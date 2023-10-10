@@ -1,0 +1,18 @@
+{
+  "name": "interpretableai",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow/tfjs": "^4.11.0",
+    "axios": "^1.5.1",
+    "papaparse": "^5.4.1",
+    "plotly.js": "^1.47.4",
+    "simple-statistics": "^7.8.3"
+  }
+}
