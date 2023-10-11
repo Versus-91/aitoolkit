@@ -29,7 +29,6 @@ function handleFileSelect(evt) {
         header: true,
         dynamicTyping: true,
         complete: function (results) {
-            console.log(results);
             printPapaObject(results);
         }
     });
@@ -82,10 +81,10 @@ function handleFileSelect(evt) {
         header: true,
         dynamicTyping: true,
         complete: function (results) {
-            console.log(results.data);
-            printPapaObject(results);
+            //printPapaObject(results);
+            renderDatasetStats(results.data)
             renderChart("chart", results.data, "PetalLengthCm", {
-                title: "Overall material and finish quality (0-10)",
+                title: "",
                 xLabel: "Species"
             });
         }
@@ -144,6 +143,46 @@ function renderChart(container, data, column, config) {
         title: config.title
     });
 };
+
+function renderDatasetStats(data) {
+    var header = "";
+    var tbody = "";
+    const fileds = ["Metric", "Min", "Max", "Median", "Standard devision", "p-value"]
+    for (var p in fileds) {
+        header += "<th>" + fileds[p] + "</th>";
+    }
+    const invalidColumns = ["Id"];
+    for (const key in data[0]) {
+        if (!invalidColumns.includes(key)) {
+            let row = "";
+            const formattedData = data.map(row => {
+                return row[key]
+            }).filter(function (item) {
+                return typeof item === "number"
+            });
+            console.log(formattedData);
+            const min = Math.min(...formattedData)
+            console.log(min, key);
+            const max = Math.max(...formattedData)
+            row += "<td>" + key + "</td>";
+            row += "<td>" + min + "</td>";
+            row += "<td>" + max + "</td>";
+            row += "<td>" + min + "</td>";
+            row += "<td>" + min + "</td>";
+            row += "<td>" + min + "</td>";
+            tbody += "<tr>" + row + "</tr>";
+        }
+    }
+
+    //build a table
+    document.querySelector("output").innerHTML =
+        '<table class="table is-bordered"><thead>' +
+        header +
+        "</thead><tbody>" +
+        tbody +
+        "</tbody></table>"
+        ;
+}
 function linear_test(data) {
     // Inputs
     const xs = tf.tensor([-1, 0, 1, 2, 3, 4]); 1
@@ -162,12 +201,24 @@ function linear_test(data) {
     let log = model.summary();
     // Train
     model.fit(xs, ys, { epochs: 300 }).then(history => {
-        5
-        const inputTensor = tf.tensor([10]);
-        const answer = model.predict(inputTensor); 6
-        console.log(`10 results in ${Math.round(answer.dataSync())}`);
-        // cleanup
-        tf.dispose([xs, ys, model, answer, inputTensor]); 7
+        const inputs = [10, 10, 15]
+        const inputTensor = tf.tensor(inputs);
+        const answer = model.predict(inputTensor);
+        const answers = answer.dataSync();
+        answers.forEach((element, i) => {
+            console.log(inputs[i] + ` results in ${Math.round(answers[i])}`);
+        });
+        const labels = tf.tensor1d(inputs);
+        const predictions = tf.tensor1d(answers);
+        tfvis.metrics.confusionMatrix(labels, predictions).then((res) => {
+            const container = document.getElementById("confusion-matrix")
+            tfvis.render.confusionMatrix(container, {
+                values: res,
+                tickLabels: ["Healthy", "Diabetic"],
+            })
+            console.log(JSON.stringify(res, null, 2))
+        });
+        tf.dispose([xs, ys, model, answer, inputTensor]);
     });
 }
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
