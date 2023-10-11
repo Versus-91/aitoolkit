@@ -147,11 +147,11 @@ function renderChart(container, data, column, config) {
 function renderDatasetStats(data) {
     var header = "";
     var tbody = "";
-    const fileds = ["Metric", "Min", "Max", "Median", "Standard devision", "p-value"]
+    const fileds = ["Metric", "Min", "Max", "Median", "Standard deviation", "p-value"]
     for (var p in fileds) {
         header += "<th>" + fileds[p] + "</th>";
     }
-    const invalidColumns = ["Id"];
+    const invalidColumns = ["Id", "Species"];
     for (const key in data[0]) {
         if (!invalidColumns.includes(key)) {
             let row = "";
@@ -160,6 +160,7 @@ function renderDatasetStats(data) {
             }).filter(function (item) {
                 return typeof item === "number"
             });
+
             console.log(formattedData);
             const min = Math.min(...formattedData)
             console.log(min, key);
@@ -167,8 +168,8 @@ function renderDatasetStats(data) {
             row += "<td>" + key + "</td>";
             row += "<td>" + min + "</td>";
             row += "<td>" + max + "</td>";
-            row += "<td>" + min + "</td>";
-            row += "<td>" + min + "</td>";
+            row += "<td>" + ss.mean(formattedData) + "</td>";
+            row += "<td>" + ss.standardDeviation(formattedData) + "</td>";
             row += "<td>" + min + "</td>";
             tbody += "<tr>" + row + "</tr>";
         }
