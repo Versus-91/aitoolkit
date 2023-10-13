@@ -12,6 +12,7 @@
         integrity="sha512-q3eWabyZPc1XTCmF+8/LuE1ozpg5xxn7iO89yfSOd5/oKvyqLngoNGsx8jq92Y8eXJ/IRxQbEC+FGSYxtk2oiw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
+
 <body>
     <div class="container mt-4">
         <div class="columns is-multiline">
@@ -38,6 +39,8 @@
             <div class="column">
                 <output></output>
             </div>
+            <div id="plot-container"></div>
+
             <div class="column">
                 <div id="chart"></div>
                 <div id="confusion-matrix"></div>
@@ -52,8 +55,7 @@
     <script src="node_modules/simple-statistics/dist/simple-statistics.min.js"></script>
     <script src="node_modules/science/science.v1.min.js"></script>
     <script src="node_modules/jquery/dist/jquery.min.js"></script>
-
-    <script src="index.js"></script>
+    <script type="module" src="index.js"></script>
 
 </body>
 

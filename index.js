@@ -1,20 +1,20 @@
 "use strict";
-
-const FeatureCategories = {
-    Numerical: "Numerical",
-    Categorical: "Categorical",
-}
+import DataLoader from "./data.js";
+import {FeatureCategories} from "./feature_types.js";
+let data_parser = new DataLoader();
 function createDatasetPropsDropdown(items) {
-    let rowMetadata = findDataTypes(items);
+    let rowMetadata = data_parser.findDataTypes(items);
     let header = "";
     for (const key in rowMetadata) {
         let options = ""
+        const lastProperty = Object.keys(items[0])[Object.keys(items[0]).length - 1];
         $('#props').append(`
-            <h4>${key.replace(/([A-Z])/g, ' $1').trim()}</h4>
+            <h4>${key.replace(/([A-Z])/g, ' $1').trim()} - ${key === lastProperty ? "Output" : "Input"}</h4>
             <div class="select mb-1">
                 <select id="${key}">
                     <option value="1">Numerical</option>
                     <option value="2">Categorical</option>
+                    <option value="3">Ordinal</option>
                 </select>
             </div>
         `);
@@ -24,51 +24,6 @@ function createDatasetPropsDropdown(items) {
             $('#' + key).val(2)
         }
     }
-
-}
-function findDataTypes(items) {
-    if (Array.isArray(items) && items.length == 0) {
-        throw "input is not an array"
-    }
-    let result = {};
-    for (const key in items[0]) {
-        result[key] = "na"
-        for (let index = 0; index < items.length; index++) {
-            const element = items[index];
-            if (Object.hasOwnProperty.call(element, key)) {
-                if (typeof element[key] == "number") {
-                    result[key] = FeatureCategories.Numerical;
-                    break;
-                } else if (typeof element[key] == "string") {
-                    result[key] = FeatureCategories.Categorical;
-                    break;
-                }
-            }
-        }
-    }
-    return result;
-}
-function generateDatasetStatsTable(items) {
-    var header = "";
-    var tbody = "";
-    for (var p in items.meta.fields) {
-        header += "<th>" + items.meta.fields[p] + "</th>";
-    }
-    var row = "";
-    for (var i = 0; i < items.data.length; i++) {
-        for (var z in items.data[i]) {
-            row += "<td>" + items.data[i][z] + "</td>";
-        }
-        tbody += "<tr>" + row + "</tr>";
-    }
-    //build a table
-    document.querySelector("output").innerHTML =
-        '<table class="table is-bordered"><thead>' +
-        header +
-        "</thead><tbody>" +
-        tbody +
-        "</tbody></table>"
-        ;
 }
 
 function handleFileSelect(evt) {
@@ -81,7 +36,6 @@ function handleFileSelect(evt) {
         header: true,
         dynamicTyping: true,
         complete: function (results) {
-            //printPapadata(results);
             createDatasetPropsDropdown(results.data);
             renderDatasetStats(results.data);
             renderChart("chart", results.data, "PetalLengthCm", {
@@ -90,30 +44,7 @@ function handleFileSelect(evt) {
             });
         }
     });
-
 }
-
-const createDataSets = (data, features, categoricalFeatures, testSize) => {
-    const X = data.map(r =>
-        features.flatMap(f => {
-            if (categoricalFeatures.has(f)) {
-                return oneHot(!r[f] ? 0 : r[f], VARIABLE_CATEGORY_COUNT[f]);
-            }
-            return !r[f] ? 0 : r[f];
-        })
-    );
-
-    const X_t = normalize(tf.tensor2d(X));
-
-    const y = tf.tensor(data.map(r => (!r.SalePrice ? 0 : r.SalePrice)));
-
-    const splitIdx = parseInt((1 - testSize) * data.length, 10);
-
-    const [xTrain, xTest] = tf.split(X_t, [splitIdx, data.length - splitIdx]);
-    const [yTrain, yTest] = tf.split(y, [splitIdx, data.length - splitIdx]);
-
-    return [xTrain, xTest, yTrain, yTest];
-};
 
 async function trainNewModel() {
     this.linearmodel = tf.sequential();
@@ -154,7 +85,15 @@ function renderDatasetStats(data) {
     for (var p in fileds) {
         header += "<th>" + fileds[p] + "</th>";
     }
-    const invalidColumns = ["Id", "Species"];
+    const invalidColumns = ["Id"];
+    let columnDataTypes = data_parser.findDataTypes(data)
+    console.log(columnDataTypes);
+    for (const key in columnDataTypes) {
+        if (columnDataTypes[key] === FeatureCategories.Categorical) {
+            invalidColumns.push(key)
+        }
+    }
+    console.log(invalidColumns);
     for (const key in data[0]) {
         if (!invalidColumns.includes(key)) {
             let row = "";
@@ -188,7 +127,7 @@ function renderDatasetStats(data) {
 }
 function linear_test(data) {
     // Inputs
-    const xs = tf.tensor([-1, 0, 1, 2, 3, 4]); 1
+    const xs = tf.tensor([-1, 0, 1, 2, 3, 4]);
     // Answers we want from inputs
     const ys = tf.tensor([-4, -2, 0, 2, 4, 6]);
     const model = tf.sequential();
@@ -224,6 +163,8 @@ function linear_test(data) {
         tf.dispose([xs, ys, model, answer, inputTensor]);
     });
 }
+
+
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 document.getElementById("test").addEventListener("click", linear_test)
 
