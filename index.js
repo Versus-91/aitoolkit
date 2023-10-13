@@ -1,16 +1,60 @@
 "use strict";
 
-function createDatasetPropsDropdown(data) {
-    
+const FeatureCategories = {
+    Numerical: "Numerical",
+    Categorical: "Categorical",
 }
+function createDatasetPropsDropdown(items) {
+    let rowMetadata = findDataTypes(items);
+    let header = "";
+    for (const key in rowMetadata) {
+        let options = ""
+        $('#props').append(`
+            <h4>${key.replace(/([A-Z])/g, ' $1').trim()}</h4>
+            <div class="select mb-1">
+                <select id="${key}">
+                    <option value="1">Numerical</option>
+                    <option value="2">Categorical</option>
+                </select>
+            </div>
+        `);
+        if (rowMetadata[key] === FeatureCategories.Numerical) {
+            $('#' + key).val(1)
+        } else if (rowMetadata[key] === FeatureCategories.Categorical) {
+            $('#' + key).val(2)
+        }
+    }
 
+}
+function findDataTypes(items) {
+    if (Array.isArray(items) && items.length == 0) {
+        throw "input is not an array"
+    }
+    let result = {};
+    for (const key in items[0]) {
+        result[key] = "na"
+        for (let index = 0; index < items.length; index++) {
+            const element = items[index];
+            if (Object.hasOwnProperty.call(element, key)) {
+                if (typeof element[key] == "number") {
+                    result[key] = FeatureCategories.Numerical;
+                    break;
+                } else if (typeof element[key] == "string") {
+                    result[key] = FeatureCategories.Categorical;
+                    break;
+                }
+            }
+        }
+    }
+    return result;
+}
 function generateDatasetStatsTable(items) {
     var header = "";
     var tbody = "";
     for (var p in items.meta.fields) {
         header += "<th>" + items.meta.fields[p] + "</th>";
     }
-        var row = "";
+    var row = "";
     for (var i = 0; i < items.data.length; i++) {
         for (var z in items.data[i]) {
             row += "<td>" + items.data[i][z] + "</td>";
@@ -28,14 +72,18 @@ function generateDatasetStatsTable(items) {
 }
 
 function handleFileSelect(evt) {
+    var target = evt.target || evt.srcElement;
+    if (target.value.length == 0) {
+        return;
+    }
     var file = evt.target.files[0];
     Papa.parse(file, {
         header: true,
         dynamicTyping: true,
         complete: function (results) {
             //printPapadata(results);
-            renderDatasetStats(results.data)
-            createDatasetPropsDropdown(results.data)
+            createDatasetPropsDropdown(results.data);
+            renderDatasetStats(results.data);
             renderChart("chart", results.data, "PetalLengthCm", {
                 title: "",
                 xLabel: "Species"
@@ -44,6 +92,7 @@ function handleFileSelect(evt) {
     });
 
 }
+
 const createDataSets = (data, features, categoricalFeatures, testSize) => {
     const X = data.map(r =>
         features.flatMap(f => {
@@ -65,6 +114,7 @@ const createDataSets = (data, features, categoricalFeatures, testSize) => {
 
     return [xTrain, xTest, yTrain, yTest];
 };
+
 async function trainNewModel() {
     this.linearmodel = tf.sequential();
     this.linearmodel.add(tf.layers.dense({ units: 1, inputShape: [1] }));
