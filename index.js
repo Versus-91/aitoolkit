@@ -1,67 +1,19 @@
 "use strict";
-function printPapaObject(papa) {
-    var header = "";
-    var tbody = "";
-    for (var p in papa.meta.fields) {
-        header += "<th>" + papa.meta.fields[p] + "</th>";
-    }
-    for (var i = 0; i < papa.data.length; i++) {
-        var row = "";
-        for (var z in papa.data[i]) {
-            row += "<td>" + papa.data[i][z] + "</td>";
-        }
-        tbody += "<tr>" + row + "</tr>";
-    }
-    //build a table
-    $("output").html(
-        '<table class="table"><thead>' +
-        header +
-        "</thead><tbody>" +
-        tbody +
-        "</tbody></table>"
-    );
+
+function createDatasetPropsDropdown(data) {
+    
 }
 
-function handleFileSelect(evt) {
-    var file = evt.target.files[0];
-
-    Papa.parse(file, {
-        header: true,
-        dynamicTyping: true,
-        complete: function (results) {
-            printPapaObject(results);
-        }
-    });
-}
-function scatterplot() {
-    cars = res.data.map((car) => ({
-        mpg: car.Miles_per_Gallon,
-        horsepower: car.Horsepower
-    }))
-    const values = cars.map((d) => ({
-        x: d.horsepower,
-        y: d.mpg,
-    }));
-    tfvis.render.scatterplot(
-        { name: 'Horsepower v MPG' },
-        { values: values },
-        {
-            xLabel: 'Horsepower',
-            yLabel: 'MPG',
-            height: 300
-        }
-    );
-}
-function printPapaObject(papa) {
+function generateDatasetStatsTable(items) {
     var header = "";
     var tbody = "";
-    for (var p in papa.meta.fields) {
-        header += "<th>" + papa.meta.fields[p] + "</th>";
+    for (var p in items.meta.fields) {
+        header += "<th>" + items.meta.fields[p] + "</th>";
     }
-    for (var i = 0; i < papa.data.length; i++) {
         var row = "";
-        for (var z in papa.data[i]) {
-            row += "<td>" + papa.data[i][z] + "</td>";
+    for (var i = 0; i < items.data.length; i++) {
+        for (var z in items.data[i]) {
+            row += "<td>" + items.data[i][z] + "</td>";
         }
         tbody += "<tr>" + row + "</tr>";
     }
@@ -81,8 +33,9 @@ function handleFileSelect(evt) {
         header: true,
         dynamicTyping: true,
         complete: function (results) {
-            //printPapaObject(results);
+            //printPapadata(results);
             renderDatasetStats(results.data)
+            createDatasetPropsDropdown(results.data)
             renderChart("chart", results.data, "PetalLengthCm", {
                 title: "",
                 xLabel: "Species"
@@ -147,7 +100,7 @@ function renderChart(container, data, column, config) {
 function renderDatasetStats(data) {
     var header = "";
     var tbody = "";
-    const fileds = ["Metric", "Min", "Max", "Median", "Standard deviation", "p-value"]
+    const fileds = ["Metric", "Min", "Max", "Median", "Mean", "Standard deviation", "p-value"]
     for (var p in fileds) {
         header += "<th>" + fileds[p] + "</th>";
     }
@@ -161,16 +114,15 @@ function renderDatasetStats(data) {
                 return typeof item === "number"
             });
 
-            console.log(formattedData);
             const min = Math.min(...formattedData)
-            console.log(min, key);
             const max = Math.max(...formattedData)
             row += "<td>" + key + "</td>";
             row += "<td>" + min + "</td>";
             row += "<td>" + max + "</td>";
+            row += "<td>" + ss.median(formattedData) + "</td>";
             row += "<td>" + ss.mean(formattedData) + "</td>";
             row += "<td>" + ss.standardDeviation(formattedData) + "</td>";
-            row += "<td>" + min + "</td>";
+            row += "<td>" + "NA" + "</td>";
             tbody += "<tr>" + row + "</tr>";
         }
     }

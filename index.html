@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>LinearRegressionTf</title>
+    <title>Machine Learning toolkit</title>
     <base href="/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -14,10 +14,10 @@
 <body>
     <div class="container mt-4">
         <div class="columns is-multiline">
-            <div class="column ">
-                <div class="file">
+            <div class="column is-6">
+                <div class="file mb-2">
                     <label class="file-label">
-                        <input class="file-input" id="parseCVS" type="file" name="resume">
+                        <input class="file-input is-info" id="parseCVS" type="file" name="resume">
                         <span class="file-cta">
                             <span class="file-icon">
                                 <i class="fas fa-upload"></i>
@@ -28,13 +28,18 @@
                         </span>
                     </label>
                 </div>
+            </div>
+            <div class="column is-6">
+                <button class="button mb-2" id="test">Test linear regression</button>
+            </div>
+            <div class="column is-12" id="props">
+            </div>
+            <div class="column">
                 <output></output>
             </div>
             <div class="column">
-                <button id="test">Test linear regression</button>
                 <div id="chart"></div>
                 <div id="confusion-matrix"></div>
-
             </div>
         </div>
     </div>
@@ -45,6 +50,7 @@
     <script src="node_modules/plotly.js/dist/plotly.min.js"></script>
     <script src="node_modules/simple-statistics/dist/simple-statistics.min.js"></script>
     <script src="node_modules/science/science.v1.min.js"></script>
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <script src="index.js"></script>
 
 </body>
