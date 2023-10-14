@@ -67,16 +67,6 @@ function handleFileSelect(evt) {
     });
 }
 
-async function trainNewModel() {
-    this.linearmodel = tf.sequential();
-    this.linearmodel.add(tf.layers.dense({ units: 1, inputShape: [1] }));
-    this.linearmodel.compile({ loss: 'meanSquaredError', optimizer: 'sgd' });
-
-    const xs = tf.tensor1d([1, 2]);
-    const ys = tf.tensor1d([2, 4]);
-    await this.linearmodel.fit(xs, ys);
-    console.log('training is complete');
-}
 function renderChart(container, data, column, config) {
     const columnData = data.map(r => r[column]);
 
@@ -114,7 +104,6 @@ function renderDatasetStats(data) {
             invalidColumns.push(key)
         }
     }
-    console.log(invalidColumns);
     for (const key in data[0]) {
         if (!invalidColumns.includes(key)) {
             let row = "";
@@ -146,45 +135,6 @@ function renderDatasetStats(data) {
         "</tbody></table>"
         ;
 }
-function linear_test(data) {
-    // Inputs
-    const xs = tf.tensor([-1, 0, 1, 2, 3, 4]);
-    // Answers we want from inputs
-    const ys = tf.tensor([-4, -2, 0, 2, 4, 6]);
-    const model = tf.sequential();
-    model.add(tf.layers.dense({
-        inputShape: 1,
-        units: 1
-    }));
-    model.compile({
-        optimizer: "sgd",
-        loss: "meanSquaredError"
-    });
-
-    let log = model.summary();
-    // Train
-    model.fit(xs, ys, { epochs: 300 }).then(history => {
-        const inputs = [10, 10, 15]
-        const inputTensor = tf.tensor(inputs);
-        const answer = model.predict(inputTensor);
-        const answers = answer.dataSync();
-        answers.forEach((element, i) => {
-            console.log(inputs[i] + ` results in ${Math.round(answers[i])}`);
-        });
-        const labels = tf.tensor1d(inputs);
-        const predictions = tf.tensor1d(answers);
-        tfvis.metrics.confusionMatrix(labels, predictions).then((res) => {
-            const container = document.getElementById("confusion-matrix")
-            tfvis.render.confusionMatrix(container, {
-                values: res,
-                tickLabels: ["Healthy", "Diabetic"],
-            })
-            console.log(JSON.stringify(res, null, 2))
-        });
-        tf.dispose([xs, ys, model, answer, inputTensor]);
-    });
-}
-
 
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 document.getElementById("test").addEventListener("click", linear_test)
