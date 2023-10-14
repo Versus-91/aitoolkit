@@ -50,10 +50,18 @@
                 <div id="chart"></div>
                 <div id="confusion-matrix"></div>
             </div>
-            <div id="outcome-cont" />
-            <div id="loss-cont"></div>
-            <div id="acc-cont"></div>
-            <div id="confusion-matrix"></div>
+            <div class="columns is-multiline">
+                <div class="column-6">
+                    <div id="loss-cont"></div>
+                </div>
+                <div class="column-6">
+                    <div id="acc-cont"></div>
+                </div>                
+                <div class="column-6">
+                    <div id="confusion-matrix"></div>
+                </div>
+            </div>
+
         </div>
     </div>
     <script src="node_modules/@tensorflow/tfjs/dist/tf.min.js"></script>
