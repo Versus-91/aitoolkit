@@ -1,7 +1,9 @@
 "use strict";
 import DataLoader from "./data.js";
-import {FeatureCategories} from "./feature_types.js";
+import { FeatureCategories } from "./feature_types.js";
+import  Trainter  from "./trainer.js";
 let data_parser = new DataLoader();
+let trainer = new Trainter();
 function createDatasetPropsDropdown(items) {
     let rowMetadata = data_parser.findDataTypes(items);
     let header = "";
@@ -9,14 +11,20 @@ function createDatasetPropsDropdown(items) {
         let options = ""
         const lastProperty = Object.keys(items[0])[Object.keys(items[0]).length - 1];
         $('#props').append(`
+        <div class="column is-4">
             <h4>${key.replace(/([A-Z])/g, ' $1').trim()} - ${key === lastProperty ? "Output" : "Input"}</h4>
             <div class="select mb-1">
                 <select id="${key}">
                     <option value="1">Numerical</option>
-                    <option value="2">Categorical</option>
+                    <option value="2">Nominal</option>
                     <option value="3">Ordinal</option>
                 </select>
             </div>
+            <label class="checkbox my-2">
+                <input type="checkbox">
+                Ignore
+            </label>
+        </div>
         `);
         if (rowMetadata[key] === FeatureCategories.Numerical) {
             $('#' + key).val(1)
@@ -35,13 +43,26 @@ function handleFileSelect(evt) {
     Papa.parse(file, {
         header: true,
         dynamicTyping: true,
-        complete: function (results) {
+        complete: async function (results) {
             createDatasetPropsDropdown(results.data);
             renderDatasetStats(results.data);
             renderChart("chart", results.data, "PetalLengthCm", {
                 title: "",
                 xLabel: "Species"
             });
+            const features = ["Glucose"];
+
+            const [trainDs, validDs, xTest, yTest] = data_parser.createDataSets(
+                results.data,
+                features,
+                0.1,
+                16
+            );
+            const model = await trainer.trainLogisticRegression(
+                features.length,
+                trainDs,
+                validDs
+            );
         }
     });
 }

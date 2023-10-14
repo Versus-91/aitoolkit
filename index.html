@@ -34,8 +34,13 @@
             <div class="column is-6">
                 <button class="button mb-2" id="test">Test linear regression</button>
             </div>
-            <div class="column is-12" id="props">
+            <div class="column is-12">
+                <article class="message is-link">
+                    <div class="columns mx-1 is-multiline" id="props">
+                    </div>
+                </article>
             </div>
+
             <div class="column">
                 <output></output>
             </div>
@@ -45,6 +50,10 @@
                 <div id="chart"></div>
                 <div id="confusion-matrix"></div>
             </div>
+            <div id="outcome-cont" />
+            <div id="loss-cont"></div>
+            <div id="acc-cont"></div>
+            <div id="confusion-matrix"></div>
         </div>
     </div>
     <script src="node_modules/@tensorflow/tfjs/dist/tf.min.js"></script>
@@ -55,6 +64,9 @@
     <script src="node_modules/simple-statistics/dist/simple-statistics.min.js"></script>
     <script src="node_modules/science/science.v1.min.js"></script>
     <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
+        integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script type="module" src="index.js"></script>
 
 </body>
