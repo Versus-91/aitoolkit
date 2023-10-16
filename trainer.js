@@ -8,6 +8,9 @@ export default class Trainer {
     }
     async trainLogisticRegression(featureCount, trainDs, validDs) {
         const model = tf.sequential();
+        function logit(x) {
+            return tf.div(tf.scalar(1), tf.add(tf.scalar(1), tf.exp(tf.neg(x))));
+        }
         model.add(
             tf.layers.dense({
                 units: 2,
@@ -17,7 +20,7 @@ export default class Trainer {
         );
         const optimizer = tf.train.adam(0.001);
         model.compile({
-            optimizer: optimizer,
+            optimizer: "adam",
             loss: "binaryCrossentropy",
             metrics: ["accuracy"]
         });
@@ -26,7 +29,7 @@ export default class Trainer {
         const accContainer = document.getElementById("acc-cont");
         console.log("Training...");
         await model.fitDataset(trainDs, {
-            epochs: 100,
+            epochs: 50,
             validationData: validDs,
             callbacks: {
                 onEpochEnd: async (epoch, logs) => {

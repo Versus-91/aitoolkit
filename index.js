@@ -1,7 +1,7 @@
 "use strict";
 import DataLoader from "./data.js";
 import { FeatureCategories } from "./feature_types.js";
-import  Trainter  from "./trainer.js";
+import Trainter from "./trainer.js";
 let data_parser = new DataLoader();
 let trainer = new Trainter();
 function createDatasetPropsDropdown(items) {
@@ -12,7 +12,7 @@ function createDatasetPropsDropdown(items) {
         const lastProperty = Object.keys(items[0])[Object.keys(items[0]).length - 1];
         $('#props').append(`
         <div class="column is-4">
-            <h4>${key.replace(/([A-Z])/g, ' $1').trim()} - ${key === lastProperty ? "Output" : "Input"}</h4>
+            <h4>${insertSpaces(key)} - ${key === lastProperty ? "Output" : "Input"}</h4>
             <div class="select mb-1">
                 <select id="${key}">
                     <option value="1">Numerical</option>
@@ -21,7 +21,7 @@ function createDatasetPropsDropdown(items) {
                 </select>
             </div>
             <label class="checkbox my-2">
-                <input type="checkbox">
+                <input id="${key - "checkbox"}" type="checkbox">
                 Ignore
             </label>
         </div>
@@ -33,7 +33,11 @@ function createDatasetPropsDropdown(items) {
         }
     }
 }
-
+function insertSpaces(string) {
+    string = string.replace(/([a-z])([A-Z])/g, '$1 $2');
+    string = string.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+    return string;
+}
 function handleFileSelect(evt) {
     var target = evt.target || evt.srcElement;
     if (target.value.length == 0) {
@@ -46,10 +50,12 @@ function handleFileSelect(evt) {
         complete: async function (results) {
             createDatasetPropsDropdown(results.data);
             renderDatasetStats(results.data);
-            renderChart("chart", results.data, "PetalLengthCm", {
-                title: "",
-                xLabel: "Species"
-            });
+            let df = new dfd.DataFrame(results.data)
+            df.print()
+            // renderChart("chart", results.data, "PetalLengthCm", {
+            //     title: "",
+            //     xLabel: "Species"
+            // });
             const features = ["Glucose"];
 
             const [trainDs, validDs, xTest, yTest] = data_parser.createDataSets(
@@ -135,7 +141,7 @@ function renderDatasetStats(data) {
         "</tbody></table>"
         ;
 }
-
+await tf.ready()
+console.log(tf.getBackend());
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
-document.getElementById("test").addEventListener("click", linear_test)
 
