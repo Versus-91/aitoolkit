@@ -11,9 +11,9 @@
         />
         <script defer src="https://pyscript.net/latest/pyscript.js"></script>
         <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.js"></script>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.js"></script>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.2.min.js"></script>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.2.min.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.3.min.js"></script>
         <script type="text/javascript" src="https://unpkg.com/@holoviz/panel@0.13.0/dist/panel.min.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css"
@@ -70,16 +70,14 @@
                 <div class="column-6">
                     <div id="acc-cont"></div>
                 </div>                
-                <div class="column-6">
-                        <div id="mpl"></div>
-                        <div id="mpl2"></div>
-                </div>
 
             </div>
 
         </div>
     </div>
-
+ <section class="pyscript">
+ <div id="mpl"></div>
+ <div id="mpl2"></div>
                 <script src="./index.js">
                 </script>
                 <py-config>
@@ -120,6 +118,8 @@
                 import seaborn as sns
                 from js import document 
                 import io
+                from sklearn.preprocessing import LabelEncoder
+
                 file_input = pn.widgets.FileInput(accept='.csv', width=180)
                 button_upload = pn.widgets.Button(name='Upload', button_type='primary', width=100)
                 row = pn.Row(file_input, button_upload, height=75)
@@ -131,9 +131,8 @@
                     if file_input.value is not None:
                         df = pd.read_csv(io.BytesIO(file_input.value))
                         table.value = df
-                        test(df)
                         document.getElementById('table').style.display = 'block'
-
+                        test(df)
                 
                     
 
@@ -141,10 +140,11 @@
 
                 def test(items):
                     # Load the Iris dataset
-                    iris = items
-                    X = items.iloc[:, :-1] 
-                    y = items.iloc[:, -1]  
-
+                    label_encoder = LabelEncoder()
+                    iris = datasets.load_iris()
+                    X = iris.data
+                    y = iris.target
+                        
                     # Split the data into training and testing sets
                     X_train, X_test, y_train, y_test = train_test_split(
                         X, y, test_size=0.3, random_state=42)
@@ -164,33 +164,6 @@
                     # Calculate the accuracy of the model
                     accuracy = accuracy_score(y_test, y_pred)
                     print(f"Accuracy: {accuracy * 100:.2f}%")
-
-                    # Load the Iris dataset
-                    iris = datasets.load_iris()
-                    X = iris.data
-                    y = iris.target
-
-                    # Split the data into training and testing sets
-                    X_train, X_test, y_train, y_test = train_test_split(
-                        X, y, test_size=0.3, random_state=42)
-
-                    # Standardize the features
-                    scaler = StandardScaler()
-                    X_train = scaler.fit_transform(X_train)
-                    X_test = scaler.transform(X_test)
-
-                    # Create an SVM model
-                    svm = SVC(kernel='linear')
-
-                    # Train the model on the training data
-                    svm.fit(X_train, y_train)
-
-                    # Make predictions on the test data
-                    y_pred = svm.predict(X_test)
-
-                    # Calculate the accuracy
-                    accuracy = accuracy_score(y_test, y_pred)
-                    print(f"SVM Accuracy: {accuracy * 100:.2f}%")
 
                     # Standardize the features
                     scaler = StandardScaler()
@@ -217,7 +190,7 @@
                     plt.title("PCA Visualization")
                     plt.xlabel("PCA Component 1")
                     plt.ylabel("PCA Component 2")
-                    display(sns.pairplot(items, hue="target"), target="mpl2")
+                    
                     display(a, target="mpl")
                 async def init():
                     button_upload.on_click(process_file)
@@ -225,5 +198,6 @@
                     await show(table, 'table')
                 js.setTimeout(create_proxy(init), 0) 
                 </script>
+    </section>
     </body>
 </html>
