@@ -10,11 +10,19 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 # Load the Iris dataset
-iris = datasets.load_iris()
-X = iris.data
-y = iris.target
+# iris = datasets.load_iris()
+# X = iris.data
+# y = iris.target
+# Replace 'iris.csv' with the actual path to your CSV file
+data = pd.read_csv('iris.csv')
 
+# Assuming that your CSV file has columns for features (e.g., 'sepal_length', 'sepal_width', 'petal_length', 'petal_width')
+X = data.iloc[:, :-1]  # Features
+y = data.iloc[:, -1]   # Target variable in the last column
 # Split the data into training and testing sets
+for i, item in enumerate(data.columns):
+    print(item)
+
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.3, random_state=42)
 # Standardize the features
@@ -31,40 +39,6 @@ model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 # Calculate the accuracy of the model
 accuracy = accuracy_score(y_test, y_pred)
-print(f"Accuracy: {accuracy * 100:.2f}%")
-
-# Load the Iris dataset
-iris = datasets.load_iris()
-X = iris.data
-y = iris.target
-
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.3, random_state=42)
-
-# Standardize the features
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-
-# Create an SVM model
-svm = SVC(kernel='linear')
-
-# Train the model on the training data
-svm.fit(X_train, y_train)
-
-# Make predictions on the test data
-y_pred = svm.predict(X_test)
-
-# Calculate the accuracy
-accuracy = accuracy_score(y_test, y_pred)
-print(f"SVM Accuracy: {accuracy * 100:.2f}%")
-
-# Load the Iris dataset
-iris = datasets.load_iris()
-X = iris.data
-y = iris.target
-
 # Standardize the features
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
@@ -90,5 +64,6 @@ plt.scatter(X_pca[:, 0], X_pca[:, 1], c=y, cmap='viridis')
 plt.title("PCA Visualization")
 plt.xlabel("PCA Component 1")
 plt.ylabel("PCA Component 2")
-
-display(a, target="mpl")
+# display(sns.pairplot(items, hue="target"), target="mpl2")
+# display(a, target="mpl")
+print(f"Accuracy: {accuracy * 100:.2f}%")

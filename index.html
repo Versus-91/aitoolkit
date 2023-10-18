@@ -4,28 +4,103 @@
         <title>Matplotlib</title>
         <meta charset="utf-8" />
         <link rel="icon" type="image/x-icon" href="./favicon.png" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <link
             rel="stylesheet"
             href="https://pyscript.net/latest/pyscript.css"
         />
         <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+        <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.2.min.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.2.min.js"></script>
+        <script type="text/javascript" src="https://unpkg.com/@holoviz/panel@0.13.0/dist/panel.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css"
+        integrity="sha512-q3eWabyZPc1XTCmF+8/LuE1ozpg5xxn7iO89yfSOd5/oKvyqLngoNGsx8jq92Y8eXJ/IRxQbEC+FGSYxtk2oiw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link rel="stylesheet" href="./assets/css/examples.css" />
     </head>
     <body>
-        <section class="pyscript">
-            <div class="py-box">
-                    <input id="new-task-content">
-                    <button py-click="test()" id="new-task-btn" class="py-button">
-                        Add Task!
-                    </button>
+        <div class="container mt-4">
+        <div class="columns is-multiline">
+            <div class="column is-6">
+                <div class="file mb-2 is-info">
+                    <label class="file-label">
+                        <input class="file-input is-info" id="parseCVS" type="file" name="resume">
+                        <span class="file-cta">
+                            <span class="file-icon">
+                                <i class="fas fa-upload"></i>
+                            </span>
+                            <span class="file-label">
+                                Choose a file…
+                            </span>
+                        </span>
+                    </label>
+                </div>
             </div>
-            <div id="mpl"></div>
+            <div class="column is-6">
+                <div class="row overflow-hidden" id="content">
+                    <div class="col mh-100 float-left" id="main">
+                        <div id="fileinput"></div>
+                        <div id="table"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-12">
+                <article class="message is-link">
+                    <div class="columns mx-1 is-multiline" id="props">
+                    </div>
+                </article>
+            </div>
+
+            <div class="column">
+                <output></output>
+            </div>
+            <div id="plot-container"></div>
+
+            <div class="column">
+                <div id="chart"></div>
+                <div id="confusion-matrix"></div>
+            </div>
+            <div class="columns is-multiline">
+                <div class="column-6">
+                    <div id="loss-cont"></div>
+                </div>
+                <div class="column-6">
+                    <div id="acc-cont"></div>
+                </div>                
+                <div class="column-6">
+                        <div id="mpl"></div>
+                        <div id="mpl2"></div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+                <script src="./index.js">
+                </script>
                 <py-config>
                     packages = [
-                      "matplotlib","scikit-learn","numpy","pandas"
+                      "matplotlib","scikit-learn","numpy","pandas","seaborn",
+                       "https://cdn.holoviz.org/panel/0.14.4/dist/wheels/bokeh-2.4.3-py3-none-any.whl",
+                       "https://cdn.holoviz.org/panel/0.14.4/dist/wheels/panel-0.14.4-py3-none-any.whl",
                     ]
                 </py-config>
-
+                <script src="node_modules/@tensorflow/tfjs/dist/tf.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>
+                <script src="node_modules/papaparse/papaparse.min.js"></script>
+                <script src="node_modules/axios/dist/axios.min.js"></script>
+                <script src="node_modules/plotly.js/dist/plotly.min.js"></script>
+                <script src="node_modules/simple-statistics/dist/simple-statistics.min.js"></script>
+                <script src="node_modules/science/science.v1.min.js"></script>
+                <script src="node_modules/jquery/dist/jquery.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
+                    integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
+                    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+                <script type="module" src="index.js"></script>
                 <script type="py">
                 from sklearn.decomposition import PCA
                 from sklearn.manifold import TSNE
@@ -33,24 +108,47 @@
                 from sklearn.svm import SVC
                 import numpy as np
                 import pandas as pd
+                import asyncio
+                import panel as pn
+                from pyodide.ffi import create_proxy
+                from panel.io.pyodide import show
                 from sklearn import datasets
                 from sklearn.model_selection import train_test_split
                 from sklearn.preprocessing import StandardScaler
                 from sklearn.linear_model import LogisticRegression
                 from sklearn.metrics import accuracy_score
+                import seaborn as sns
+                from js import document 
+                import io
+                file_input = pn.widgets.FileInput(accept='.csv', width=180)
+                button_upload = pn.widgets.Button(name='Upload', button_type='primary', width=100)
+                row = pn.Row(file_input, button_upload, height=75)
 
+                table = pn.widgets.Tabulator(pagination='remote', page_size=10)
+                document.getElementById('table').style.display = 'none'
 
-                def test():
+                def process_file(event):
+                    if file_input.value is not None:
+                        df = pd.read_csv(io.BytesIO(file_input.value))
+                        table.value = df
+                        test(df)
+                        document.getElementById('table').style.display = 'block'
+
+                
+                    
+
+                
+
+                def test(items):
                     # Load the Iris dataset
-                    iris = datasets.load_iris()
-                    X = iris.data
-                    y = iris.target
+                    iris = items
+                    X = items.iloc[:, :-1] 
+                    y = items.iloc[:, -1]  
 
                     # Split the data into training and testing sets
                     X_train, X_test, y_train, y_test = train_test_split(
                         X, y, test_size=0.3, random_state=42)
 
-    
                     # Standardize the features
                     scaler = StandardScaler()
                     X_train = scaler.fit_transform(X_train)
@@ -94,11 +192,6 @@
                     accuracy = accuracy_score(y_test, y_pred)
                     print(f"SVM Accuracy: {accuracy * 100:.2f}%")
 
-                    # Load the Iris dataset
-                    iris = datasets.load_iris()
-                    X = iris.data
-                    y = iris.target
-
                     # Standardize the features
                     scaler = StandardScaler()
                     X_scaled = scaler.fit_transform(X)
@@ -124,9 +217,13 @@
                     plt.title("PCA Visualization")
                     plt.xlabel("PCA Component 1")
                     plt.ylabel("PCA Component 2")
-
+                    display(sns.pairplot(items, hue="target"), target="mpl2")
                     display(a, target="mpl")
+                async def init():
+                    button_upload.on_click(process_file)
+                    await show(row, 'fileinput')
+                    await show(table, 'table')
+                js.setTimeout(create_proxy(init), 0) 
                 </script>
-        </section>
     </body>
 </html>
