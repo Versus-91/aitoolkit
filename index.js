@@ -1,37 +1,60 @@
 "use strict";
 import DataLoader from "./data.js";
-import { FeatureCategories } from "./feature_types.js";
+import { FeatureCategories, Settings } from "./feature_types.js";
 import Trainter from "./trainer.js";
 let data_parser = new DataLoader();
 let trainer = new Trainter();
 function createDatasetPropsDropdown(items) {
     let rowMetadata = data_parser.findDataTypes(items);
     let header = "";
+    const lastProperty = Object.keys(items[0])[Object.keys(items[0]).length - 1];
     for (const key in rowMetadata) {
         let options = ""
-        const lastProperty = Object.keys(items[0])[Object.keys(items[0]).length - 1];
         $('#props').append(`
         <div class="column is-4">
             <h4>${insertSpaces(key)} - ${key === lastProperty ? "Output" : "Input"}</h4>
             <div class="select mb-1">
-                <select id="${key}">
+                <select id="${key === lastProperty ? key + "-y" : key}">
                     <option value="1">Numerical</option>
                     <option value="2">Nominal</option>
                     <option value="3">Ordinal</option>
                 </select>
             </div>
             <label class="checkbox my-2">
-                <input id="${key - "checkbox"}" type="checkbox">
+                <input id="${key + "-checkbox"}" type="checkbox">
                 Ignore
             </label>
         </div>
         `);
+        const id = key === lastProperty ? key + "-y" : key
         if (rowMetadata[key] === FeatureCategories.Numerical) {
-            $('#' + key).val(1)
+            $('#' + id).val(1)
         } else if (rowMetadata[key] === FeatureCategories.Categorical) {
-            $('#' + key).val(2)
+            $('#' + id).val(2)
         }
     }
+
+    if (rowMetadata[lastProperty] === FeatureCategories.Numerical) {
+        $('#props').append(createAlgorithmsSelect(1));
+    } else if (rowMetadata[lastProperty] === FeatureCategories.Categorical) {
+        $('#props').append(createAlgorithmsSelect(2));
+    }
+    $(document).on('change', '#' + lastProperty + '-y', function (e) {
+        $("#algorithm").remove();
+        $("#props").append(createAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
+    });
+}
+function createAlgorithmsSelect(category) {
+    let result = '<div id="algorithm" class="column is-4"><h4>Algorithm</h4><div class="select mb-1"> <select class="select">'
+    const lable = category == 1 ? "regression" : "classification"
+    for (const key in Settings[lable]) {
+        if (Settings.hasOwnProperty.call(Settings[lable], key)) {
+            const item = Settings[lable][key];
+            result += `<option value="${item.value}">${item.lable}</option>`
+        }
+    }
+    result += '</select></div></div>'
+    return result
 }
 function insertSpaces(string) {
     string = string.replace(/([a-z])([A-Z])/g, '$1 $2');
@@ -75,7 +98,6 @@ function handleFileSelect(evt) {
 
 function renderChart(container, data, column, config) {
     const columnData = data.map(r => r[column]);
-
     const columnTrace = {
         name: column,
         x: columnData,
@@ -133,7 +155,7 @@ function renderDatasetStats(data) {
     }
 
     //build a table
-    document.querySelector("output").innerHTML =
+    document.getElementById("output").innerHTML =
         '<table class="table is-bordered"><thead>' +
         header +
         "</thead><tbody>" +
@@ -141,7 +163,5 @@ function renderDatasetStats(data) {
         "</tbody></table>"
         ;
 }
-await tf.ready()
-console.log(tf.getBackend());
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 
