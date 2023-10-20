@@ -1,10 +1,14 @@
-
 <html>
     <head>
         <title>Matplotlib</title>
         <meta charset="utf-8" />
         <link rel="icon" type="image/x-icon" href="./favicon.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link
+            rel="stylesheet"
+            href="https://pyscript.net/latest/pyscript.css"
+        />
+        <script defer src="https://pyscript.net/latest/pyscript.js"></script>
         <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.js"></script>
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.js"></script>
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js"></script>
@@ -34,9 +38,11 @@
                 </div>
             </div>
             <div class="column is-6">
+                <button id="apply" py-click="test()" type="button is-danger">Apply</button>
                 <div class="row overflow-hidden" id="content">
                     <div class="col mh-100 float-left" id="main">
                         <div id="fileinput"></div>
+                        <div id="table"></div>
                     </div>
                 </div>
             </div>
@@ -47,8 +53,13 @@
                 </article>
             </div>
 
+            <div class="column" id="output">
+            </div>
+            <div id="plot-container"></div>
+
             <div class="column">
-                <div id="output"></div>
+                <div id="chart"></div>
+                <div id="confusion-matrix"></div>
             </div>
             <div class="columns is-multiline">
                 <div class="column-6">
@@ -69,7 +80,7 @@
                 </script>
                 <py-config>
                     packages = [
-                      "matplotlib","scikit-learn","numpy","pandas","seaborn","statsmodels",
+                      "matplotlib","scikit-learn","numpy","pandas","seaborn",
                        "https://cdn.holoviz.org/panel/0.14.4/dist/wheels/bokeh-2.4.3-py3-none-any.whl",
                        "https://cdn.holoviz.org/panel/0.14.4/dist/wheels/panel-0.14.4-py3-none-any.whl",
                     ]
@@ -85,8 +96,10 @@
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
                     integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
                     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-                <script type="module" src="./index.js"></script>
-                <py-script>
+                <script type="module" src="index.js"></script>
+                <script type="mpy" src="main2.py"></script>
+
+                <script type="py">
                 from sklearn.decomposition import PCA
                 from sklearn.manifold import TSNE
                 import matplotlib.pyplot as plt
@@ -103,29 +116,35 @@
                 from sklearn.linear_model import LogisticRegression
                 from sklearn.metrics import accuracy_score
                 import seaborn as sns
-                from js import document 
+                from js import document, console, Uint8Array, window, File
                 import io
                 from sklearn.preprocessing import LabelEncoder
 
                 file_input = pn.widgets.FileInput(accept='.csv', width=180)
                 button_upload = pn.widgets.Button(name='Upload', button_type='primary', width=100)
                 row = pn.Row(file_input, button_upload, height=75)
-
+                data_frame = None
                 table = pn.widgets.Tabulator(pagination='remote', page_size=10)
                 document.getElementById('table').style.display = 'none'
 
-                def process_file(event):
-                    if file_input.value is not None:
-                        df = pd.read_csv(io.BytesIO(file_input.value))
-                        table.value = df
-                        document.getElementById('table').style.display = 'block'
-                        test(df)
+                async def process_file(e):
+                    global data_frame
+                    console.log("Attempted file upload: " + e.target.value)
+                    file_list = e.target.files
+                    first_item = file_list.item(0)
+                    if len(file_list) == 1:
+                        array_buf = Uint8Array.new(await first_item.arrayBuffer())
+                        bytes_list = bytearray(array_buf)
+                        data_frame = pd.read_csv(io.BytesIO(bytes_list))
+                        #table.value = df
+                        #document.getElementById('table').style.display = 'block'
+                        #test(df)
                 
                     
 
                 
 
-                def test(items):
+                def test():
                     # Load the Iris dataset
                     label_encoder = LabelEncoder()
                     iris = datasets.load_iris()
@@ -183,8 +202,9 @@
                     button_upload.on_click(process_file)
                     await show(row, 'fileinput')
                     await show(table, 'table')
-                js.setTimeout(create_proxy(init), 0) 
-                </py-script>
+                upload_file = create_proxy(process_file)
+                document.getElementById("parseCVS").addEventListener("change", upload_file)
+                </script>
     </section>
     </body>
 </html>
