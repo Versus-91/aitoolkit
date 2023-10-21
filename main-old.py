@@ -13,31 +13,41 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
+import seaborn as sns
+import os
 
-label_encoder = LabelEncoder()
-items = pd.read_csv('iris.csv')
+# label_encoder = LabelEncoder()
+items = pd.read_csv(os.path.join('datasets', "titanic.csv"))
+
+# # # Split the data into training and testing sets
+# # for i, item in enumerate(data.columns):
+# #     print(item)
+
+# label_encoder = LabelEncoder()
+# iris = items
+# X = items.iloc[:, :-1]
+# y = items.iloc[:, -1]
 
 # # Split the data into training and testing sets
-# for i, item in enumerate(data.columns):
-#     print(item)
+# X_train, X_test, y_train, y_test = train_test_split(
+#     X, y, test_size=0.3, random_state=0)
+# # # Standardize the feat
+# # scaler = StandardScaler()
+# # X_train = scaler.fit_transform(X_train)
+# # X_test = scaler.transform(X_test)
+# # Create a logistic regression model
+# model = LogisticRegression()
+# # Train the model on the training
+# model.fit(X_train, y_train)
+# # Make predictions on test data
+# y_pred = model.predict(X_test)
+# print('The accuracy of the Logistic Regression is',
+#       accuracy_score(y_pred, y_test))
+# # Sample dataset
+# Calculate the percentage of missing values for each variable
+missing_percentage = (items.isnull().mean() * 100).round(2)
+# Print the results
+print("Percentage of Missing Values for Each Variable:")
+print(missing_percentage)
 
-label_encoder = LabelEncoder()
-iris = items
-X = items.iloc[:, :-1]
-y = items.iloc[:, -1]
 
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.3, random_state=0)
-# # Standardize the feat
-# scaler = StandardScaler()
-# X_train = scaler.fit_transform(X_train)
-# X_test = scaler.transform(X_test)
-# Create a logistic regression model
-model = LogisticRegression()
-# Train the model on the training
-model.fit(X_train, y_train)
-# Make predictions on test data
-y_pred = model.predict(X_test)
-print('The accuracy of the Logistic Regression is',
-      accuracy_score(y_pred, y_test))
