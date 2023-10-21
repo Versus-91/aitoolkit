@@ -32,7 +32,62 @@ export default class DataLoader {
             const element = items[index];
         }
     }
-
+    findMissinValues(data) {
+        if (!Array.isArray(data) || data.length == 0) {
+            throw "input must be an array."
+        }
+        const result = {}
+        for (const key in data[0]) {
+            if (Object.hasOwnProperty.call(data[0], key)) {
+                const element = data[0][key];
+                result[key] = 0
+            }
+        }
+        data.forEach(element => {
+            for (const key in element) {
+                if (Object.hasOwnProperty.call(element, key)) {
+                    const item = element[key];
+                    if (item === null || item === undefined) {
+                        result[key]++
+                    }
+                }
+            }
+        });
+        let itemsCount = data.length
+        for (const key in result) {
+            if (Object.hasOwnProperty.call(result, key)) {
+                result[key] = (result[key] / itemsCount) * 100;
+            }
+        }
+    }
+    findTargetPercents(items, target) {
+        if (!Array.isArray(items) || items.length == 0) {
+            throw "input must be an array."
+        }
+        const result = { "count": 0 }
+        items.forEach(element => {
+            for (const key in element) {
+                if (Object.hasOwnProperty.call(element, key)) {
+                    if (key === target) {
+                        result.count++
+                        if (Object.hasOwnProperty.call(result, element[key])) {
+                            result[element[key]]++
+                        } else {
+                            result[element[key]] = 1
+                        }
+                    }
+                }
+            }
+        });
+        for (const key in result) {
+            if (Object.hasOwnProperty.call(result, key)) {
+                if (key !== "count") {
+                    result[key] = (result[key] / result.count) * 100;
+                }
+            }
+        }
+        return result
+    }
     createDataSets(data, features, testSize, batchSize) {
         const oneHot = outcome => Array.from(tf.oneHot(outcome, 2).dataSync());
         const X = data.map(r =>
@@ -51,7 +106,6 @@ export default class DataLoader {
         const ds = tf.data
             .zip({ xs: tf.data.array(X), ys: tf.data.array(y) })
             .shuffle(data.length, 42);
-        console.log(ds);
         return [
             ds.take(splitIdx).batch(batchSize),
             ds.skip(splitIdx + 1).batch(batchSize),

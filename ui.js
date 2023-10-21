@@ -1,30 +1,30 @@
+import { FeatureCategories, Settings } from "./feature_types.js";
 export default class UI {
     constructor(parser) {
-        data_parser = parser
+        this.data_parser = parser
     }
-    drawPieChart() {
+    drawTargetPieChart(values, lables, containerId) {
         var data = [{
-            values: [19, 26, 55],
-            labels: ['Residential', 'Non-Residential', 'Utility'],
+            values: values,
+            labels: lables,
             type: 'pie'
         }];
-
         var layout = {
             height: 400,
             width: 500
         };
 
-        Plotly.newPlot('myDiv', data, layout);
+        Plotly.newPlot(containerId, data, layout);
     }
     createDatasetPropsDropdown(items) {
-        let rowMetadata = data_parser.findDataTypes(items);
+        let rowMetadata = this.data_parser.findDataTypes(items);
         let header = "";
         const lastProperty = Object.keys(items[0])[Object.keys(items[0]).length - 1];
         for (const key in rowMetadata) {
             let options = ""
             $('#props').append(`
             <div class="column is-4">
-                <h4>${insertSpaces(key)} - ${key === lastProperty ? "Output" : "Input"}</h4>
+                <h4>${this.insertSpaces(key)} - ${key === lastProperty ? "Output" : "Input"}</h4>
                 <div class="select mb-1">
                     <select id="${key === lastProperty ? key + "-y" : key}">
                         <option value="1">Numerical</option>
@@ -47,13 +47,13 @@ export default class UI {
         }
 
         if (rowMetadata[lastProperty] === FeatureCategories.Numerical) {
-            $('#props').append(createAlgorithmsSelect(1));
+            $('#props').append(this.createAlgorithmsSelect(1));
         } else if (rowMetadata[lastProperty] === FeatureCategories.Categorical) {
-            $('#props').append(createAlgorithmsSelect(2));
+            $('#props').append(this.createAlgorithmsSelect(2));
         }
         $(document).on('change', '#' + lastProperty + '-y', function (e) {
             $("#algorithm").remove();
-            $("#props").append(createAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
+            $("#props").append(this.createAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
         });
     }
     createAlgorithmsSelect(category) {
@@ -72,5 +72,50 @@ export default class UI {
         string = string.replace(/([a-z])([A-Z])/g, '$1 $2');
         string = string.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
         return string;
+    }
+    renderDatasetStats(data) {
+        var header = "";
+        var tbody = "";
+        const fileds = ["Metric", "Min", "Max", "Median", "Mean", "Standard deviation", "p-value"]
+        for (var p in fileds) {
+            header += "<th>" + fileds[p] + "</th>";
+        }
+        const invalidColumns = ["Id"];
+        let columnDataTypes = this.data_parser.findDataTypes(data)
+        for (const key in columnDataTypes) {
+            if (columnDataTypes[key] === FeatureCategories.Categorical) {
+                invalidColumns.push(key)
+            }
+        }
+        for (const key in data[0]) {
+            if (!invalidColumns.includes(key)) {
+                let row = "";
+                const formattedData = data.map(row => {
+                    return row[key]
+                }).filter(function (item) {
+                    return typeof item === "number"
+                });
+
+                const min = Math.min(...formattedData)
+                const max = Math.max(...formattedData)
+                row += "<td>" + key + "</td>";
+                row += "<td>" + min + "</td>";
+                row += "<td>" + max + "</td>";
+                row += "<td>" + ss.median(formattedData) + "</td>";
+                row += "<td>" + ss.mean(formattedData) + "</td>";
+                row += "<td>" + ss.standardDeviation(formattedData) + "</td>";
+                row += "<td>" + "NA" + "</td>";
+                tbody += "<tr>" + row + "</tr>";
+            }
+        }
+
+        //build a table
+        document.getElementById("output").innerHTML =
+            '<table class="table is-bordered"><thead>' +
+            header +
+            "</thead><tbody>" +
+            tbody +
+            "</tbody></table>"
+            ;
     }
 }

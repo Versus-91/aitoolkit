@@ -1,6 +1,5 @@
 "use strict";
 import DataLoader from "./data.js";
-import { FeatureCategories } from "./feature_types.js";
 import Trainter from "./trainer.js";
 import UI from "./ui.js";
 let data_parser = new DataLoader();
@@ -19,6 +18,9 @@ function handleFileSelect(evt) {
         complete: async function (results) {
             ui.createDatasetPropsDropdown(results.data);
             ui.renderDatasetStats(results.data);
+            data_parser.findMissinValues(results.data)
+            const portions = data_parser.findTargetPercents(results.data, "Species")
+            ui.drawTargetPieChart(portions, Object.keys(portions).filter(m => m !== "count"), "y_pie_chart")
             // renderChart("chart", results.data, "PetalLengthCm", {
             //     title: "",
             //     xLabel: "Species"
@@ -61,51 +63,6 @@ function renderChart(container, data, column, config) {
     });
 };
 
-function renderDatasetStats(data) {
-    var header = "";
-    var tbody = "";
-    const fileds = ["Metric", "Min", "Max", "Median", "Mean", "Standard deviation", "p-value"]
-    for (var p in fileds) {
-        header += "<th>" + fileds[p] + "</th>";
-    }
-    const invalidColumns = ["Id"];
-    let columnDataTypes = data_parser.findDataTypes(data)
-    console.log(columnDataTypes);
-    for (const key in columnDataTypes) {
-        if (columnDataTypes[key] === FeatureCategories.Categorical) {
-            invalidColumns.push(key)
-        }
-    }
-    for (const key in data[0]) {
-        if (!invalidColumns.includes(key)) {
-            let row = "";
-            const formattedData = data.map(row => {
-                return row[key]
-            }).filter(function (item) {
-                return typeof item === "number"
-            });
 
-            const min = Math.min(...formattedData)
-            const max = Math.max(...formattedData)
-            row += "<td>" + key + "</td>";
-            row += "<td>" + min + "</td>";
-            row += "<td>" + max + "</td>";
-            row += "<td>" + ss.median(formattedData) + "</td>";
-            row += "<td>" + ss.mean(formattedData) + "</td>";
-            row += "<td>" + ss.standardDeviation(formattedData) + "</td>";
-            row += "<td>" + "NA" + "</td>";
-            tbody += "<tr>" + row + "</tr>";
-        }
-    }
-
-    //build a table
-    document.getElementById("output").innerHTML =
-        '<table class="table is-bordered"><thead>' +
-        header +
-        "</thead><tbody>" +
-        tbody +
-        "</tbody></table>"
-        ;
-}
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 
