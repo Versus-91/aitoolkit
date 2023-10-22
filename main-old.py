@@ -52,9 +52,13 @@ accuracy = accuracy_score(y_test, y_pred)
 #     if true_label != predicted_label:
 #         plt.text(X_pca[i, 0], X_pca[i, 1], str(i), color='red', fontsize=12)
 
-plt.title(f'PCA Visualization of Model Results (Accuracy: {accuracy:.2f})')
-plt.legend()
-plt.xlabel('Principal Component 1')
-plt.ylabel('Principal Component 2')
+# plt.title(f'PCA Visualization of Model Results (Accuracy: {accuracy:.2f})')
+# plt.legend()
+# plt.xlabel('Principal Component 1')
+# plt.ylabel('Principal Component 2')
 
+# plt.show()
+kde = sns.kdeplot(X['SepalWidthCm'].dropna(), fill=True)
+print(kde)
 plt.show()
+print("done")

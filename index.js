@@ -25,4 +25,4 @@ function handleFileSelect(evt) {
     });
 }
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
-
+textarea.addEventListener("kde", (e) => console.log(e));

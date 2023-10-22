@@ -130,9 +130,9 @@ export default class UI {
                 row += "<td>" + key + "</td>";
                 row += "<td>" + min + "</td>";
                 row += "<td>" + max + "</td>";
-                row += "<td>" + ss.median(formattedData) + "</td>";
-                row += "<td>" + ss.mean(formattedData) + "</td>";
-                row += "<td>" + ss.standardDeviation(formattedData) + "</td>";
+                row += "<td>" + ss.median(formattedData).toFixed(2) + "</td>";
+                row += "<td>" + ss.mean(formattedData).toFixed(2) + "</td>";
+                row += "<td>" + ss.standardDeviation(formattedData).toFixed(2) + "</td>";
                 row += "<td>" + "NA" + "</td>";
                 tbody += "<tr>" + row + "</tr>";
             }
@@ -140,7 +140,7 @@ export default class UI {
 
         //build a table
         document.getElementById("output").innerHTML =
-            '<table class="table is-bordered"><thead>' +
+            '<table class="table is-bordered is-striped is-narrow is-hoverable"><thead>' +
             header +
             "</thead><tbody>" +
             tbody +
