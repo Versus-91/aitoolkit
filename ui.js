@@ -55,6 +55,7 @@ export default class UI {
             $("#algorithm").remove();
             $("#props").append(this.createAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
         });
+        $('#props').append(this.createTargetDropdown(rowMetadata))
     }
     createAlgorithmsSelect(category) {
         let result = '<div id="algorithm" class="column is-4"><h4>Algorithm</h4><div class="select mb-1"> <select class="select">'
@@ -64,6 +65,14 @@ export default class UI {
                 const item = Settings[lable][key];
                 result += `<option value="${item.value}">${item.lable}</option>`
             }
+        }
+        result += '</select></div></div>'
+        return result
+    }
+    createTargetDropdown(items) {
+        let result = '<div  class="column is-4"><h4>Target</h4><div class="select mb-1"> <select class="select" id="target">'
+        for (const key in items) {
+            result += `<option value="${key}">${key}</option>`
         }
         result += '</select></div></div>'
         return result

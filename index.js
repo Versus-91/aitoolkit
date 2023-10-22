@@ -62,7 +62,10 @@ function renderChart(container, data, column, config) {
         title: config.title
     });
 };
+function custom_data() {
+    const event = new CustomEvent("build", { detail: elem.dataset.time });
 
+}
 
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 

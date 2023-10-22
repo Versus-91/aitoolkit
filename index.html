@@ -8,6 +8,7 @@
             rel="stylesheet"
             href="https://pyscript.net/latest/pyscript.css"
         />
+        <script defer src="https://pyscript.net/latest/pyscript.js"></script>
         <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.js"></script>
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.js"></script>
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js"></script>
@@ -37,7 +38,7 @@
                 </div>
             </div>
             <div class="column is-6">
-                <button id="apply" py-click="test()" class="button is-danger">Apply</button>
+                <button id="apply" class="button is-danger">Apply</button>
                 <div class="row overflow-hidden" id="content">
                     <div class="col mh-100 float-left" id="main">
                         <div id="fileinput"></div>
@@ -67,7 +68,7 @@
                     <div id="loss-cont"></div>
                 </div>
                 <div class="column-6">
-                    <div id="acc-cont"></div>
+                    <div id="cm"></div>
                 </div>                
 
             </div>
@@ -75,7 +76,6 @@
         </div>
     </div>
  <section class="pyscript">
- <div id="mpl"></div>
  <div id="mpl2"></div>
                 <py-config>
                     packages = [
