@@ -21,51 +21,8 @@ function handleFileSelect(evt) {
             data_parser.findMissinValues(results.data)
             const portions = data_parser.findTargetPercents(results.data, "Species")
             ui.drawTargetPieChart(portions, Object.keys(portions).filter(m => m !== "count"), "y_pie_chart")
-            // renderChart("chart", results.data, "PetalLengthCm", {
-            //     title: "",
-            //     xLabel: "Species"
-            // });
-            // const features = ["Glucose"];
-
-            // const [trainDs, validDs, xTest, yTest] = data_parser.createDataSets(
-            //     results.data,
-            //     features,
-            //     0.1,
-            //     16
-            // );
-            // const model = await trainer.trainLogisticRegression(
-            //     features.length,
-            //     trainDs,
-            //     validDs
-            // );
         }
     });
 }
-
-function renderChart(container, data, column, config) {
-    const columnData = data.map(r => r[column]);
-    const columnTrace = {
-        name: column,
-        x: columnData,
-        type: "histogram",
-        opacity: 0.7,
-        marker: {
-            color: "dodgerblue"
-        }
-    };
-    Plotly.newPlot(container, [columnTrace], {
-        xaxis: {
-            title: config.xLabel,
-            range: config.range
-        },
-        yaxis: { title: "Count" },
-        title: config.title
-    });
-};
-function custom_data() {
-    const event = new CustomEvent("build", { detail: elem.dataset.time });
-
-}
-
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 

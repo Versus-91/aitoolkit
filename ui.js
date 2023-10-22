@@ -16,6 +16,26 @@ export default class UI {
 
         Plotly.newPlot(containerId, data, layout);
     }
+    renderChart(container, data, column, config) {
+        const columnData = data.map(r => r[column]);
+        const columnTrace = {
+            name: column,
+            x: columnData,
+            type: "histogram",
+            opacity: 0.7,
+            marker: {
+                color: "dodgerblue"
+            }
+        };
+        Plotly.newPlot(container, [columnTrace], {
+            xaxis: {
+                title: config.xLabel,
+                range: config.range
+            },
+            yaxis: { title: "Count" },
+            title: config.title
+        });
+    };
     createDatasetPropsDropdown(items) {
         let rowMetadata = this.data_parser.findDataTypes(items);
         let header = "";
