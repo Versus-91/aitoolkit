@@ -21,11 +21,12 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from pyscript import Element
 from sklearn.metrics import classification_report
 
+from utils.kde import draw_kde
+
 
 def plot_confusion_matrix(confusion_matrix, lables):
     disp = ConfusionMatrixDisplay(
         confusion_matrix=confusion_matrix, display_labels=lables)
-    fig = disp.plot()
     return disp.figure_
 
 
@@ -47,6 +48,7 @@ async def process_file(e):
         array_buf = Uint8Array.new(await first_item.arrayBuffer())
         bytes_list = bytearray(array_buf)
         data_frame = pd.read_csv(io.BytesIO(bytes_list))
+        display(draw_kde(data_frame), target="cm")
         # table.value = df
         # document.getElementById('table').style.display = 'block'
         # test(df)
@@ -56,51 +58,7 @@ def test(event):
     target_element = document.getElementById("target")
     chart_element = Element("cm")
     chart_element.element.innerHTML = ""
-    # Load the Iris dataset
     label_encoder = LabelEncoder()
-    # iris = datasets.load_iris()
-    # X = iris.data
-    # y = iris.target
-
-    # # Split the data into training and testing sets
-    # X_train, X_test, y_train, y_test = train_test_split(
-    #     X, y, test_size=0.3, random_state=42)
-    # # Standardize the features
-    # scaler = StandardScaler()
-    # X_train = scaler.fit_transform(X_train)
-    # X_test = scaler.transform(X_test)
-    # # Create a logistic regression model
-    # model = LogisticRegression(
-    #     solver='lbfgs', multi_class='auto', max_iter=1000)
-    # # Train the model on the training data
-    # model.fit(X_train, y_train)
-    # # Make predictions on the test data
-    # y_pred = model.predict(X_test)
-    # # Calculate the accuracy of the model
-    # accuracy = accuracy_score(y_test, y_pred)
-    # print(f"Accuracy: {accuracy * 100:.2f}%")
-    # Standardize the features
-    # scaler = StandardScaler()
-    # X_scaled = scaler.fit_transform(X)
-    # Apply t-SNE for dimensionality reduction and visualization
-    # tsne = TSNE(n_components=2, random_state=42)
-    # X_tsne = tsne.fit_transform(X_scaled)
-    # Apply PCA for dimensionality reduction and visualization
-    # pca = PCA(n_components=2)
-    # X_pca = pca.fit_transform(X_scaled)
-    # Plot the t-SNE and PCA results
-    # a = plt.figure(figsize=(12, 5))
-    # plt.subplot(1, 2, 1)
-    # plt.scatter(X_tsne[:, 0], X_tsne[:, 1], c=y, cmap='viridis')
-    # plt.title("t-SNE Visualization")
-    # plt.xlabel("t-SNE Component 1")
-    # plt.ylabel("t-SNE Component 2")
-    # plt.subplot(1, 2, 2)
-    # plt.scatter(X_pca[:, 0], X_pca[:, 1], c=y, cmap='viridis')
-    # plt.title("PCA Visualization")
-    # plt.xlabel("PCA Component 1")
-    # plt.ylabel("PCA Component 2")
-    # display(a, target="mpl")
     X = data_frame.iloc[:, :-1]
     y = data_frame.iloc[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(

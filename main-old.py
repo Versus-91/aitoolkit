@@ -58,7 +58,7 @@ accuracy = accuracy_score(y_test, y_pred)
 # plt.ylabel('Principal Component 2')
 
 # plt.show()
-kde = sns.kdeplot(X['SepalWidthCm'].dropna(), fill=True)
-print(kde)
+kde = sns.kdeplot(data=df.loc[:, df.columns != 'Id'], fill=True, common_norm=False, palette="crest",
+                  alpha=.5, linewidth=0)
 plt.show()
 print("done")
