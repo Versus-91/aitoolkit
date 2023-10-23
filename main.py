@@ -23,6 +23,7 @@ from sklearn.metrics import classification_report
 
 from utils.kde import draw_kde
 from utils.data_process import get_feature_types
+from utils.visualization import draw_pca
 
 
 def plot_confusion_matrix(confusion_matrix, lables):
@@ -74,7 +75,9 @@ async def test(event):
         print("ordinal", item)
     for item in nominal:
         print("nomial", item)
-    target_element = document.getElementById("target")
+    target_element = str(document.getElementById("target").value)
+    print(target_element)
+    display(draw_pca(data_frame, target_element), target="pca")
     chart_element = Element("cm")
     chart_element.element.innerHTML = ""
     label_encoder = LabelEncoder()
