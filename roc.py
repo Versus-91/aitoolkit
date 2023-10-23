@@ -1,25 +1,44 @@
-from sklearn.metrics import roc_curve, roc_auc_score
+import os
+import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.calibration import LabelEncoder
+from sklearn.datasets import load_iris
+from sklearn.decomposition import PCA
+import matplotlib.patches as mpatches
+import pandas as pd
 
-# Example true labels and predicted probabilities (replace with your actual data)
-true_labels = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0]
-predicted_probs = [0.8, 0.3, 0.6, 0.7, 0.2, 0.9, 0.4, 0.1, 0.75, 0.2]
+iris = load_iris()
+data = iris.data
+le = LabelEncoder()
+df = pd.read_csv(os.path.join('datasets', "iris.csv"))
+pca = PCA(n_components=3)
+X = df.iloc[:, :-1]
+y = le.fit_transform(df['Species'])
+transformed_data = pca.fit_transform(X=X)
 
-# Compute the ROC curve
-fpr, tpr, thresholds = roc_curve(true_labels, predicted_probs)
+# Create scatter plots
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
-# Calculate the AUC (Area Under the Curve)
-roc_auc = roc_auc_score(true_labels, predicted_probs)
+scatter = axes[0].scatter(transformed_data[:, 0],
+                          transformed_data[:, 2], c=y, cmap='viridis')
+axes[0].set_xlabel(f"PC 1")
+axes[0].set_ylabel(f"PC 3")
 
-# Plot the ROC curve
-plt.figure(figsize=(8, 6))
-plt.plot(fpr, tpr, color='darkorange', lw=2,
-         label=f'ROC curve (AUC = {roc_auc:.2f})')
-plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('Receiver Operating Characteristic (ROC) Curve')
-plt.legend(loc='lower right')
+axes[1].scatter(transformed_data[:, 0], transformed_data[:, 1],
+                c=y, cmap='viridis')
+axes[1].set_xlabel(f"PC 1")
+axes[1].set_ylabel(f"PC 2")
+
+axes[2].scatter(transformed_data[:, 1], transformed_data[:, 2],
+                c=y, cmap='viridis')
+axes[2].set_xlabel(f"PC 2")
+axes[2].set_ylabel(f"PC 3")
+
+# Create a legend with class names
+unique_labels = list(set(y))
+class_names = le.classes_
+legend_patches = [mpatches.Patch(color=scatter.cmap(scatter.norm(
+    label)), label=class_names[label]) for label in unique_labels]
+plt.legend(handles=legend_patches, title="Classes", loc='upper right')
+
 plt.show()

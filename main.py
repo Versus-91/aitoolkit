@@ -42,7 +42,7 @@ async def visualize_output(model, x):
     await show(output_table, target="output_table")
 
 
-output_table = pn.widgets.Tabulator(pagination='remote', page_size=10)
+output_table = pn.widgets.Tabulator()
 document.getElementById('output_table').style.display = 'none'
 file_input = pn.widgets.FileInput(accept='.csv', width=180)
 button_upload = pn.widgets.Button(

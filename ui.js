@@ -92,9 +92,9 @@ export default class UI {
             <h4>standardize</h4>
             <div class="select mb-1">
                 <select id="normalization">
-                    <option value="1">Numerical</option>
-                    <option value="2">Nominal</option>
-                    <option value="3">Ordinal</option>
+                    <option value="1">No</option>
+                    <option value="2">Scale</option>
+                    <option value="3">Normal</option>
                 </select>
             </div>
         </div>
