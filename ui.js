@@ -112,6 +112,7 @@ export default class UI {
         </div>
         `)
         $('#props').append(this.createTargetDropdown(rowMetadata))
+        $('#target').val(Object.keys(rowMetadata)[Object.keys(rowMetadata).length - 1])
 
     }
     createAlgorithmsSelect(category) {
