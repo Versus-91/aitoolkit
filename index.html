@@ -64,7 +64,7 @@
             <div class="column is-12">
                 <div class="columns is-multiline">
                     <div class="column is-6">
-                        <div id="loss-cont"></div>
+                        <div id="output_table"></div>
                     </div>
                     <div class="column is-6">
                         <div id="cm"></div>
@@ -81,7 +81,7 @@
                        "https://cdn.holoviz.org/panel/0.14.4/dist/wheels/panel-0.14.4-py3-none-any.whl",
                     ]
                     [[fetch]]
-                    files = ["main.py","/utils/kde.py"]
+                    files = ["main.py","/utils/kde.py","/utils/data_process.py"]
                 </py-config>
                 <script src="node_modules/@tensorflow/tfjs/dist/tf.min.js"></script>
                 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>

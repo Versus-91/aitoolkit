@@ -32,33 +32,35 @@ label_encoder = LabelEncoder()
 df = pd.DataFrame(pd.read_csv("Iris.csv"))
 X = df.iloc[:, :-1]
 y = df.iloc[:, -1]
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.3, random_state=0)
-model = LogisticRegression(random_state=1, max_iter=500)
-model.fit(X=X_train, y=y_train)
-y_pred = model.predict(X_test)
-pca = PCA(n_components=2)
-X_pca = pca.fit_transform(X_test)
-accuracy = accuracy_score(y_test, y_pred)
+# X_train, X_test, y_train, y_test = train_test_split(
+#     X, y, test_size=0.3, random_state=0)
+# model = LogisticRegression(random_state=1, max_iter=500)
+# model.fit(X=X_train, y=y_train)
+# y_pred = model.predict(X_test)
+# pca = PCA(n_components=2)
+# X_pca = pca.fit_transform(X_test)
+# accuracy = accuracy_score(y_test, y_pred)
 
-# print(classification_report(y_true=y_test, y_pred=y_pred))
-# cm = confusion_matrix(y_pred=y_pred, y_true=y_test, labels=model.classes_)
-# # plot_confusion_matrix(cm, model.classes_)
-# for label in np.unique(y_test):
-#     plt.scatter(X_pca[y_test == label, 0], X_pca[y_test ==
-#                 label, 1], label=f'Class {label}', s=60)
+# # print(classification_report(y_true=y_test, y_pred=y_pred))
+# # cm = confusion_matrix(y_pred=y_pred, y_true=y_test, labels=model.classes_)
+# # # plot_confusion_matrix(cm, model.classes_)
+# # for label in np.unique(y_test):
+# #     plt.scatter(X_pca[y_test == label, 0], X_pca[y_test ==
+# #                 label, 1], label=f'Class {label}', s=60)
 
-# for i, (true_label, predicted_label) in enumerate(zip(y_test, y_pred)):
-#     if true_label != predicted_label:
-#         plt.text(X_pca[i, 0], X_pca[i, 1], str(i), color='red', fontsize=12)
+# # for i, (true_label, predicted_label) in enumerate(zip(y_test, y_pred)):
+# #     if true_label != predicted_label:
+# #         plt.text(X_pca[i, 0], X_pca[i, 1], str(i), color='red', fontsize=12)
 
-# plt.title(f'PCA Visualization of Model Results (Accuracy: {accuracy:.2f})')
-# plt.legend()
-# plt.xlabel('Principal Component 1')
-# plt.ylabel('Principal Component 2')
+# # plt.title(f'PCA Visualization of Model Results (Accuracy: {accuracy:.2f})')
+# # plt.legend()
+# # plt.xlabel('Principal Component 1')
+# # plt.ylabel('Principal Component 2')
 
+# # plt.show()
+# kde = sns.kdeplot(data=df.loc[:, df.columns != 'Id'], fill=True, common_norm=False, palette="crest",
+#                   alpha=.5, linewidth=0)
 # plt.show()
-kde = sns.kdeplot(data=df.loc[:, df.columns != 'Id'], fill=True, common_norm=False, palette="crest",
-                  alpha=.5, linewidth=0)
-plt.show()
-print("done")
+# print("done")
+for item in df.columns:
+    print(item)

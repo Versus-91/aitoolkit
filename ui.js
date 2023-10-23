@@ -46,7 +46,7 @@ export default class UI {
             <div class="column is-4">
                 <h4>${this.insertSpaces(key)} - ${key === lastProperty ? "Output" : "Input"}</h4>
                 <div class="select mb-1">
-                    <select id="${key === lastProperty ? key + "-y" : key}">
+                    <select id="${key}">
                         <option value="1">Numerical</option>
                         <option value="2">Nominal</option>
                         <option value="3">Ordinal</option>
@@ -58,7 +58,7 @@ export default class UI {
                 </label>
             </div>
             `);
-            const id = key === lastProperty ? key + "-y" : key
+            const id = key
             if (rowMetadata[key] === FeatureCategories.Numerical) {
                 $('#' + id).val(1)
             } else if (rowMetadata[key] === FeatureCategories.Categorical) {
@@ -75,7 +75,44 @@ export default class UI {
             $("#algorithm").remove();
             $("#props").append(this.createAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
         });
+        $('#props').append(`
+        <div class="column is-4">
+            <h4>Imputation</h4>
+            <div class="select mb-1">
+                <select id="imputation">
+                    <option value="1">Default</option>
+                    <option value="2">Linear regression</option>
+                    <option value="3">random forest</option>
+                </select>
+            </div>
+        </div>
+        `)
+        $('#props').append(`
+        <div class="column is-4">
+            <h4>standardize</h4>
+            <div class="select mb-1">
+                <select id="normalization">
+                    <option value="1">Numerical</option>
+                    <option value="2">Nominal</option>
+                    <option value="3">Ordinal</option>
+                </select>
+            </div>
+        </div>
+        `)
+        $('#props').append(`
+        <div class="column is-4">
+            <h4>Cross Validation</h4>
+            <div class="select mb-1">
+                <select id="cross_validation">
+                    <option value="1">70 % training - 30 % test</option>
+                    <option value="2">No</option>
+                    <option value="3">K-fold</option>
+                </select>
+            </div>
+        </div>
+        `)
         $('#props').append(this.createTargetDropdown(rowMetadata))
+
     }
     createAlgorithmsSelect(category) {
         let result = '<div id="algorithm" class="column is-4"><h4>Algorithm</h4><div class="select mb-1"> <select class="select">'

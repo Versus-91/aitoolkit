@@ -1,44 +1,38 @@
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from sklearn import datasets
-from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
-
+import numpy as np
+from sklearn.metrics import roc_curve, roc_auc_score
+import seaborn as sns
 # Load the Iris dataset
-iris = datasets.load_iris()
-X = iris.data  # The feature matrix
-y = iris.target  # The target labels
+df = pd.DataFrame(pd.read_csv("Iris.csv",index_col=False))
+X = df.iloc[:, :-1]
+y = df.iloc[:, -1]
 
-# Apply PCA for 3D reduction
-pca = PCA(n_components=3)
-X_pca = pca.fit_transform(X)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+model = LogisticRegression()
+model.fit(X_train, y_train)
+# Predict probabilities for each class
+probs = model.predict_proba(X)
 
-# Apply t-SNE for 3D reduction
-tsne = TSNE(n_components=3)
-X_tsne = tsne.fit_transform(X)
-
-# Create subplots for 1st vs. 2nd, 1st vs. 3rd, and 2nd vs. 3rd dimensions
-fig = plt.figure(figsize=(15, 5))
-
-# 1st vs. 2nd dimension
-ax = fig.add_subplot(131, projection='3d')
-ax.scatter(X_pca[:, 0], X_pca[:, 1], c=y, cmap='viridis')
-ax.set_xlabel('1st Principal Component')
-ax.set_ylabel('2nd Principal Component')
-ax.set_title('PCA: 1st vs. 2nd')
-
-# 1st vs. 3rd dimension
-ax = fig.add_subplot(132, projection='3d')
-ax.scatter(X_pca[:, 0], X_pca[:, 2], c=y, cmap='viridis')
-ax.set_xlabel('1st Principal Component')
-ax.set_ylabel('3rd Principal Component')
-ax.set_title('PCA: 1st vs. 3rd')
-
-# 2nd vs. 3rd dimension
-ax = fig.add_subplot(133, projection='3d')
-ax.scatter(X_pca[:, 1], X_pca[:, 2], c=y, cmap='viridis')
-ax.set_xlabel('2nd Principal Component')
-ax.set_ylabel('3rd Principal Component')
-ax.set_title('PCA: 2nd vs. 3rd')
-
+# Create a DataFrame to store the probabilities
+prob_df = pd.DataFrame(data=probs, columns=model.classes_)
+print(prob_df.head())
+# Plot KDE of the predicted probabilities
+plt.figure(figsize=(10, 6))
+sns.kdeplot(data=prob_df, common_norm=False, fill=True)
+plt.xlabel("Probability")
+plt.ylabel("Density")
+plt.title("KDE of Predicted Probabilities")
+plt.show()
+# Create a boxplot of the predicted probabilities
+plt.figure(figsize=(10, 6))
+sns.boxplot(data=prob_df)
+plt.xlabel("Class")
+plt.ylabel("Probability")
+plt.title("Boxplot of Predicted Probabilities")
 plt.show()
