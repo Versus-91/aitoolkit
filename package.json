@@ -7,19 +7,23 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js"
   },
-  "type": "module",
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tensorflow/tfjs": "^4.11.0",
+    "@tensorflow/tfjs": "^4.12.0",
+    "@tensorflow/tfjs-vis": "^1.5.1",
     "axios": "^1.5.1",
     "express": "^4.15.2",
     "jquery": "^3.6.0",
+    "ml-matrix": "^6.10.7",
+    "ml-pca": "^4.1.1",
     "nodemon": "^3.0.1",
     "open": "^9.1.0",
     "papaparse": "^5.4.1",
     "plotly.js": "^1.47.4",
+    "plotly.js-dist": "^2.27.0",
     "science": "^1.9.3",
-    "simple-statistics": "^7.8.3"
+    "simple-statistics": "^7.8.3",
+    "tfjs": "^0.6.0"
   }
 }

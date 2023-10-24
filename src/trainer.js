@@ -2,6 +2,36 @@ export default class Trainer {
     constructor() {
 
     }
+
+    async trainModel(xs, ys, numClasses) {
+        const model = tf.sequential();
+
+        model.add(tf.layers.dense({
+            units: numClasses,
+            activation: 'softmax',
+            inputShape: [4],
+        }));
+
+        model.compile({
+            optimizer: tf.train.adam(),
+            loss: 'categoricalCrossentropy',
+            metrics: ['accuracy'],
+        });
+
+        const trainingConfig = {
+            epochs: 100,
+            shuffle: true,
+            validationSplit: 0.1,
+            callbacks: {
+                onEpochEnd: async (epoch, logs) => {
+                    console.log(`Epoch ${epoch}, loss: ${logs.loss}, accuracy: ${logs.acc}`);
+                },
+            },
+        };
+
+        const history = await model.fit(xs, ys, trainingConfig);
+        return model;
+    }
     async train() {
         let model = tf.sequential();
 

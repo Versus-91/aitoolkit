@@ -1,5 +1,5 @@
-import { FeatureCategories } from "./feature_types.js";
-
+import * as tf from '@tensorflow/tfjs';
+import { FeatureCategories } from "../feature_types.js";
 export default class DataLoader {
 
     gaussianKernel = (u) => {
@@ -120,28 +120,33 @@ export default class DataLoader {
         return result
     }
     createDataSets(data, features, testSize, batchSize) {
-        const oneHot = outcome => Array.from(tf.oneHot(outcome, 2).dataSync());
-        const X = data.map(r =>
-            features.map(f => {
-                const val = r[f];
-                return val === undefined ? 0 : val;
-            })
-        );
-        const y = data.map(r => {
-            const outcome = r.Outcome === undefined ? 0 : r.Outcome;
-            return oneHot(outcome);
+        // Step 1: Prepare X and y
+        const X = data.map(dataPoint => {
+            return features.map(feature => {
+                // If the feature exists, use its value; otherwise, set it to 0
+                return dataPoint[feature] !== undefined ? dataPoint[feature] : 0;
+            });
         });
 
+        const y = data.map(dataPoint => {
+            // One-hot encode the 'Outcome' field, or set it to 0 if undefined
+            const outcome = dataPoint.Outcome !== undefined ? oneHot(dataPoint.Outcome) : 0;
+            return outcome;
+        });
+
+        // Step 2: Calculate the split index
         const splitIdx = parseInt((1 - testSize) * data.length, 10);
 
-        const ds = tf.data
-            .zip({ xs: tf.data.array(X), ys: tf.data.array(y) })
-            .shuffle(data.length, 42);
-        return [
-            ds.take(splitIdx).batch(batchSize),
-            ds.skip(splitIdx + 1).batch(batchSize),
-            tf.tensor(X.slice(splitIdx)),
-            tf.tensor(y.slice(splitIdx))
-        ];
+        // Step 3: Create TensorFlow.js dataset
+        const ds = tf.data.zip({ xs: tf.data.array(X), ys: tf.data.array(y) }).shuffle(data.length, 42);
+
+        // Step 4: Return datasets
+        const trainingData = ds.take(splitIdx).batch(batchSize); // Training dataset
+        const testingData = ds.skip(splitIdx + 1).batch(batchSize); // Testing dataset
+        const testingX = tf.tensor(X.slice(splitIdx)); // Testing input features
+        const testingY = tf.tensor(y.slice(splitIdx)); // Testing labels
+
+        return [trainingData, testingData, testingX, testingY];
     };
+
 }

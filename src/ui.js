@@ -1,4 +1,7 @@
-import { FeatureCategories, Settings } from "./feature_types.js";
+import Plotly from 'plotly.js-dist';
+import * as ss from 'simple-statistics';
+
+import { FeatureCategories, Settings } from "../feature_types.js";
 export default class UI {
     constructor(parser) {
         this.data_parser = parser
