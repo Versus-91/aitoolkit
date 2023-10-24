@@ -1,10 +1,12 @@
 "use strict";
+import ChartController from "./charts.js";
 import DataLoader from "./data.js";
 import Trainter from "./trainer.js";
 import UI from "./ui.js";
 let data_parser = new DataLoader();
 let ui = new UI(data_parser);
 let trainer = new Trainter();
+let chart = new ChartController(data_parser)
 
 function handleFileSelect(evt) {
     var target = evt.target || evt.srcElement;

@@ -1,9 +1,40 @@
 import { FeatureCategories } from "./feature_types.js";
 
 export default class DataLoader {
-    constructor() {
 
+    gaussianKernel = (u) => {
+        return (1 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * u * u);
     }
+    GaussKDE(xi, x) {
+        return (1 / Math.sqrt(2 * Math.PI)) * Math.exp(Math.pow(xi - x, 2) / -2);
+    }
+    kernelDensityEstimation(data, bandwidth) {
+        return (x) => {
+            return (1 / (data.length * bandwidth)) * data.reduce((sum, dataPoint) => {
+                return sum + this.gaussianKernel((x - dataPoint) / bandwidth);
+            }, 0);
+        };
+    }
+
+
+    // Function to find the mode
+    findMode(data) {
+        const frequencyMap = {};
+        let maxFrequency = 0;
+        let mode = null;
+
+        // Count the frequency of each value in the array
+        data.forEach((value) => {
+            frequencyMap[value] = (frequencyMap[value] || 0) + 1;
+            if (frequencyMap[value] > maxFrequency) {
+                maxFrequency = frequencyMap[value];
+                mode = value;
+            }
+        });
+
+        return mode;
+    }
+
     findDataTypes(items) {
         if (Array.isArray(items) && items.length == 0) {
             throw "input is not an array"

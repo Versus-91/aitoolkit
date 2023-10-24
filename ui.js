@@ -113,7 +113,7 @@ export default class UI {
         `)
         $('#props').append(this.createTargetDropdown(rowMetadata))
         $('#target').val(Object.keys(rowMetadata)[Object.keys(rowMetadata).length - 1])
-
+        $('#kde_select').append(this.createFeaturesDropdown(rowMetadata))
     }
     createAlgorithmsSelect(category) {
         let result = '<div id="algorithm" class="column is-4"><h4>Algorithm</h4><div class="select mb-1"> <select class="select">'
@@ -129,6 +129,14 @@ export default class UI {
     }
     createTargetDropdown(items) {
         let result = '<div  class="column is-4"><h4>Target</h4><div class="select mb-1"> <select class="select" id="target">'
+        for (const key in items) {
+            result += `<option value="${key}">${key}</option>`
+        }
+        result += '</select></div></div>'
+        return result
+    }
+    createFeaturesDropdown(items) {
+        let result = '<div  class="column is-4"><h4>Target</h4><div class="select mb-1"> <select class="select" id="kde_feature">'
         for (const key in items) {
             result += `<option value="${key}">${key}</option>`
         }

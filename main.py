@@ -105,7 +105,16 @@ def test_click(event):
     print(event.target.data)
 
 
+async def draw_kde_chart(event):
+    plt.figure()
+    document.getElementById("kde").innerHTML = ""
+    column_name = str(document.getElementById("kde_feature").value)
+    await show(draw_kde(data_frame, column_name), "kde")
+
 upload_file = create_proxy(process_file)
 run_at_click = create_proxy(test)
+draw_kde_at_click = create_proxy(draw_kde_chart)
 document.getElementById("parseCVS").addEventListener("change", upload_file)
 document.getElementById("apply").addEventListener("click", run_at_click)
+document.getElementById("draw_kde").addEventListener(
+    "click", draw_kde_at_click)

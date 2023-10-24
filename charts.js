@@ -1,4 +1,39 @@
-export default class DrawChart {
+
+export default class ChartController {
+    constructor(data_processor) {
+        this.data_processor = data_processor
+    }
+    draw_kde(data, bandwidth = 0.5) {
+        const kde = this.data_processor.kernelDensityEstimation(data, bandwidth);
+
+        // Generate x and y values for the KDE plot
+        const xValues = [];
+        const yValues = [];
+        for (let x = Math.min(...data); x <= Math.max(...data); x += 0.1) {
+            xValues.push(x);
+            yValues.push(kde(x));
+        }
+
+        // Create a Plotly trace for the KDE plot
+        const trace = {
+            x: xValues,
+            y: yValues,
+            mode: 'lines',
+            type: 'scatter',
+        };
+
+        // Create the layout for the plot
+        const layout = {
+            title: 'Kernel Density Estimation (KDE) Plot',
+            xaxis: { title: 'X' },
+            yaxis: { title: 'Density' },
+        };
+
+        // Create the Plotly plot
+        Plotly.newPlot('kde-plot', [trace], layout);
+    }
+
+
     drawStackedHorizontalChart(categories, lable) {
         var trace1 = {
             x: [20, 14, 23],

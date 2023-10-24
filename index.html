@@ -8,12 +8,6 @@
             rel="stylesheet"
             href="https://pyscript.net/latest/pyscript.css"
         />
-        <script defer src="https://pyscript.net/latest/pyscript.js"></script>
-        <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.js"></script>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.js"></script>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js"></script>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.3.min.js"></script>
-        <script type="text/javascript" src="https://unpkg.com/@holoviz/panel@0.13.0/dist/panel.min.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css"
         integrity="sha512-q3eWabyZPc1XTCmF+8/LuE1ozpg5xxn7iO89yfSOd5/oKvyqLngoNGsx8jq92Y8eXJ/IRxQbEC+FGSYxtk2oiw=="
@@ -58,6 +52,11 @@
             <div class="column is-6">
                 <div id="y_pie_chart"></div>
             </div>
+            <div class="column is-6">
+                <div id="kde_select"></div>
+                <button id="draw_kde">draw</button>
+                <div id="kde-plot"></div>
+            </div>
             <div class="column is-12">
                 <div id="pca"></div>
             </div>
@@ -75,30 +74,18 @@
                 </div>
             </div>
     </div>
- <section class="pyscript">
- <div id="mpl2"></div>
-                <py-config>
-                    packages = [
-                      "matplotlib","scikit-learn","numpy","pandas","seaborn","scipy",
-                       "https://cdn.holoviz.org/panel/0.14.4/dist/wheels/bokeh-2.4.3-py3-none-any.whl",
-                       "https://cdn.holoviz.org/panel/0.14.4/dist/wheels/panel-0.14.4-py3-none-any.whl",
-                    ]
-                    [[fetch]]
-                    files = ["main.py","/utils/kde.py","/utils/data_process.py","/utils/visualization.py"]
-                </py-config>
-                <script src="node_modules/@tensorflow/tfjs/dist/tf.min.js"></script>
-                <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>
-                <script src="node_modules/papaparse/papaparse.min.js"></script>
-                <script src="node_modules/axios/dist/axios.min.js"></script>
-                <script src="node_modules/plotly.js/dist/plotly.min.js"></script>
-                <script src="node_modules/simple-statistics/dist/simple-statistics.min.js"></script>
-                <script src="node_modules/science/science.v1.min.js"></script>
-                <script src="node_modules/jquery/dist/jquery.min.js"></script>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
-                    integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
-                    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-                <script type="module" src="index.js"></script>
-                <py-script src="main.py"></py-script>
-    </section>
+    <script src="node_modules/@tensorflow/tfjs/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>
+    <script src="node_modules/papaparse/papaparse.min.js"></script>
+    <script src="node_modules/axios/dist/axios.min.js"></script>
+    <script src="node_modules/plotly.js/dist/plotly.min.js"></script>
+    <script src="node_modules/simple-statistics/dist/simple-statistics.min.js"></script>
+    <script src="node_modules/science/science.v1.min.js"></script>
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"
+        integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="module" src="index.js"></script>
+    <py-script src="main.py"></py-script>
     </body>
 </html>
