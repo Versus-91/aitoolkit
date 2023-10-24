@@ -1,6 +1,6 @@
+import * as tfvis from "@tensorflow/tfjs-vis";
 import { Matrix } from 'ml-matrix';
-import PCA from 'ml-pca';
-import tfvis from "@tensorflow/tfjs-vis";
+import { PCA } from 'ml-pca';
 let viz = tfvis
 export default class ChartController {
     constructor(data_processor) {

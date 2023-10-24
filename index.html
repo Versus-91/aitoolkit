@@ -24,14 +24,14 @@
                                 <i class="fas fa-upload"></i>
                             </span>
                             <span class="file-label">
-                                Choose a file…
+                                file select
                             </span>
                         </span>
                     </label>
                 </div>
             </div>
             <div class="column is-6">
-                <button id="apply" class="button is-danger">Apply</button>
+                <button id="apply" class="button is-danger">save</button>
                 <div class="row overflow-hidden" id="content">
                     <div class="col mh-100 float-left" id="main">
                         <div id="fileinput"></div>
@@ -54,7 +54,7 @@
             <div class="column is-6">
                 <div id="kde_select"></div>
                 <button id="draw_kde">draw</button>
-                <div id="kde-plot"></div>
+                <div id="results"></div>
             </div>
             <div class="column is-12">
                 <div id="pca"></div>
@@ -68,12 +68,11 @@
                         <div id="output_table"></div>
                     </div>
                     <div class="column is-6">
-                        <div id="cm"></div>
+                        <div id="confusion-matrix"></div>
                     </div>                
                 </div>
             </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.0.2/dist/tfjs-vis.umd.min.js"></script>
-    <script src="index.js"></script>
+    <script type="module" src="index.js"></script>
     </body>
 </html>
