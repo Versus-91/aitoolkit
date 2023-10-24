@@ -1,5 +1,6 @@
 "use strict";
 import * as tf from '@tensorflow/tfjs';
+import * as tfvis from '@tensorflow/tfjs-vis';
 import { DataFrame, LabelEncoder, Series } from 'danfojs/dist/danfojs-base';
 import $ from 'jquery';
 import Papa from 'papaparse';
@@ -41,20 +42,24 @@ function handleFileSelect(evt) {
 async function train(data) {
     const df = new DataFrame(data.training_data)
     let encoder = new LabelEncoder()
-    // const lables = (new Series(df["Species"].values)).unique()
-    // encoder.fit(lables.values)
     encoder.fit(df['Species'])
     let sf_enc = encoder.transform(df['Species'].values)
     df.drop({ columns: ["Species"], inplace: true });
     df.addColumn("y", sf_enc, { inplace: true });
-    df.print()
+
+    const df_test = new DataFrame(data.test_data)
+    encoder.fit(df_test['Species'])
+    let sf_enc_test = encoder.transform(df_test['Species'].values)
+    df_test.drop({ columns: ["Species"], inplace: true });
+    df_test.addColumn("y", sf_enc_test, { inplace: true });
     // let encoded_lables = encoder.transform(lables.values)
     // console.log(encoded_lables.tensor);
     let X = df.loc({ columns: df.columns.slice(1, -1) }).tensor
     let y = df.column("y").tensor;
     y = y.toFloat()
-    console.log(y.toFloat());
-    console.log(X);
+    let x_test = df_test.loc({ columns: df.columns.slice(1, -1) }).tensor
+    let y_test = df_test.column("y").tensor;
+    y_test = y_test.toFloat()
 
     const resultsDiv = document.getElementById('results');
     const model = tf.sequential();
@@ -82,23 +87,24 @@ async function train(data) {
     });
 
     // const evaluation = await model.evaluate(X, y);
-    // const predictions = model.predict(X);
-    // const predictedLabels = predictions.argMax(1);
-    // const trueLabels = y.argMax(1);
-
+    const predictions = model.predict(x_test);
+    const predictedLabels = predictions.argMax(1);
+    const trueLabels = y_test.arraySync();
+    const pre = tf.metrics.precision(trueLabels, predictedLabels)
+    const re = tf.metrics.recall(trueLabels, predictedLabels)
+    pre.print()
+    re.print();
     // const confusionMatrix = tf.math.confusionMatrix(
     //     trueLabels,
     //     predictedLabels,
     //     3
     // );
+    const confusionMatrix = await tfvis.metrics.confusionMatrix(y_test, predictedLabels);
+    const container = document.getElementById("confusion-matrix");
 
-    // confusionMatrix.print()
-    // const pre = tf.metrics.precision(trueLabels, predictedLabels)
-    // const re = tf.metrics.recall(trueLabels, predictedLabels)
-
-    // pre.print();
-    // re.print();
-
+    tfvis.render.confusionMatrix(container, {
+        values: confusionMatrix,
+    });
     // resultsDiv.innerHTML = `
     //             <h2>Logistic Regression Results:</h2>
     //             <p>Accuracy: ${await evaluation[1].dataSync()}</p>`
