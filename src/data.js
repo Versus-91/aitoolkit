@@ -1,4 +1,3 @@
-import * as tf from '@tensorflow/tfjs';
 import { FeatureCategories } from "../feature_types.js";
 export default class DataLoader {
 
@@ -119,34 +118,29 @@ export default class DataLoader {
         }
         return result
     }
-    createDataSets(data, features, testSize, batchSize) {
-        // Step 1: Prepare X and y
-        const X = data.map(dataPoint => {
-            return features.map(feature => {
-                // If the feature exists, use its value; otherwise, set it to 0
-                return dataPoint[feature] !== undefined ? dataPoint[feature] : 0;
-            });
-        });
 
-        const y = data.map(dataPoint => {
-            // One-hot encode the 'Outcome' field, or set it to 0 if undefined
-            const outcome = dataPoint.Outcome !== undefined ? oneHot(dataPoint.Outcome) : 0;
-            return outcome;
-        });
+    splitData(data, testRatio = 0.2) {
+        // Shuffle the data randomly
+        this.shuffleArray(data);
 
-        // Step 2: Calculate the split index
-        const splitIdx = parseInt((1 - testSize) * data.length, 10);
+        // Calculate the split point
+        const splitIndex = Math.floor(data.length * (1 - testRatio));
 
-        // Step 3: Create TensorFlow.js dataset
-        const ds = tf.data.zip({ xs: tf.data.array(X), ys: tf.data.array(y) }).shuffle(data.length, 42);
+        // Split the data into training and testing sets
+        const trainingData = data.slice(0, splitIndex);
+        const testingData = data.slice(splitIndex);
+        return {
+            "test_data": testingData,
+            "training_data": trainingData
+        }
+        // Now you have trainingData and testingData
+        // You can use these for machine learning tasks
+    }
 
-        // Step 4: Return datasets
-        const trainingData = ds.take(splitIdx).batch(batchSize); // Training dataset
-        const testingData = ds.skip(splitIdx + 1).batch(batchSize); // Testing dataset
-        const testingX = tf.tensor(X.slice(splitIdx)); // Testing input features
-        const testingY = tf.tensor(y.slice(splitIdx)); // Testing labels
-
-        return [trainingData, testingData, testingX, testingY];
-    };
-
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
 }

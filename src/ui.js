@@ -116,7 +116,8 @@ export default class UI {
         `)
         $('#props').append(this.createTargetDropdown(rowMetadata))
         $('#target').val(Object.keys(rowMetadata)[Object.keys(rowMetadata).length - 1])
-        $('#kde_select').append(this.createFeaturesDropdown(rowMetadata))
+        $('#props').append(`<div class="column is-4"><button class="button" id="train-button">train</button></div>`);
+        // $('#kde_select').append(this.createFeaturesDropdown(rowMetadata))
     }
     createAlgorithmsSelect(category) {
         let result = '<div id="algorithm" class="column is-4"><h4>Algorithm</h4><div class="select mb-1"> <select class="select">'

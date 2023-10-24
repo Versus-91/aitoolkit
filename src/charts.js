@@ -1,5 +1,7 @@
 import * as tfvis from "@tensorflow/tfjs-vis";
-import { Matrix } from 'ml-matrix';
+import {
+    getNumbers,getDataset
+} from 'ml-dataset-iris';
 import { PCA } from 'ml-pca';
 let viz = tfvis
 export default class ChartController {
@@ -36,44 +38,30 @@ export default class ChartController {
         Plotly.newPlot('kde-plot', [trace], layout);
     }
     draw_pca() {
-        // Sample data
-        const data = new Matrix([
-            [2, 3, 4, 5],
-            [4, 1, 5, 8],
-            [7, 6, 9, 8],
-            [10, 12, 11, 9],
-            [13, 14, 16, 11],
-        ]);
+        const dataset = getNumbers();
+        const pca = new PCA(dataset);
+        /*
+        [ 0.9246187232017269,
+        0.05306648311706785,
+        0.017102609807929704,
+        0.005212183873275558 ]
+        */
+        const newPoints = [
+            [4.9, 3.2, 1.2, 0.4],
+            [5.4, 3.3, 1.4, 0.9],
+        ];
+        let rows = pca.getEigenvectors().data.map((eigenvectorForPCs, variableIndex) => {
+            const variable = Object.keys(dataset[0])[variableIndex];
+            const row = {
+                Variable: variable
+            };
+            eigenvectorForPCs.forEach((value, pcIndex) => {
+                row[`PC${pcIndex + 1}`] = value;
+            });
+            return row;
+        })
+        console.log(rows)
 
-        // Perform PCA
-        const pca = new PCA(data);
-        const scores = pca.getCenteredData();
-
-        // Extract the first two principal components (PC1 and PC2)
-        const pc1 = scores.getColumn(0);
-        const pc2 = scores.getColumn(1);
-
-        // Create a scatter plot using Plotly
-        const trace = {
-            x: pc1,
-            y: pc2,
-            mode: 'markers',
-            type: 'scatter',
-            marker: {
-                size: 10,
-                color: 'blue',
-            },
-        };
-
-        const layout = {
-            xaxis: { title: 'PC1' },
-            yaxis: { title: 'PC2' },
-            title: 'PCA Plot',
-        };
-
-        const dataToPlot = [trace];
-
-        Plotly.newPlot('pca-plot', dataToPlot, layout);
     }
 
     drawStackedHorizontalChart(categories, lable) {
