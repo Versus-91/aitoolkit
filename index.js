@@ -1,13 +1,14 @@
 "use strict";
-import * as tf from '@tensorflow/tfjs';
+import * as ss from 'simple-statistics'
+import { DataFrame, LabelEncoder, Series, tensorflow } from 'danfojs/dist/danfojs-base';
 import * as tfvis from '@tensorflow/tfjs-vis';
-import { DataFrame, LabelEncoder, Series } from 'danfojs/dist/danfojs-base';
 import $ from 'jquery';
 import Papa from 'papaparse';
 import ChartController from "./src/charts.js";
 import DataLoader from "./src/data.js";
 import Trainter from "./src/trainer.js";
 import UI from "./src/ui.js";
+const tf = tensorflow//Tensorflow.js is exportedfrom Danfojs
 window.jQuery = window.$ = $
 let data_parser = new DataLoader();
 
@@ -27,6 +28,21 @@ function handleFileSelect(evt) {
         dynamicTyping: true,
         complete: async function (results) {
             cvs_data = data_parser.splitData(results.data)
+            const df1 = new DataFrame(results.data);
+            let new_col = ["count", "mean", "std", "min", "median", "max", "variance"]
+            let description = df1.describe()
+            description.addColumn("D", new_col, { inplace: true })
+            description.plot("desc").table()
+            console.log(df1.shape)
+            const na = df1.isNa().sum({ axis: 0 }).div(df1.isNa().count({ axis: 0 })).round(4)
+            na.plot("plot_div").table()
+            // let data = [[1, 2, 3], [NaN, 5, 6], [NaN, 30, 40], [39, undefined, 78]]
+            // let cols = ["A", "B", "C"]
+            // let df = new DataFrame(data, { columns: cols })
+            // Calculate KDE values at specific points
+            // df.isNa().sum().print()
+            // let missing_values = df1.isNa().sum().div(df1.isNa().count()).round(4)
+            // missing_values.print()
             ui.createDatasetPropsDropdown(results.data);
             document.getElementById("train-button").onclick = async () => {
                 await train(cvs_data)
@@ -56,7 +72,8 @@ async function train(data) {
     // console.log(encoded_lables.tensor);
     let X = df.loc({ columns: df.columns.slice(1, -1) }).tensor
     let y = df.column("y").tensor;
-    y = y.toFloat()
+    y = tf.oneHot(tf.tensor1d(sf_enc).toInt(), 3);
+    console.log(y);
     let x_test = df_test.loc({ columns: df.columns.slice(1, -1) }).tensor
     let y_test = df_test.column("y").tensor;
     y_test = y_test.toFloat()
@@ -70,13 +87,12 @@ async function train(data) {
     }));
     model.compile({
         optimizer: tf.train.adam(0.001),
-        loss: 'sparseCategoricalCrossentropy', // Use sparse categorical cross-entropy
+        loss: 'categoricalCrossentropy', // Use sparse categorical cross-entropy
         metrics: ['accuracy']
     });
 
     // Train the model
     await model.fit(X, y, {
-        batchSize: 3,
         epochs: 30,
         callbacks: tf.callbacks.earlyStopping({ monitor: 'loss', patience: 40 }),
         callbacks: {

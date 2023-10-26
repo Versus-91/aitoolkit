@@ -1,41 +1,74 @@
-import * as tfvis from "@tensorflow/tfjs-vis";
 import {
-    getNumbers,getDataset
+    getNumbers, getDataset
 } from 'ml-dataset-iris';
 import { PCA } from 'ml-pca';
-let viz = tfvis
 export default class ChartController {
     constructor(data_processor) {
         this.data_processor = data_processor
     }
-    draw_kde(data, bandwidth = 0.5) {
-        const kde = this.data_processor.kernelDensityEstimation(data, bandwidth);
+    draw_kde(data) {
+        let dataSource = [93, 93, 96, 100, 101, 102, 102];
+        let xiData = [];
+        let animationDuration = 4000;
+        let range = 20,
+            startPoint = 88;
+        for (i = 0; i < range; i++) {
+            xiData[i] = startPoint + i;
+        }
+        let data = [];
 
-        // Generate x and y values for the KDE plot
-        const xValues = [];
-        const yValues = [];
-        for (let x = Math.min(...data); x <= Math.max(...data); x += 0.1) {
-            xValues.push(x);
-            yValues.push(kde(x));
+        function GaussKDE(xi, x) {
+            return (1 / Math.sqrt(2 * Math.PI)) * Math.exp(Math.pow(xi - x, 2) / -2);
         }
 
-        // Create a Plotly trace for the KDE plot
-        const trace = {
-            x: xValues,
-            y: yValues,
-            mode: 'lines',
-            type: 'scatter',
-        };
+        let N = dataSource.length;
 
-        // Create the layout for the plot
-        const layout = {
-            title: 'Kernel Density Estimation (KDE) Plot',
-            xaxis: { title: 'X' },
-            yaxis: { title: 'Density' },
-        };
+        for (i = 0; i < xiData.length; i++) {
+            let temp = 0;
+            for (j = 0; j < dataSource.length; j++) {
+                temp = temp + GaussKDE(xiData[i], dataSource[j]);
+            }
+            data.push([xiData[i], (1 / N) * temp]);
+        }
 
-        // Create the Plotly plot
-        Plotly.newPlot('kde-plot', [trace], layout);
+        Highcharts.chart("container", {
+            chart: {
+                type: "spline",
+                animation: true
+            },
+            title: {
+                text: "Gaussian Kernel Density Estimation (KDE)"
+            },
+
+            yAxis: {
+                title: { text: null }
+            },
+            tooltip: {
+                valueDecimals: 3
+            },
+            plotOptions: {
+                series: {
+                    marker: {
+                        enabled: false
+                    },
+                    dashStyle: "shortdot",
+                    color: "#ff8d1e",
+                    pointStart: xiData[0],
+                    animation: {
+                        duration: animationDuration
+                    }
+                }
+            },
+            series: [
+                {
+                    name: "KDE",
+                    dashStyle: "solid",
+                    lineWidth: 2,
+                    color: "#1E90FF",
+                    data: data
+                }
+            ]
+        });
     }
     draw_pca() {
         const dataset = getNumbers();
