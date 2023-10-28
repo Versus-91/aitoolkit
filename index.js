@@ -8,6 +8,7 @@ import ChartController from "./src/charts.js";
 import DataLoader from "./src/data.js";
 import Trainter from "./src/trainer.js";
 import UI from "./src/ui.js";
+import { density1d } from '@uwdata/kde'
 window.tf = tensorflow
 window.jQuery = window.$ = $
 let data_parser = new DataLoader();
@@ -93,12 +94,12 @@ async function train(data) {
 
     // Train the model
     await model.fit(X, y, {
-        epochs: 100,
+        epochs: 300,
         batchSize: 32,
         callbacks: tf.callbacks.earlyStopping({ monitor: 'loss', patience: 40 }),
         callbacks: {
             onEpochEnd: (epoch, logs) => {
-                console.log('Accuracy', logs.acc);
+                // console.log('Accuracy', logs.acc);
             }
         }
     });
@@ -107,7 +108,7 @@ async function train(data) {
     const predictions = model.predict(x_test);
     const predictedLabels = predictions.argMax(1);
 
-    const trueLabels = y_test.arraySync();
+    // const trueLabels = y_test.arraySync();
     // const pre = tf.metrics.precision(trueLabels, predictedLabels)
     // const re = tf.metrics.recall(trueLabels, predictedLabels)
     // const confusionMatrix = tf.math.confusionMatrix(
@@ -115,6 +116,7 @@ async function train(data) {
     //     predictedLabels,
     //     3
     // );
+    console.log(y_test.arraySync());
     const modifiedTensor = tf.where(tf.equal(y_test, 0), 1, 0);
     let [area, fprs, tprs] = chart.drawROC(modifiedTensor, predictions.slice([0, 0], [-1, 1]))
 
@@ -131,9 +133,18 @@ async function train(data) {
     //             <p>Accuracy: ${await evaluation[1].dataSync()}</p>`
     //     ;
 }
+function draw_kde(params) {
+    // chart.draw_kde([93, 93, 96, 100, 101, 102, 102], 'roc2')
+    let items = [1, 2, 5, 5, 6, 9]
+    let estimates = density1d([1, 2, 5, 5, 6, 9], { bandwidth: 1, extent: [0, 10] })
+    let points = estimates.points()
 
+    chart.draw_kde(points, items, 'roc2')
+}
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 document.getElementById("pca-button").addEventListener("click", chart.draw_pca)
+document.getElementById("draw-kde").addEventListener("click", draw_kde)
+
 
 
 

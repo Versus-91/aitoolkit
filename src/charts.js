@@ -18,14 +18,19 @@ export default class ChartController {
             mode: 'lines',
             name: 'ROC Curve',
         };
-
+        var trace2 = {
+            x: [0, 1],
+            y: [0, 1],
+            type: 'scatter',
+            name: 'diagonal',
+        };
         var layout = {
             title: 'ROC Curve',
             xaxis: { title: 'False Positive Rate' },
             yaxis: { title: 'True Positive Rate' },
         };
 
-        var data = [trace];
+        var data = [trace, trace2];
 
         Plotly.newPlot(container, data, layout);
     }
@@ -67,14 +72,21 @@ export default class ChartController {
             let area = 0;
             for (let i = 0; i < thresholds.length; ++i) {
                 const threshold = thresholds[i];
-
                 const threshPredictions = binarize(probs, threshold).as1D();
+
+
 
                 const fpr = this.falsePositiveRate(targets, threshPredictions).dataSync()[0];
                 const tpr = tf.metrics.recall(targets, threshPredictions).dataSync()[0];
+
                 fprs.push(fpr);
                 tprs.push(tpr);
-
+                if (i === 0) {
+                    console.log("probs", probs.dataSync());
+                    console.log("thresh preds", threshPredictions.arraySync());
+                    console.log("targets", targets.arraySync());
+                    console.log("true positive rate", tpr, fpr);
+                }
                 // Accumulate to area for AUC calculation.
                 if (i > 0) {
                     area += (tprs[i] + tprs[i - 1]) * (fprs[i - 1] - fprs[i]) / 2;
@@ -83,32 +95,15 @@ export default class ChartController {
             return [area, fprs, tprs];
         });
     }
-    draw_kde(items) {
-        let dataSource = [93, 93, 96, 100, 101, 102, 102];
+    draw_kde(points, items, container) {
+        console.log(container);
+        let dataSource = items;
         let xiData = [];
         let animationDuration = 4000;
-        let range = 20,
-            startPoint = 88;
-        for (i = 0; i < range; i++) {
-            xiData[i] = startPoint + i;
-        }
-        let data = [];
-
-        function GaussKDE(xi, x) {
-            return (1 / Math.sqrt(2 * Math.PI)) * Math.exp(Math.pow(xi - x, 2) / -2);
-        }
-
-        let N = dataSource.length;
-
-        for (i = 0; i < xiData.length; i++) {
-            let temp = 0;
-            for (j = 0; j < dataSource.length; j++) {
-                temp = temp + GaussKDE(xiData[i], dataSource[j]);
-            }
-            data.push([xiData[i], (1 / N) * temp]);
-        }
-
-        Highcharts.chart("container", {
+        items.forEach(element => {
+            console.log(points.next(element));
+        });
+        Highcharts.chart("roc2", {
             chart: {
                 type: "spline",
                 animation: true
