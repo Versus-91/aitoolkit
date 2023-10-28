@@ -93,7 +93,7 @@ async function train(data) {
 
     // Train the model
     await model.fit(X, y, {
-        epochs: 300,
+        epochs: 100,
         batchSize: 32,
         callbacks: tf.callbacks.earlyStopping({ monitor: 'loss', patience: 40 }),
         callbacks: {
@@ -115,36 +115,16 @@ async function train(data) {
     //     predictedLabels,
     //     3
     // );
-    console.log(predictions.slice([0, 0], [-1, 1]).arraySync())
+    const modifiedTensor = tf.where(tf.equal(y_test, 0), 1, 0);
+    let [area, fprs, tprs] = chart.drawROC(modifiedTensor, predictions.slice([0, 0], [-1, 1]))
 
-    let [area, fprs, tprs] = chart.drawROC(y_test, predictions.slice([0, 0], [-1, 1]))
-    const newSeries = [];
-    for (let i = 0; i < fprs.length; i++) {
-        newSeries.push({
-            x: fprs[i],
-            y: tprs[i],
-        });
-    }
-    const rocValues = [];
-    const rocSeries = [];
-    rocSeries.push("seriesName");
-    rocValues.push(newSeries);
-    tfvis.render.linechart(
-        document.getElementById('roc'),
-        { values: rocValues, series: rocSeries },
-        {
-            width: 450,
-            height: 320,
-        },
-    );
-    console.log("fprs", fprs);
-    console.log("tprs", tprs);
-    chart.roc_chart("roc2", tprs, fprs)
+    chart.roc_chart("roc", tprs, fprs)
     const confusionMatrix = await tfvis.metrics.confusionMatrix(y_test, predictedLabels);
     const container = document.getElementById("confusion-matrix");
 
     tfvis.render.confusionMatrix(container, {
         values: confusionMatrix,
+        tickLabels: encoder.inverseTransform([0, 1, 2])
     });
     // resultsDiv.innerHTML = `
     //             <h2>Logistic Regression Results:</h2>
@@ -152,7 +132,6 @@ async function train(data) {
     //     ;
 }
 
-// evaluateModel();
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 document.getElementById("pca-button").addEventListener("click", chart.draw_pca)
 

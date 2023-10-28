@@ -4,30 +4,30 @@ import {
 import Plotly from 'plotly.js-dist';
 import { PCA } from 'ml-pca';
 import { binarize } from './utils'
+import * as tfvis from '@tensorflow/tfjs-vis';
+
 export default class ChartController {
     constructor(data_processor) {
         this.data_processor = data_processor
     }
-    roc_chart(container, tpr, fpr) {
-        var trace1 = {
-            x: fpr,
-            y: tpr,
-            mode: 'line',
-            lable: "sdsd"
+    roc_chart(container, tprs, fprs) {
+        var trace = {
+            x: fprs,
+            y: tprs,
+            type: 'scatter',
+            mode: 'lines',
+            name: 'ROC Curve',
         };
-        let chart_data = [trace1];
 
         var layout = {
-            title: 'ROC',
-            xaxis: {
-                title: 'FPR',
-            },
-            yaxis: {
-                title: 'TPR',
-            }
+            title: 'ROC Curve',
+            xaxis: { title: 'False Positive Rate' },
+            yaxis: { title: 'True Positive Rate' },
         };
 
-        Plotly.newPlot(container, chart_data, layout);
+        var data = [trace];
+
+        Plotly.newPlot(container, data, layout);
     }
     falsePositives(yTrue, yPred) {
         return tf.tidy(() => {
