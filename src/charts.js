@@ -1,12 +1,89 @@
 import {
     getNumbers, getDataset
 } from 'ml-dataset-iris';
+import Plotly from 'plotly.js-dist';
 import { PCA } from 'ml-pca';
+import { binarize } from './utils'
 export default class ChartController {
     constructor(data_processor) {
         this.data_processor = data_processor
     }
-    draw_kde(data) {
+    roc_chart(container, tpr, fpr) {
+        var trace1 = {
+            x: fpr,
+            y: tpr,
+            mode: 'line',
+            lable: "sdsd"
+        };
+        let chart_data = [trace1];
+
+        var layout = {
+            title: 'ROC',
+            xaxis: {
+                title: 'FPR',
+            },
+            yaxis: {
+                title: 'TPR',
+            }
+        };
+
+        Plotly.newPlot(container, chart_data, layout);
+    }
+    falsePositives(yTrue, yPred) {
+        return tf.tidy(() => {
+            const one = tf.scalar(1);
+            const zero = tf.scalar(0);
+            return tf.logicalAnd(yTrue.equal(zero), yPred.equal(one))
+                .sum()
+                .cast('float32');
+        });
+    }
+
+    trueNegatives(yTrue, yPred) {
+        return tf.tidy(() => {
+            const zero = tf.scalar(0);
+            return tf.logicalAnd(yTrue.equal(zero), yPred.equal(zero))
+                .sum()
+                .cast('float32');
+        });
+    }
+
+    // TODO(cais): Use tf.metrics.falsePositiveRate when available.
+    falsePositiveRate(yTrue, yPred) {
+        return tf.tidy(() => {
+            const fp = this.falsePositives(yTrue, yPred);
+            const tn = this.trueNegatives(yTrue, yPred);
+            return fp.div(fp.add(tn));
+        });
+    }
+    drawROC(targets, probs) {
+        return tf.tidy(() => {
+            const thresholds = [
+                0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55,
+                0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.92, 0.94, 0.96, 0.98, 1.0
+            ];
+            const tprs = [];  // True positive rates.
+            const fprs = [];  // False positive rates.
+            let area = 0;
+            for (let i = 0; i < thresholds.length; ++i) {
+                const threshold = thresholds[i];
+
+                const threshPredictions = binarize(probs, threshold).as1D();
+
+                const fpr = this.falsePositiveRate(targets, threshPredictions).dataSync()[0];
+                const tpr = tf.metrics.recall(targets, threshPredictions).dataSync()[0];
+                fprs.push(fpr);
+                tprs.push(tpr);
+
+                // Accumulate to area for AUC calculation.
+                if (i > 0) {
+                    area += (tprs[i] + tprs[i - 1]) * (fprs[i - 1] - fprs[i]) / 2;
+                }
+            }
+            return [area, fprs, tprs];
+        });
+    }
+    draw_kde(items) {
         let dataSource = [93, 93, 96, 100, 101, 102, 102];
         let xiData = [];
         let animationDuration = 4000;

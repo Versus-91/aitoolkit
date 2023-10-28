@@ -8,7 +8,7 @@ import ChartController from "./src/charts.js";
 import DataLoader from "./src/data.js";
 import Trainter from "./src/trainer.js";
 import UI from "./src/ui.js";
-const tf = tensorflow//Tensorflow.js is exportedfrom Danfojs
+window.tf = tensorflow
 window.jQuery = window.$ = $
 let data_parser = new DataLoader();
 
@@ -93,7 +93,8 @@ async function train(data) {
 
     // Train the model
     await model.fit(X, y, {
-        epochs: 30,
+        epochs: 300,
+        batchSize: 32,
         callbacks: tf.callbacks.earlyStopping({ monitor: 'loss', patience: 40 }),
         callbacks: {
             onEpochEnd: (epoch, logs) => {
@@ -105,16 +106,40 @@ async function train(data) {
     // const evaluation = await model.evaluate(X, y);
     const predictions = model.predict(x_test);
     const predictedLabels = predictions.argMax(1);
+
     const trueLabels = y_test.arraySync();
-    const pre = tf.metrics.precision(trueLabels, predictedLabels)
-    const re = tf.metrics.recall(trueLabels, predictedLabels)
-    pre.print()
-    re.print();
+    // const pre = tf.metrics.precision(trueLabels, predictedLabels)
+    // const re = tf.metrics.recall(trueLabels, predictedLabels)
     // const confusionMatrix = tf.math.confusionMatrix(
     //     trueLabels,
     //     predictedLabels,
     //     3
     // );
+    console.log(predictions.slice([0, 0], [-1, 1]).arraySync())
+
+    let [area, fprs, tprs] = chart.drawROC(y_test, predictions.slice([0, 0], [-1, 1]))
+    const newSeries = [];
+    for (let i = 0; i < fprs.length; i++) {
+        newSeries.push({
+            x: fprs[i],
+            y: tprs[i],
+        });
+    }
+    const rocValues = [];
+    const rocSeries = [];
+    rocSeries.push("seriesName");
+    rocValues.push(newSeries);
+    tfvis.render.linechart(
+        document.getElementById('roc'),
+        { values: rocValues, series: rocSeries },
+        {
+            width: 450,
+            height: 320,
+        },
+    );
+    console.log("fprs", fprs);
+    console.log("tprs", tprs);
+    chart.roc_chart("roc2", tprs, fprs)
     const confusionMatrix = await tfvis.metrics.confusionMatrix(y_test, predictedLabels);
     const container = document.getElementById("confusion-matrix");
 
@@ -130,5 +155,6 @@ async function train(data) {
 // evaluateModel();
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 document.getElementById("pca-button").addEventListener("click", chart.draw_pca)
+
 
 
