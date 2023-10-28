@@ -95,15 +95,35 @@ export default class ChartController {
             return [area, fprs, tprs];
         });
     }
-    draw_kde(points, items, container) {
-        console.log(container);
-        let dataSource = items;
+    draw_kde(items, container) {
+        let dataSource = items
         let xiData = [];
         let animationDuration = 4000;
-        items.forEach(element => {
-            console.log(points.next(element));
-        });
-        Highcharts.chart("roc2", {
+        let min = Math.min(...dataSource);
+        let max = Math.max(...dataSource);
+        let range = max - min + 1;
+        let startPoint = min;
+
+        for (let i = 0; i < range; i++) {
+            xiData[i] = startPoint + i;
+        }
+        let data = [];
+
+        function GaussKDE(xi, x) {
+            return (1 / Math.sqrt(2 * Math.PI)) * Math.exp(Math.pow(xi - x, 2) / -2);
+        }
+
+        let N = dataSource.length;
+
+        for (let i = 0; i < xiData.length; i++) {
+            let temp = 0;
+            for (let j = 0; j < dataSource.length; j++) {
+                temp = temp + GaussKDE(xiData[i], dataSource[j]);
+            }
+            data.push([xiData[i], (1 / N) * temp]);
+        }
+
+        Highcharts.chart(container, {
             chart: {
                 type: "spline",
                 animation: true

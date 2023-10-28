@@ -8,7 +8,6 @@ import ChartController from "./src/charts.js";
 import DataLoader from "./src/data.js";
 import Trainter from "./src/trainer.js";
 import UI from "./src/ui.js";
-import { density1d } from '@uwdata/kde'
 window.tf = tensorflow
 window.jQuery = window.$ = $
 let data_parser = new DataLoader();
@@ -135,11 +134,11 @@ async function train(data) {
 }
 function draw_kde(params) {
     // chart.draw_kde([93, 93, 96, 100, 101, 102, 102], 'roc2')
-    let items = [1, 2, 5, 5, 6, 9]
-    let estimates = density1d([1, 2, 5, 5, 6, 9], { bandwidth: 1, extent: [0, 10] })
-    let points = estimates.points()
+    let items = [1, 2, 3, 4, 5, 4, 3]
+    items = [0.05, 0.1, 0.15, 0.2, 0.1, 0.1, 0.05, 0.1, 0.1, 0.15]
 
-    chart.draw_kde(points, items, 'roc2')
+
+    chart.draw_kde(items, 'roc2')
 }
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 document.getElementById("pca-button").addEventListener("click", chart.draw_pca)
