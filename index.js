@@ -1,6 +1,6 @@
 "use strict";
 import * as ss from 'simple-statistics'
-import { DataFrame, LabelEncoder, Series, tensorflow } from 'danfojs/dist/danfojs-base';
+import { DataFrame, LabelEncoder, Series, tensorflow, concat } from 'danfojs/dist/danfojs-base';
 import * as tfvis from '@tensorflow/tfjs-vis';
 import $ from 'jquery';
 import Papa from 'papaparse';
@@ -8,6 +8,8 @@ import ChartController from "./src/charts.js";
 import DataLoader from "./src/data.js";
 import Trainter from "./src/trainer.js";
 import UI from "./src/ui.js";
+import { readCSV } from 'danfojs/dist/danfojs-browser/src/index.js';
+
 window.tf = tensorflow
 window.jQuery = window.$ = $
 let data_parser = new DataLoader();
@@ -16,6 +18,7 @@ let ui = new UI(data_parser);
 let trainer = new Trainter();
 let chart = new ChartController(data_parser)
 let cvs_data = ""
+
 function handleFileSelect(evt) {
     var target = evt.target || evt.srcElement;
     if (target.value.length == 0) {
@@ -26,16 +29,39 @@ function handleFileSelect(evt) {
         header: true,
         skipEmptyLines: true,
         dynamicTyping: true,
-        complete: async function (results) {
+        complete: function (results) {
             cvs_data = data_parser.splitData(results.data)
             const df1 = new DataFrame(results.data);
-            let new_col = ["count", "mean", "std", "min", "median", "max", "variance"]
-            let description = df1.describe()
-            description.addColumn("D", new_col, { inplace: true })
-            description.plot("desc").table()
-            console.log(df1.shape)
-            const na = df1.isNa().sum({ axis: 0 }).div(df1.isNa().count({ axis: 0 })).round(4)
-            na.plot("plot_div").table()
+            df1.columns.forEach((column) => {
+                console.log(column, df1.column(column).dtype);
+            })
+
+            // let new_col = new Series({ stats: ["count", "mean", "std", "min", "median", "max", "variance"] })
+            // const headerStyle = {
+            //     align: ["left", "center"],
+            //     line: { width: 1, color: '#506784' },
+            //     fill: { color: '#119DFF' },
+            //     font: { family: "Arial", size: 14, color: "white" }
+            // };
+            // const cellStyle = {
+            //     align: ["left", "center"],
+            //     line: { color: "#506784", width: 1 },
+            //     fill: { color: ['#25FEFD', 'white'] },
+            //     font: { family: "Arial", size: 13, color: ["#506784"] }
+
+            // };
+            // let description = df1.describe().round(2)
+            // description.print()
+            // let z = concat({ dfList: [new_col, description], axis: 1 })
+            // z.plot("desc").table({
+            //     config: {
+            //         tableHeaderStyle: headerStyle,
+            //         tableCellStyle: cellStyle,
+            //     }
+            // })
+            // console.log(df1.shape)
+            // const na = df1.isNa().sum({ axis: 0 }).div(df1.isNa().count({ axis: 0 })).round(2)
+            // na.plot("plot_div").table()
             // let data = [[1, 2, 3], [NaN, 5, 6], [NaN, 30, 40], [39, undefined, 78]]
             // let cols = ["A", "B", "C"]
             // let df = new DataFrame(data, { columns: cols })
@@ -45,10 +71,12 @@ function handleFileSelect(evt) {
             // missing_values.print()
             ui.createDatasetPropsDropdown(results.data);
             document.getElementById("train-button").onclick = async () => {
+                document.getElementById("train-button").classList.add("is-loading")
                 await train(cvs_data)
+                document.getElementById("train-button").classList.remove("is-loading")
             }
             ui.renderDatasetStats(results.data);
-            // console.log(data_parser.findMissinValues(results.data));
+            console.log(data_parser.findMissinValues(results.data));
             const portions = data_parser.findTargetPercents(results.data, "Species");
             ui.drawTargetPieChart(portions, Object.keys(portions).filter(m => m !== "count"), "y_pie_chart");
         }

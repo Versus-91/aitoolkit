@@ -1,19 +1,19 @@
 import { FeatureCategories } from "../feature_types.js";
 export default class DataLoader {
-     kernelDensityEstimation(data, kernel, bandwidth) {
-        return function(x) {
-          return (1 / (data.length * bandwidth)) * data.reduce(function(sum, dataPoint) {
-            return sum + kernel((x - dataPoint) / bandwidth);
-          }, 0);
+    kernelDensityEstimation(data, kernel, bandwidth) {
+        return function (x) {
+            return (1 / (data.length * bandwidth)) * data.reduce(function (sum, dataPoint) {
+                return sum + kernel((x - dataPoint) / bandwidth);
+            }, 0);
         };
-      }
+    }
 
-      
-      // Gaussian kernel function
+
+    // Gaussian kernel function
     gaussian(x) {
         return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
-      }
-            
+    }
+
 
 
 
@@ -40,17 +40,21 @@ export default class DataLoader {
             throw "input is not an array"
         }
         let result = {};
-        for (const key in items[0]) {
+        for (let key in items[0]) {
+            key = key.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             result[key] = "na"
             for (let index = 0; index < items.length; index++) {
                 const element = items[index];
                 if (Object.hasOwnProperty.call(element, key)) {
-                    if (typeof element[key] == "number") {
+                    if (typeof element[key] === "number") {
                         result[key] = FeatureCategories.Numerical;
                         break;
-                    } else if (typeof element[key] == "string") {
+                    } else if (typeof element[key] === "string") {
                         result[key] = FeatureCategories.Categorical;
                         break;
+                    }
+                    else {
+                        console.log(element[key]);
                     }
                 }
             }

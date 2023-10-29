@@ -40,83 +40,90 @@ export default class UI {
         });
     };
     createDatasetPropsDropdown(items) {
-        let rowMetadata = this.data_parser.findDataTypes(items);
-        let header = "";
-        const lastProperty = Object.keys(items[0])[Object.keys(items[0]).length - 1];
-        for (const key in rowMetadata) {
-            let options = ""
+        try {
+            let rowMetadata = this.data_parser.findDataTypes(items);
+            console.log(rowMetadata);
+            let header = "";
+            const lastProperty = Object.keys(items[0])[Object.keys(items[0]).length - 1];
+            for (let key in rowMetadata) {
+                let options = ""
+                key = key.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+                $('#props').append(`
+                <div class="column is-4">
+                    <h4>${this.insertSpaces(key)} - ${key === lastProperty ? "Output" : "Input"}</h4>
+                    <div class="select mb-1">
+                        <select id="${key}">
+                            <option value="1">Numerical</option>
+                            <option value="2">Nominal</option>
+                            <option value="3">Ordinal</option>
+                        </select>
+                    </div>
+                    <label class="checkbox my-2">
+                        <input id="${key + "-checkbox"}" type="checkbox">
+                        Ignore
+                    </label>
+                </div>
+                `);
+                const id = key
+                if (rowMetadata[key] === FeatureCategories.Numerical) {
+                    $('#' + id).val(1)
+                } else if (rowMetadata[key] === FeatureCategories.Categorical) {
+                    $('#' + id).val(2)
+                }
+            }
+
+            if (rowMetadata[lastProperty] === FeatureCategories.Numerical) {
+                $('#props').append(this.createAlgorithmsSelect(1));
+            } else if (rowMetadata[lastProperty] === FeatureCategories.Categorical) {
+                $('#props').append(this.createAlgorithmsSelect(2));
+            }
+            $(document).on('change', '#' + lastProperty + '-y', function (e) {
+                $("#algorithm").remove();
+                $("#props").append(this.createAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
+            });
             $('#props').append(`
             <div class="column is-4">
-                <h4>${this.insertSpaces(key)} - ${key === lastProperty ? "Output" : "Input"}</h4>
+                <h4>Imputation</h4>
                 <div class="select mb-1">
-                    <select id="${key}">
-                        <option value="1">Numerical</option>
-                        <option value="2">Nominal</option>
-                        <option value="3">Ordinal</option>
+                    <select id="imputation">
+                        <option value="1">Default</option>
+                        <option value="2">Linear regression</option>
+                        <option value="3">random forest</option>
                     </select>
                 </div>
-                <label class="checkbox my-2">
-                    <input id="${key + "-checkbox"}" type="checkbox">
-                    Ignore
-                </label>
             </div>
-            `);
-            const id = key
-            if (rowMetadata[key] === FeatureCategories.Numerical) {
-                $('#' + id).val(1)
-            } else if (rowMetadata[key] === FeatureCategories.Categorical) {
-                $('#' + id).val(2)
-            }
+            `)
+            $('#props').append(`
+            <div class="column is-4">
+                <h4>standardize</h4>
+                <div class="select mb-1">
+                    <select id="normalization">
+                        <option value="1">No</option>
+                        <option value="2">Scale</option>
+                        <option value="3">Normal</option>
+                    </select>
+                </div>
+            </div>
+            `)
+            $('#props').append(`
+            <div class="column is-4">
+                <h4>Cross Validation</h4>
+                <div class="select mb-1">
+                    <select id="cross_validation">
+                        <option value="1">70 % training - 30 % test</option>
+                        <option value="2">No</option>
+                        <option value="3">K-fold</option>
+                    </select>
+                </div>
+            </div>
+            `)
+            $('#props').append(this.createTargetDropdown(rowMetadata))
+            $('#target').val(Object.keys(rowMetadata)[Object.keys(rowMetadata).length - 1])
+            $('#props').append(`<div class="column is-4"><button class="button" id="train-button">train</button></div>`);
+        } catch (error) {
+            console.log(error);
         }
 
-        if (rowMetadata[lastProperty] === FeatureCategories.Numerical) {
-            $('#props').append(this.createAlgorithmsSelect(1));
-        } else if (rowMetadata[lastProperty] === FeatureCategories.Categorical) {
-            $('#props').append(this.createAlgorithmsSelect(2));
-        }
-        $(document).on('change', '#' + lastProperty + '-y', function (e) {
-            $("#algorithm").remove();
-            $("#props").append(this.createAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
-        });
-        $('#props').append(`
-        <div class="column is-4">
-            <h4>Imputation</h4>
-            <div class="select mb-1">
-                <select id="imputation">
-                    <option value="1">Default</option>
-                    <option value="2">Linear regression</option>
-                    <option value="3">random forest</option>
-                </select>
-            </div>
-        </div>
-        `)
-        $('#props').append(`
-        <div class="column is-4">
-            <h4>standardize</h4>
-            <div class="select mb-1">
-                <select id="normalization">
-                    <option value="1">No</option>
-                    <option value="2">Scale</option>
-                    <option value="3">Normal</option>
-                </select>
-            </div>
-        </div>
-        `)
-        $('#props').append(`
-        <div class="column is-4">
-            <h4>Cross Validation</h4>
-            <div class="select mb-1">
-                <select id="cross_validation">
-                    <option value="1">70 % training - 30 % test</option>
-                    <option value="2">No</option>
-                    <option value="3">K-fold</option>
-                </select>
-            </div>
-        </div>
-        `)
-        $('#props').append(this.createTargetDropdown(rowMetadata))
-        $('#target').val(Object.keys(rowMetadata)[Object.keys(rowMetadata).length - 1])
-        $('#props').append(`<div class="column is-4"><button class="button" id="train-button">train</button></div>`);
         // $('#kde_select').append(this.createFeaturesDropdown(rowMetadata))
     }
     createAlgorithmsSelect(category) {

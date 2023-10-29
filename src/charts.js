@@ -96,71 +96,79 @@ export default class ChartController {
         });
     }
     draw_kde(items, container) {
-        let dataSource = items
-        let xiData = [];
-        let animationDuration = 4000;
-        let min = Math.min(...dataSource);
-        let max = Math.max(...dataSource);
-        let range = max - min + 1;
-        let startPoint = min;
+        d3.json("./faithful.json", function (error, faithful) {
 
-        for (let i = 0; i < range; i++) {
-            xiData[i] = startPoint + i;
-        }
-        let data = [];
+            if (error) throw error;
 
-        function GaussKDE(xi, x) {
-            return (1 / Math.sqrt(2 * Math.PI)) * Math.exp(Math.pow(xi - x, 2) / -2);
-        }
+            var svg = d3.select("svg")
 
-        let N = dataSource.length;
+            let min = Math.min(...faithful) - 1
+            let max = Math.max(...faithful) + 1
 
-        for (let i = 0; i < xiData.length; i++) {
-            let temp = 0;
-            for (let j = 0; j < dataSource.length; j++) {
-                temp = temp + GaussKDE(xiData[i], dataSource[j]);
-            }
-            data.push([xiData[i], (1 / N) * temp]);
-        }
+            const width = +svg.attr("width")
+            const height = +svg.attr("height")
 
-        Highcharts.chart(container, {
-            chart: {
-                type: "spline",
-                animation: true
-            },
-            title: {
-                text: "Gaussian Kernel Density Estimation (KDE)"
-            },
+            const margin = { top: 20, right: 30, bottom: 30, left: 40 };
+            var n = faithful.length
+            var x = d3.scaleLinear()
+                .domain([min, max])
+                .range([margin.left, width - margin.right]);
+            density = kernelDensityEstimator(kernelEpanechnikov(0.1), x.ticks(10))(faithful);
+            console.log(density)
+            var y = d3.scaleLinear()
+                .domain([0, d3.max(density, d => d[1])])
+                .range([height - margin.bottom, margin.top]);
 
-            yAxis: {
-                title: { text: null }
-            },
-            tooltip: {
-                valueDecimals: 3
-            },
-            plotOptions: {
-                series: {
-                    marker: {
-                        enabled: false
-                    },
-                    dashStyle: "shortdot",
-                    color: "#ff8d1e",
-                    pointStart: xiData[0],
-                    animation: {
-                        duration: animationDuration
-                    }
-                }
-            },
-            series: [
-                {
-                    name: "KDE",
-                    dashStyle: "solid",
-                    lineWidth: 2,
-                    color: "#1E90FF",
-                    data: data
-                }
-            ]
+
+            svg.append("g")
+                .attr("class", "axis axis--x")
+                .attr("transform", "translate(0," + (height - margin.bottom) + ")")
+                .call(d3.axisBottom(x))
+                .append("text")
+                .attr("x", width - margin.right)
+                .attr("y", -6)
+                .attr("fill", "#000")
+                .attr("text-anchor", "end")
+                .attr("font-weight", "bold");
+
+            svg.append("g")
+                .attr("class", "axis axis--y")
+                .attr("transform", "translate(" + margin.left + ",0)")
+                .call(d3.axisLeft(y));
+            svg.insert("g", "*")
+                .attr("fill", "#bbb")
+                .selectAll("rect")
+                .enter().append("rect")
+                .attr("x", function (d) { return x(d.x0) + 1; })
+                .attr("y", function (d) { return y(d.length / n); })
+                .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
+                .attr("height", function (d) { return y(0) - y(d.length / n); });
+
+            svg.append("path")
+                .datum(density)
+                .attr("fill", "none")
+                .attr("stroke", "#000")
+                .attr("stroke-width", 1.5)
+                .attr("stroke-linejoin", "round")
+                .attr("d", d3.line()
+                    .curve(d3.curveBasis)
+                    .x(function (d) { return x(d[0]); })
+                    .y(function (d) { return y(d[1]); }));
         });
+
+        function kernelDensityEstimator(kernel, X) {
+            return function (V) {
+                return X.map(function (x) {
+                    return [x, d3.mean(V, function (v) { return kernel(x - v); })];
+                });
+            };
+        }
+
+        function kernelEpanechnikov(k) {
+            return function (v) {
+                return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+            };
+        }
     }
     draw_pca() {
         const dataset = getNumbers();
