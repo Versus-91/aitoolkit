@@ -1,5 +1,5 @@
 import {
-    getNumbers, getDataset
+    getNumbers, getDataset, getClasses
 } from 'ml-dataset-iris';
 import Plotly from 'plotly.js-dist';
 import { PCA } from 'ml-pca';
@@ -172,28 +172,99 @@ export default class ChartController {
     }
     draw_pca() {
         const dataset = getNumbers();
-        const pca = new PCA(dataset);
-        /*
-        [ 0.9246187232017269,
-        0.05306648311706785,
-        0.017102609807929704,
-        0.005212183873275558 ]
-        */
-        const newPoints = [
-            [4.9, 3.2, 1.2, 0.4],
-            [5.4, 3.3, 1.4, 0.9],
-        ];
-        let rows = pca.getEigenvectors().data.map((eigenvectorForPCs, variableIndex) => {
-            const variable = Object.keys(dataset[0])[variableIndex];
-            const row = {
-                Variable: variable
-            };
-            eigenvectorForPCs.forEach((value, pcIndex) => {
-                row[`PC${pcIndex + 1}`] = value;
-            });
-            return row;
-        })
-        console.log(rows)
+        const labels = getClasses()
+        console.log(dataset);
+        const pca = new PCA(dataset, { center: true, scale: true });
+        var uniqueLabels = [...new Set(labels)];
+        // Create a dynamic colorscale based on the unique labels
+        var colorscale = uniqueLabels.map((label, index) => {
+            // Generate a unique color for each label
+            // You can use a color library like d3-color or generate colors as needed
+            // Here, we'll generate colors using a simple method
+            var hue = (360 * index) / uniqueLabels.length; // Distribute colors across the color wheel
+            return `hsl(${hue}, 100%, 50%)`; // Use HSL colors for variety
+        });
+
+        // Map text values to color indices
+        var colorIndices = labels.map(label => uniqueLabels.indexOf(label));
+        const pca_data = pca.predict(dataset, { nComponents: 3 })
+        let x = []
+        let y = []
+        let x1 = []
+        let y1 = []
+        let x2 = []
+        let y2 = []
+        pca_data.data.forEach(element => {
+            x.push(element[0])
+            y.push(element[1])
+            x1.push(element[0])
+            y1.push(element[2])
+            x2.push(element[1])
+            y2.push(element[2])
+        });
+        var trace1 = {
+            x: x,
+            y: y,
+            text: labels,
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: 10,
+                color: colorIndices,
+                colorscale: [colorscale],
+            },
+        };
+        var trace2 = {
+            x: x1,
+            y: y1,
+            text: labels,
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: 10,
+                color: colorIndices,
+                colorscale: [colorscale],
+            },
+        };
+        var trace3 = {
+            x: x2,
+            y: y2,
+            text: labels,
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: 10,
+                color: colorIndices,
+                colorscale: [colorscale],
+            },
+        };
+        var data = [trace1];
+        Plotly.newPlot('pca-1', data, {
+            xaxis: {
+                title: 'PCA component 1'
+            },
+            yaxis: {
+                title: 'PCA component 2'
+            }
+        });
+        Plotly.newPlot('pca-2', [trace2], {
+            xaxis: {
+                title: 'PCA component 1'
+            },
+            yaxis: {
+                title: 'PCA component 3'
+            }
+        });
+        Plotly.newPlot('pca-3', [trace3], {
+            xaxis: {
+                title: 'PCA component 2'
+            },
+            yaxis: {
+                title: 'PCA component 3'
+            }
+        });
+
+
 
     }
     draw_scatterplot() {

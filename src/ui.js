@@ -58,7 +58,7 @@ export default class UI {
                         </select>
                     </div>
                     <label class="checkbox my-2">
-                        <input id="${key + "-checkbox"}" type="checkbox">
+                        <input id="${key + "-checkbox"}" type="checkbox" checked>
                         Ignore
                     </label>
                 </div>
@@ -136,6 +136,14 @@ export default class UI {
         }
         result += '</select></div></div>'
         return result
+    }
+    find_selected_columns(columns) {
+        const selected_columns = []
+        columns.forEach(column => {
+            if (!document.getElementById(column + '-checkbox').checked)
+                selected_columns.push(column)
+        });
+        return selected_columns
     }
     createTargetDropdown(items) {
         let result = '<div  class="column is-4"><h4>Target</h4><div class="select mb-1"> <select class="select" id="target">'

@@ -1,4 +1,5 @@
 import { FeatureCategories } from "../feature_types.js";
+import { DataFrame, LabelEncoder, Series, tensorflow, concat, OneHotEncoder, getDummies } from 'danfojs/dist/danfojs-base';
 export default class DataLoader {
     kernelDensityEstimation(data, kernel, bandwidth) {
         return function (x) {
@@ -147,5 +148,24 @@ export default class DataLoader {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
         }
+    }
+    perprocess_data(data_frame) {
+        // to do normalization
+        let cols = []
+        data_frame.columns.forEach((item) => {
+            if (data_frame.column(item).dtype === 'string') {
+                cols.push(item)
+            }
+        })
+        let encoder = new LabelEncoder()
+        cols.forEach((column) => {
+            encoder.fit(data_frame[column])
+            let encoded_column = encoder.transform(data_frame[column])
+            data_frame.addColumn(column, encoded_column, { inplace: true })
+        })
+        return data_frame
+    }
+    set_model() {
+
     }
 }
