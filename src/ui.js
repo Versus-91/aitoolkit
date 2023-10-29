@@ -42,7 +42,6 @@ export default class UI {
     createDatasetPropsDropdown(items) {
         try {
             let rowMetadata = this.data_parser.findDataTypes(items);
-            console.log(rowMetadata);
             let header = "";
             const lastProperty = Object.keys(items[0])[Object.keys(items[0]).length - 1];
             for (let key in rowMetadata) {

@@ -1,6 +1,6 @@
 "use strict";
 import * as ss from 'simple-statistics'
-import { DataFrame, LabelEncoder, Series, tensorflow, concat } from 'danfojs/dist/danfojs-base';
+import { DataFrame, LabelEncoder, Series, tensorflow, concat, OneHotEncoder } from 'danfojs/dist/danfojs-base';
 import * as tfvis from '@tensorflow/tfjs-vis';
 import $ from 'jquery';
 import Papa from 'papaparse';
@@ -8,8 +8,8 @@ import ChartController from "./src/charts.js";
 import DataLoader from "./src/data.js";
 import Trainter from "./src/trainer.js";
 import UI from "./src/ui.js";
+import { encode_name } from "./src/utils.js";
 import { readCSV } from 'danfojs/dist/danfojs-browser/src/index.js';
-
 window.tf = tensorflow
 window.jQuery = window.$ = $
 let data_parser = new DataLoader();
@@ -32,10 +32,6 @@ function handleFileSelect(evt) {
         complete: function (results) {
             cvs_data = data_parser.splitData(results.data)
             const df1 = new DataFrame(results.data);
-            df1.columns.forEach((column) => {
-                console.log(column, df1.column(column).dtype);
-            })
-
             // let new_col = new Series({ stats: ["count", "mean", "std", "min", "median", "max", "variance"] })
             // const headerStyle = {
             //     align: ["left", "center"],
@@ -69,28 +65,62 @@ function handleFileSelect(evt) {
             // df.isNa().sum().print()
             // let missing_values = df1.isNa().sum().div(df1.isNa().count()).round(4)
             // missing_values.print()
-            ui.createDatasetPropsDropdown(results.data);
-            document.getElementById("train-button").onclick = async () => {
-                document.getElementById("train-button").classList.add("is-loading")
-                await train(cvs_data)
-                document.getElementById("train-button").classList.remove("is-loading")
-            }
-            ui.renderDatasetStats(results.data);
-            console.log(data_parser.findMissinValues(results.data));
-            const portions = data_parser.findTargetPercents(results.data, "Species");
-            ui.drawTargetPieChart(portions, Object.keys(portions).filter(m => m !== "count"), "y_pie_chart");
+            // sk.setBackend(tf)
+            // ui.createDatasetPropsDropdown(results.data);
+            // document.getElementById("train-button").onclick = async () => {
+            //     document.getElementById("train-button").classList.add("is-loading")
+            //     await train(cvs_data)
+            //     document.getElementById("train-button").classList.remove("is-loading")
+            // }
+            // ui.renderDatasetStats(results.data);
+            // const portions = data_parser.findTargetPercents(results.data, "Species");
+            // ui.drawTargetPieChart(portions, Object.keys(portions).filter(m => m !== "count"), "y_pie_chart");
         }
     });
 }
 
 async function train(data) {
     const df = new DataFrame(data.training_data)
+    const target = document.getElementById("target").value;
+    // regression
+    if (df.column(target).dtype == 'int32' || df.column(target).dtype == 'float32') {
+        let cols = []
+        df.columns.forEach((item) => {
+            if (df.column(item).dtype === 'string') {
+                cols.push(item)
+            }
+        })
+        let encoder = new LabelEncoder()
+        cols.forEach((column) => {
+            encoder.fit(df[column])
+            let encoded_column = encoder.transform(df[column])
+            df.addColumn(column, encoded_column, { inplace: true })
+        })
+        // let model = await trainer.train_linear_regression(df.columns.length - 1, df.loc({ columns: df.columns.slice(0, -1) }).tensor, df.column(target).tensor)
+        // let y = df.loc({ columns: df.columns.slice(0, -1) }).tensor
+        // let preds = model.predict(y)
+        // const squaredErrors = tf.square(preds.sub(y))
+        // const mse = squaredErrors.mean().dataSync()[0]
+        // console.log("mse ", mse);
+        // const yMean = y.mean().dataSync()[0];
+        // const totalVariation = tf.sum(tf.square(y.sub(yMean)));
+        // console.log("variance", totalVariation.dataSync()[0]);
+        // const unexplainedVariation = tf.sum(squaredErrors);
+        // const r2 = 1 - unexplainedVariation.dataSync()[0] / totalVariation.dataSync()[0];
+        // console.log("r2", r2);
+        console.log(sk.getBackend);
+        const lr = new sk.LinearRegression({ fitIntercept: true })
+        await lr.fit(df.loc({ columns: df.columns.slice(0, -1) }).tensor.slice([0], [1000]), df.column(target).tensor.slice([0], [1000]))
+        lr.coef.print()
+        window.alert(lr.intercept)
+        return
+    }
+
     let encoder = new LabelEncoder()
     encoder.fit(df['Species'])
     let sf_enc = encoder.transform(df['Species'].values)
     df.drop({ columns: ["Species"], inplace: true });
     df.addColumn("y", sf_enc, { inplace: true });
-
     const df_test = new DataFrame(data.test_data)
     encoder.fit(df_test['Species'])
     let sf_enc_test = encoder.transform(df_test['Species'].values)

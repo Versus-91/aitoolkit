@@ -126,7 +126,7 @@ export default class DataLoader {
 
     splitData(data, testRatio = 0.2) {
         // Shuffle the data randomly
-        this.shuffleArray(data);
+        // this.shuffleArray(data);
 
         // Calculate the split point
         const splitIndex = Math.floor(data.length * (1 - testRatio));

@@ -183,3 +183,7 @@ export function binarize(y, threshold) {
         return tf.where(condition, tf.onesLike(y), tf.zerosLike(y));
     });
 }
+export function encode_name(str) {
+    let str_encoded = key.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+    return str_encoded
+}
