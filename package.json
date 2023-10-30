@@ -23,6 +23,7 @@
     "kernel-smooth": "^0.2.3",
     "mathjs": "^11.11.2",
     "ml-dataset-iris": "^1.2.1",
+    "ml-knn": "^3.0.0",
     "ml-matrix": "^6.10.7",
     "ml-pca": "^4.1.1",
     "ml-regression": "^5.0.0",
