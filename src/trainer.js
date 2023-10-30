@@ -1,6 +1,9 @@
 
 import * as tfvis from '@tensorflow/tfjs-vis';
-
+import KNN from 'ml-knn';
+import {
+    getNumbers, getDataset, getClasses
+} from 'ml-dataset-iris';
 export default class Trainer {
     constructor() {
 
@@ -118,6 +121,18 @@ export default class Trainer {
             values: confusionMatrix,
             tickLabels: encoder.inverseTransform([0, 1, 2])
         });
+    }
+    knn_test() {
+        var train_dataset = getNumbers();
+        var train_labels = getClasses();
+        var knn = new KNN(train_dataset, train_labels, { k: 2 });
+        console.log(knn);
+        var test_dataset = train_dataset;
+
+        var ans = knn.predict(test_dataset);
+
+        console.log(ans);
+
     }
     async train_linear_regression(featureCount, x_train, y_train) {
         const model = tf.sequential();

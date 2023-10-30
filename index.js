@@ -118,6 +118,8 @@ async function train(data) {
 
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 document.getElementById("pca-button").addEventListener("click", chart.draw_pca)
+document.getElementById("knn").addEventListener("click", trainer.knn_test)
+
 
 
 
