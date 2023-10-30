@@ -9,9 +9,9 @@ X = iris.data
 y = iris.target
 
 # Perform PCA with 3 components
-pca = PCA(n_components=3, svd_solver='full')
+pca = PCA()
 X_r = pca.fit_transform(X)
-
+print(pca.explained_variance_)
 # Create scatter plots
 plt.figure(figsize=(18, 6))
 

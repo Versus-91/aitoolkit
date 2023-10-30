@@ -176,13 +176,9 @@ export default class ChartController {
         console.log(dataset);
         const pca = new PCA(dataset, { center: true, scale: true });
         var uniqueLabels = [...new Set(labels)];
-        // Create a dynamic colorscale based on the unique labels
         var colorscale = uniqueLabels.map((label, index) => {
-            // Generate a unique color for each label
-            // You can use a color library like d3-color or generate colors as needed
-            // Here, we'll generate colors using a simple method
-            var hue = (360 * index) / uniqueLabels.length; // Distribute colors across the color wheel
-            return `hsl(${hue}, 100%, 50%)`; // Use HSL colors for variety
+            var hue = (360 * index) / uniqueLabels.length; 
+            return `hsl(${hue}, 100%, 50%)`; 
         });
 
         // Map text values to color indices
@@ -263,9 +259,6 @@ export default class ChartController {
                 title: 'PCA component 3'
             }
         });
-
-
-
     }
     draw_scatterplot() {
         var trace1 = {
