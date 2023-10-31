@@ -1,6 +1,6 @@
 export const FeatureCategories = {
     Numerical: "Numerical",
-    Categorical: "Categorical",
+    Nominal: "Nominal",
     Ordinal: "Ordinal",
 };
 export const Settings = {

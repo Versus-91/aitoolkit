@@ -41,42 +41,41 @@ export default class UI {
     };
     createDatasetPropsDropdown(items) {
         try {
-            let rowMetadata = this.data_parser.findDataTypes(items);
-            let header = "";
-            const lastProperty = Object.keys(items[0])[Object.keys(items[0]).length - 1];
-            for (let key in rowMetadata) {
-                let options = ""
-                key = key.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            $('#props').empty()
+            const default_target = items.columns[items.columns.length - 1]
+            items.columns.forEach(column => {
+                let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
                 $('#props').append(`
                 <div class="column is-4">
-                    <h4>${this.insertSpaces(key)} - ${key === lastProperty ? "Output" : "Input"}</h4>
+                    <h4>${this.insertSpaces(key)} - ${key === default_target ? "Output" : "Input"}</h4>
                     <div class="select mb-1">
-                        <select id="${key}">
-                            <option value="1">Numerical</option>
-                            <option value="2">Nominal</option>
-                            <option value="3">Ordinal</option>
+                        <select id="${column}">
+                            <option value="${FeatureCategories.Numerical}">Numerical</option>
+                            <option value="${FeatureCategories.Nominal}">Nominal</option>
+                            <option value="${FeatureCategories.Ordinal}">Ordinal</option>
                         </select>
                     </div>
                     <label class="checkbox my-2">
-                        <input id="${key + "-checkbox"}" type="checkbox" checked>
+                        <input id="${column + "-checkbox"}" type="checkbox" checked>
                         Ignore
                     </label>
                 </div>
                 `);
-                const id = key
-                if (rowMetadata[key] === FeatureCategories.Numerical) {
-                    $('#' + id).val(1)
-                } else if (rowMetadata[key] === FeatureCategories.Categorical) {
-                    $('#' + id).val(2)
+                const id = column
+                if (items.column(column).dtype !== 'string') {
+                    $('#' + id).val(FeatureCategories.Numerical)
+                } else {
+                    $('#' + id).val(FeatureCategories.Nominal)
                 }
-            }
+            });
 
-            if (rowMetadata[lastProperty] === FeatureCategories.Numerical) {
+
+            if (items.column(default_target).dtype !== 'string') {
                 $('#props').append(this.createAlgorithmsSelect(1));
-            } else if (rowMetadata[lastProperty] === FeatureCategories.Categorical) {
+            } else {
                 $('#props').append(this.createAlgorithmsSelect(2));
             }
-            $(document).on('change', '#' + lastProperty + '-y', function (e) {
+            $(document).on('change', '#' + default_target + '-y', function (e) {
                 $("#algorithm").remove();
                 $("#props").append(this.createAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
             });
@@ -116,9 +115,9 @@ export default class UI {
                 </div>
             </div>
             `)
-            $('#props').append(this.createTargetDropdown(rowMetadata))
-            $('#target').val(Object.keys(rowMetadata)[Object.keys(rowMetadata).length - 1])
-            $('#props').append(`<div class="column is-4"><button class="button" id="train-button">train</button></div>`);
+            $('#props').append(this.createTargetDropdown(items))
+            $('#target').val(default_target)
+            $('#props').append(`<div class="column is-4"><button class="button is-primary mt-5" id="train-button">train</button></div>`);
         } catch (error) {
             console.log(error);
         }
@@ -147,9 +146,11 @@ export default class UI {
     }
     createTargetDropdown(items) {
         let result = '<div  class="column is-4"><h4>Target</h4><div class="select mb-1"> <select class="select" id="target">'
-        for (const key in items) {
+        items.columns.forEach(column => {
+            let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             result += `<option value="${key}">${key}</option>`
-        }
+
+        });
         result += '</select></div></div>'
         return result
     }
@@ -167,42 +168,29 @@ export default class UI {
         return string;
     }
     renderDatasetStats(data) {
+        //build numerical feature table table
         var header = "";
         var tbody = "";
-        const fileds = ["Metric", "Min", "Max", "Median", "Mean", "Standard deviation", "p-value"]
+        const fileds = ["#", "Min", "Max", "Median", "Mean", "Standard deviation", "p-value"]
         for (var p in fileds) {
             header += "<th>" + fileds[p] + "</th>";
         }
-        const invalidColumns = ["Id"];
-        let columnDataTypes = this.data_parser.findDataTypes(data)
-        for (const key in columnDataTypes) {
-            if (columnDataTypes[key] === FeatureCategories.Categorical) {
-                invalidColumns.push(key)
-            }
-        }
-        for (const key in data[0]) {
-            if (!invalidColumns.includes(key)) {
-                let row = "";
-                const formattedData = data.map(row => {
-                    return row[key]
-                }).filter(function (item) {
-                    return typeof item === "number"
-                });
 
-                const min = Math.min(...formattedData)
-                const max = Math.max(...formattedData)
-                row += "<td>" + key + "</td>";
-                row += "<td>" + min + "</td>";
-                row += "<td>" + max + "</td>";
-                row += "<td>" + ss.median(formattedData).toFixed(2) + "</td>";
-                row += "<td>" + ss.mean(formattedData).toFixed(2) + "</td>";
-                row += "<td>" + ss.standardDeviation(formattedData).toFixed(2) + "</td>";
+        data.columns.forEach(column => {
+            const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            const type = document.getElementById(key).value
+            if (type === FeatureCategories.Numerical) {
+                let row = "";
+                row += "<td>" + column + "</td>";
+                row += "<td>" + data.column(column).min() + "</td>";
+                row += "<td>" + data.column(column).max() + "</td>";
+                row += "<td>" + data.column(column).median().toFixed(2) + "</td>";
+                row += "<td>" + data.column(column).mean().toFixed(2) + "</td>";
+                row += "<td>" + data.column(column).std().toFixed(2) + "</td>";
                 row += "<td>" + "NA" + "</td>";
                 tbody += "<tr>" + row + "</tr>";
             }
-        }
-
-        //build a table
+        });
         document.getElementById("output").innerHTML =
             '<table class="table is-bordered is-striped is-narrow is-hoverable"><thead>' +
             header +
@@ -210,5 +198,70 @@ export default class UI {
             tbody +
             "</tbody></table>"
             ;
+        //build categorical feature table table
+        var header_categorical = "";
+        var tbody_categorical = "";
+        const fileds_categorical = ["#", "Mode", "Percentage"]
+        for (var p in fileds_categorical) {
+            header_categorical += "<th>" + fileds_categorical[p] + "</th>";
+        }
+
+        data.columns.forEach(column => {
+            const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            const type = document.getElementById(key).value
+            if (type !== FeatureCategories.Numerical) {
+                const category_info = this.getCategoricalMode(data.column(key).values)
+                let row = "";
+                row += "<td>" + column + "</td>";
+                row += "<td>" + category_info['mode'] + "</td>";
+                row += "<td>" + ((category_info[category_info['mode']] / category_info['total']) * 100).toFixed(2) + "</td>";
+                tbody_categorical += "<tr>" + row + "</tr>";
+            }
+        });
+        document.getElementById("categorical_features").innerHTML =
+            '<table class="table is-bordered is-striped is-narrow is-hoverable"><thead>' +
+            header_categorical +
+            "</thead><tbody>" +
+            tbody_categorical +
+            "</tbody></table>"
+            ;
+
+    }
+    getCategoricalMode(arr) {
+        if (arr.length === 0) {
+            return null;
+        }
+
+        const categoryCount = {};
+        categoryCount['total'] = 0
+        categoryCount['mode'] = ''
+        for (let i = 0; i < arr.length; i++) {
+            const category = arr[i];
+            if (category === null || category === undefined) {
+                continue
+            }
+            categoryCount['total']++
+            if (category in categoryCount) {
+                categoryCount[category]++;
+            } else {
+                categoryCount[category] = 1;
+            }
+        }
+
+        let modeCategory = null;
+        let modeCount = 0;
+        for (const category in categoryCount) {
+            if (category === 'total') {
+                continue
+            }
+            if (categoryCount[category] > modeCount) {
+                modeCategory = category;
+                modeCount = categoryCount[category];
+            }
+        }
+        categoryCount['mode'] = modeCategory;
+
+
+        return categoryCount;
     }
 }

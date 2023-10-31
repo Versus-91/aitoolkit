@@ -66,10 +66,11 @@ function handleFileSelect(evt) {
             // let missing_values = df1.isNa().sum().div(df1.isNa().count()).round(4)
             // missing_values.print()
             // sk.setBackend(tf)
-            ui.createDatasetPropsDropdown(result.data);
+            let dataset = new DataFrame(result.data)
+            ui.createDatasetPropsDropdown(dataset);
             document.getElementById("train-button").onclick = async () => {
                 document.getElementById("train-button").classList.add("is-loading")
-                await visualize(result.data)
+                await visualize(dataset)
                 document.getElementById("train-button").classList.remove("is-loading")
             }
             // const portions = data_parser.findTargetPercents(results.data, "Species");
@@ -77,12 +78,10 @@ function handleFileSelect(evt) {
         }
     });
 }
-async function visualize(data) {
-    let dataset = new DataFrame(data)
-    let key = "1:" + String(dataset.columns.length - 1)
-    ui.renderDatasetStats(data);
+async function visualize(dataset) {
+    ui.renderDatasetStats(dataset);
     // chart_controller.draw_pca(dataset.iloc({ columns: [key] }).values, dataset['Species'].values)
-    await train(data)
+    // await train(data)
 }
 async function train(data) {
     let dataset = new DataFrame(data)
