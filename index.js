@@ -10,6 +10,7 @@ import UI from "./src/ui.js";
 import Classification from "./src/classification.js";
 import { encode_name } from "./src/utils.js";
 import { readCSV } from 'danfojs/dist/danfojs-browser/src/index.js';
+import { FeatureCategories } from './feature_types.js';
 window.tf = tensorflow
 window.jQuery = window.$ = $
 let data_parser = new DataLoader();
@@ -85,24 +86,32 @@ async function visualize(data) {
 }
 async function train(data) {
     let dataset = new DataFrame(data)
-    let dataset_main = new DataFrame(data)
     const target = document.getElementById("target").value;
     dataset = data_parser.perprocess_data(dataset)
     let selected_columns = ui.find_selected_columns(dataset.columns)
     let model = null
     selected_columns = selected_columns.filter(m => m !== target)
-    const x_train = dataset.loc({ columns: selected_columns }).tensor
-    const y_train = dataset.column(target).tensor
+    const x_train = dataset.loc({ columns: selected_columns })
+    const y_train = dataset.column(target)
     const x_test = x_train
     const y_test = y_train
-    console.log(dataset_main.column(target).dtype);
-    if (dataset_main.column(target).dtype === 'string') {
-        let encode = new OneHotEncoder()
-        encode.fit(dataset[target])
-        let sf_enc = encode.transform(dataset[target].values)
-        console.log(tf.tensor(sf_enc));
-        let model = await classifier.trainLogisticRegression(x_train, tf.tensor(sf_enc), selected_columns.length, 3)
-        await classifier.evaluate(x_train, tf.tensor(sf_enc), model)
+    if (document.getElementById(target).value !== FeatureCategories.Numerical) {
+        // is classification
+        const unique_classes = [...new Set(dataset.column(target).values)]
+        const is_binary_classification = unique_classes.length === 2 ? 1 : 0;
+        if (is_binary_classification) {
+            let model = await classifier.trainLogisticRegression(x_train.tensor, y_train.tensor, selected_columns.length, 2)
+            await classifier.evaluate(x_train.tensor, y_train.tensor, model, [], true)
+        } else {
+            let encode = new OneHotEncoder()
+            encode.fit(dataset[target])
+            let sf_enc = encode.transform(dataset[target].values)
+            console.log(tf.tensor(sf_enc));
+            let model = await classifier.trainLogisticRegression(x_train.tensor, tf.tensor(sf_enc), selected_columns.length, unique_classes.length)
+            await classifier.evaluate(x_train.tensor, tf.tensor(sf_enc), model)
+        }
+    } else {
+        model = await trainer.train_linear_regression(selected_columns.length, dataset.loc({ columns: selected_columns }).tensor, dataset.column(target).tensor)
     }
     // else {
     //     model = await trainer.train_linear_regression(selected_columns.length, dataset.loc({ columns: selected_columns }).tensor, dataset.column(target).tensor)
