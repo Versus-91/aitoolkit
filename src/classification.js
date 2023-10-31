@@ -1,19 +1,19 @@
 import * as tfvis from '@tensorflow/tfjs-vis';
+import { binarize } from './utils'
 
 export default class Classification {
     constructor(chart_controller) {
         this.chart_controller = chart_controller
     }
     async trainLogisticRegression(x_train, y_train, featureCount, num_classes, epochs = 200, batch_size = 32) {
-        console.log(x_train.arraySync());
-        console.log(y_train.arraySync());
-
         const loss = num_classes == 2 ? 'binaryCrossentropy' : 'categoricalCrossentropy';
+        const activation = num_classes == 2 ? 'sigmoid' : 'softmax';
+        console.log(loss);
         const model = tf.sequential();
         model.add(tf.layers.dense({
             units: num_classes == 2 ? 1 : num_classes,
             inputShape: [featureCount],
-            activation: 'sigmoid'
+            activation: activation
         }));
         model.compile({
             optimizer: tf.train.adam(0.001),
@@ -39,7 +39,7 @@ export default class Classification {
         // const evaluation = await model.evaluate(X, y);
         const predictions = model.predict(x_test);
         console.log(predictions.arraySync());
-        // const predictedLabels = is_binary ? predictions : predictions.argMax(1);
+        const predictedLabels = is_binary ? binarize(predictions).as1D() : predictions.argMax(1);
 
         // const trueLabels = y_test.arraySync();
         // const pre = tf.metrics.precision(trueLabels, predictedLabels)
@@ -49,15 +49,21 @@ export default class Classification {
         //     predictedLabels,
         //     3
         // );
+
+
         //roc for 1st class        
-        // const modifiedTensor = tf.where(tf.equal(y_test.argMax(1), 0), 1, 0);
-        // let [area, fprs, tprs] = this.chart_controller.drawROC(modifiedTensor, predictions.slice([0, 0], [-1, 1]))
-        // this.chart_controller.roc_chart("roc", tprs, fprs)
-        // const confusionMatrix = await tfvis.metrics.confusionMatrix(y_test.argMax(1), predictedLabels);
-        // const container = document.getElementById("confusion-matrix");
-        // tfvis.render.confusionMatrix(container, {
-        //     values: confusionMatrix,
-        //     // tickLabels: lables
-        // });
+        const modifiedTensor = is_binary ? [] : tf.where(tf.equal(y_test.argMax(1), 0), 1, 0);
+        let [area, fprs, tprs] = is_binary ? this.chart_controller.drawROC(y_test, predictions)
+            : this.chart_controller.drawROC(modifiedTensor, predictions.slice([0, 0], [-1, 1]))
+        this.chart_controller.roc_chart("roc", tprs, fprs)
+
+        const y = is_binary ? y_test : y_test.argMax(1)
+        console.log(predictions.arraySync());
+        const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
+        const container = document.getElementById("confusion-matrix");
+        tfvis.render.confusionMatrix(container, {
+            values: confusionMatrix,
+            // tickLabels: lables
+        });
     }
 }

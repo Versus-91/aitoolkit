@@ -106,7 +106,6 @@ async function train(data) {
             let encode = new OneHotEncoder()
             encode.fit(dataset[target])
             let sf_enc = encode.transform(dataset[target].values)
-            console.log(tf.tensor(sf_enc));
             let model = await classifier.trainLogisticRegression(x_train.tensor, tf.tensor(sf_enc), selected_columns.length, unique_classes.length)
             await classifier.evaluate(x_train.tensor, tf.tensor(sf_enc), model)
         }
