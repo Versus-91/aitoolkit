@@ -1,13 +1,13 @@
 "use strict";
 import * as ss from 'simple-statistics'
 import { DataFrame, LabelEncoder, Series, tensorflow, concat, OneHotEncoder, getDummies } from 'danfojs/dist/danfojs-base';
-import * as tfvis from '@tensorflow/tfjs-vis';
 import $ from 'jquery';
 import Papa from 'papaparse';
 import ChartController from "./src/charts.js";
 import DataLoader from "./src/data.js";
 import Trainter from "./src/trainer.js";
 import UI from "./src/ui.js";
+import Classification from "./src/classification.js";
 import { encode_name } from "./src/utils.js";
 import { readCSV } from 'danfojs/dist/danfojs-browser/src/index.js';
 window.tf = tensorflow
@@ -16,7 +16,9 @@ let data_parser = new DataLoader();
 
 let ui = new UI(data_parser);
 let trainer = new Trainter();
-let chart = new ChartController(data_parser)
+let chart_controller = new ChartController(data_parser);
+const classifier = new Classification(chart_controller);
+
 
 function handleFileSelect(evt) {
     var target = evt.target || evt.srcElement;
@@ -66,24 +68,45 @@ function handleFileSelect(evt) {
             ui.createDatasetPropsDropdown(result.data);
             document.getElementById("train-button").onclick = async () => {
                 document.getElementById("train-button").classList.add("is-loading")
-                await train(result.data)
+                await visualize(result.data)
                 document.getElementById("train-button").classList.remove("is-loading")
             }
-            // ui.renderDatasetStats(results.data);
             // const portions = data_parser.findTargetPercents(results.data, "Species");
             // ui.drawTargetPieChart(portions, Object.keys(portions).filter(m => m !== "count"), "y_pie_chart");
         }
     });
 }
-
+async function visualize(data) {
+    let dataset = new DataFrame(data)
+    let key = "1:" + String(dataset.columns.length - 1)
+    ui.renderDatasetStats(data);
+    // chart_controller.draw_pca(dataset.iloc({ columns: [key] }).values, dataset['Species'].values)
+    await train(data)
+}
 async function train(data) {
     let dataset = new DataFrame(data)
+    let dataset_main = new DataFrame(data)
     const target = document.getElementById("target").value;
-    // regression
     dataset = data_parser.perprocess_data(dataset)
-    const selected_columns = ui.find_selected_columns(dataset.columns)
-    console.log(selected_columns);
-    let model = await trainer.train_linear_regression(selected_columns.length, dataset.loc({ columns: selected_columns }).tensor, dataset.column(target).tensor)
+    let selected_columns = ui.find_selected_columns(dataset.columns)
+    let model = null
+    selected_columns = selected_columns.filter(m => m !== target)
+    const x_train = dataset.loc({ columns: selected_columns }).tensor
+    const y_train = dataset.column(target).tensor
+    const x_test = x_train
+    const y_test = y_train
+    console.log(dataset_main.column(target).dtype);
+    if (dataset_main.column(target).dtype === 'string') {
+        let encode = new OneHotEncoder()
+        encode.fit(dataset[target])
+        let sf_enc = encode.transform(dataset[target].values)
+        console.log(tf.tensor(sf_enc));
+        let model = await classifier.trainLogisticRegression(x_train, tf.tensor(sf_enc), selected_columns.length, 3)
+        await classifier.evaluate(x_train, tf.tensor(sf_enc), model)
+    }
+    // else {
+    //     model = await trainer.train_linear_regression(selected_columns.length, dataset.loc({ columns: selected_columns }).tensor, dataset.column(target).tensor)
+    // }
     // let y = df.loc({ columns: [target] }).tensor
     // let preds = model.predict(y)
     // const squaredErrors = tf.square(preds.sub(y))
@@ -117,7 +140,6 @@ async function train(data) {
 }
 
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
-document.getElementById("pca-button").addEventListener("click", chart.draw_pca)
 document.getElementById("knn").addEventListener("click", trainer.knn_test)
 
 

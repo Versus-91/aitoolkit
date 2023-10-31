@@ -162,7 +162,8 @@ export default class DataLoader {
         cols.forEach((column) => {
             encoder.fit(data_frame[column])
             let encoded_column = encoder.transform(data_frame[column])
-            data_frame.addColumn(column, encoded_column, { inplace: true })
+
+            data_frame.addColumn(column, encoded_column.values, { inplace: true })
         })
         return data_frame
     }

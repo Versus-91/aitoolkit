@@ -47,7 +47,10 @@
                     </div>
                 </article>
             </div>
-
+            <div class="column is-12">
+                <div id="kde_plots" class="columns is-multiline">            
+                </div>
+            </div>
             <div class="column is-6" id="output">
             </div>
             <div class="column is-6">
@@ -57,16 +60,20 @@
                 <div id="desc"></div>
                 <div id="plot_div"></div>
                 <div id="pca-1"></div>
-                <div id="pca-2"></div>
-                <div id="pca-3"></div>
 
                 <button id="draw-kde">draw</button>
                 <div id="results"></div>
             </div>
+            <div class="column is-6">
+                <div id="pca-2"></div>
+            </div>
+            <div class="column is-6">
+                <div id="pca-3"></div>
+            </div>
             <div class="column is-12">
                 <div id="pca"></div>
             </div>
-            <div class="column is-12">
+            <div class="column is-6">
             <h1>Outputs</h1>
             <div id="roc"></div>
             <div id="roc2"></div>
@@ -84,7 +91,6 @@
                 </div>
             </div>
     </div>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
     <script type="module" src="index.js"></script>
     </body>
 </html>

@@ -81,12 +81,6 @@ export default class ChartController {
 
                 fprs.push(fpr);
                 tprs.push(tpr);
-                if (i === 0) {
-                    console.log("probs", probs.dataSync());
-                    console.log("thresh preds", threshPredictions.arraySync());
-                    console.log("targets", targets.arraySync());
-                    console.log("true positive rate", tpr, fpr);
-                }
                 // Accumulate to area for AUC calculation.
                 if (i > 0) {
                     area += (tprs[i] + tprs[i - 1]) * (fprs[i - 1] - fprs[i]) / 2;
@@ -97,7 +91,6 @@ export default class ChartController {
     }
     draw_kde(items, container) {
         d3.json("./faithful.json", function (error, faithful) {
-
             if (error) throw error;
 
             var svg = d3.select("svg")
@@ -114,7 +107,6 @@ export default class ChartController {
                 .domain([min, max])
                 .range([margin.left, width - margin.right]);
             density = kernelDensityEstimator(kernelEpanechnikov(0.1), x.ticks(10))(faithful);
-            console.log(density)
             var y = d3.scaleLinear()
                 .domain([0, d3.max(density, d => d[1])])
                 .range([height - margin.bottom, margin.top]);
@@ -170,18 +162,13 @@ export default class ChartController {
             };
         }
     }
-    draw_pca() {
-        const dataset = getNumbers();
-        const labels = getClasses()
-        console.log(dataset);
+    draw_pca(dataset, labels) {
         const pca = new PCA(dataset, { center: true, scale: true });
         var uniqueLabels = [...new Set(labels)];
         var colorscale = uniqueLabels.map((label, index) => {
-            var hue = (360 * index) / uniqueLabels.length; 
-            return `hsl(${hue}, 100%, 50%)`; 
+            var hue = (360 * index) / uniqueLabels.length;
+            return `hsl(${hue}, 100%, 50%)`;
         });
-
-        // Map text values to color indices
         var colorIndices = labels.map(label => uniqueLabels.indexOf(label));
         const pca_data = pca.predict(dataset, { nComponents: 3 })
         let x = []
