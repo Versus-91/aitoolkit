@@ -44,21 +44,60 @@ export default class ChartController {
         });
     }
     plot_tsne(data, lables) {
+        console.assert(Array.isArray(data));
         var opt = {}
-        opt.epsilon = 10; // epsilon is learning rate (10 = default)
-        opt.perplexity = 30; // roughly how many neighbors each point influences (30 = default)
-        opt.dim = 2; // dimensionality of the embedding (2 = default)
+        opt.epsilon = 10;
+        opt.perplexity = 30;
+        opt.dim = 2;
+        var tsne = new window.tsnejs.tSNE(opt);
 
-        var tsne = new window.tsnejs.tSNE(opt); // create a tSNE instance
-
-        // initialize data. Here we have 3 points and some example pairwise dissimilarities
-        tsne.initDataDist(data);
-        for (var k = 0; k < 10000; k++) {
-            tsne.step(); // every time you call this, solution gets better
+        tsne.initDataRaw(data);
+        for (var k = 0; k < 2000; k++) {
+            tsne.step(); // 
         }
+        var Y = tsne.getSolution();
+        var uniqueLabels = [...new Set(lables.map(m => m[0]))];
+        var colorscale = uniqueLabels.map((label, index) => {
+            var hue = (360 * index) / uniqueLabels.length;
+            return `hsl(${hue}, 100%, 50%)`;
+        });
+        var colorIndices = lables.map(label => uniqueLabels.indexOf(label));
+        let points_labled = Y.map(function (item, i) {
+            return {
+                lable: lables[i][0],
+                'x': item[0],
+                'y': item[1]
+            }
+        }
+        )
+        let traces = []
+        uniqueLabels.forEach((lable, i) => {
+            var items_for_lable = points_labled.filter(m => m.lable === lable)
+            console.log("lables", items_for_lable);
+            traces.push({
+                x: items_for_lable.map(m => m.x),
+                y: items_for_lable.map(m => m.y),
+                mode: 'markers+text',
+                type: 'scatter',
+                name: lable,
+                marker: { size: 5 }
+            })
+        })
 
-        var Y = tsne.getSolution(); // Y is an array of 2-D points that you can plot
-        console.log(Y);
+        var layout = {
+            legend: {
+                y: 0.5,
+                yref: 'paper',
+                font: {
+                    family: 'Arial, sans-serif',
+                    size: 20,
+                    color: 'grey',
+                }
+            },
+            title: 'T-sne plot'
+        };
+
+        Plotly.newPlot('tsne', traces, layout);
     }
     trueNegatives(yTrue, yPred) {
         return tf.tidy(() => {

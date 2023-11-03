@@ -87,8 +87,10 @@ async function visualize(dataset) {
             numericColumns.push(column)
         }
     });
+    const target = document.getElementById("target").value;
+    let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
     if (numericColumns.length > 0) {
-        chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, null);
+        chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : null);
     }
 
 }
@@ -157,40 +159,6 @@ async function train(data) {
 
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 document.getElementById("knn").addEventListener("click", trainer.knn_test)
-document.getElementById("tsne-draw").addEventListener("click", function (params) {
-    console.log("clicked");
-    let txt = document.getElementById("tsne").value
-    var d = ",";
-    var lines = txt.split("\n");
-    var raw_data = [];
-    var dlen = -1;
-    let dataok = true;
-    
-    for (var i = 0; i < lines.length; i++) {
-        var row = lines[i];
-        if (! /\S/.test(row)) {
-            // row is empty and only has whitespace
-            continue;
-        }
-        var cells = row.split(d);
-        var data_point = [];
-        for (var j = 0; j < cells.length; j++) {
-            if (cells[j].length !== 0) {
-                data_point.push(parseFloat(cells[j]));
-            }
-        }
-        var dl = data_point.length;
-        if (i === 0) { dlen = dl; }
-        if (dlen !== dl) {
-            // TROUBLE. Not all same length.
-            console.log('TROUBLE: row ' + i + ' has bad length ' + dlen);
-            dlen = dl; // hmmm... 
-            dataok = false;
-        }
-        raw_data.push(data_point);
-    }
-    chart_controller.plot_tsne(raw_data, null)
-})
 
 
 
