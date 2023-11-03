@@ -13,7 +13,11 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     </head>
     <body>
+
         <div class="container mt-4">
+            <textarea name="" id="tsne" cols="30" rows="10">
+            </textarea>
+            <button id="tsne-draw">draw</button>
         <div class="columns is-multiline">
             <div class="column is-6">
                 <div class="file mb-2 is-info">
@@ -93,6 +97,7 @@
                 </div>
             </div>
     </div>
+    <script type="text/javascript" src="./public/libs/tsne.js"></script>
     <script type="module" src="index.js"></script>
     </body>
 </html>

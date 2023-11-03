@@ -11,10 +11,10 @@ import Classification from "./src/classification.js";
 import { encode_name } from "./src/utils.js";
 import { readCSV } from 'danfojs/dist/danfojs-browser/src/index.js';
 import { FeatureCategories } from './feature_types.js';
+
 window.tf = tensorflow
 window.jQuery = window.$ = $
 let data_parser = new DataLoader();
-
 let ui = new UI(data_parser);
 let trainer = new Trainter();
 let chart_controller = new ChartController(data_parser);
@@ -80,8 +80,17 @@ function handleFileSelect(evt) {
 }
 async function visualize(dataset) {
     ui.renderDatasetStats(dataset);
-    // chart_controller.draw_pca(dataset.iloc({ columns: [key] }).values, dataset['Species'].values)
-    // await train(data)
+
+    let numericColumns = []
+    dataset.columns.forEach(column => {
+        if (dataset.column(column).dtype !== 'string' && column !== "Id") {
+            numericColumns.push(column)
+        }
+    });
+    if (numericColumns.length > 0) {
+        chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, null);
+    }
+
 }
 async function train(data) {
     let dataset = new DataFrame(data)
@@ -148,6 +157,41 @@ async function train(data) {
 
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 document.getElementById("knn").addEventListener("click", trainer.knn_test)
+document.getElementById("tsne-draw").addEventListener("click", function (params) {
+    console.log("clicked");
+    let txt = document.getElementById("tsne").value
+    var d = ",";
+    var lines = txt.split("\n");
+    var raw_data = [];
+    var dlen = -1;
+    let dataok = true;
+    
+    for (var i = 0; i < lines.length; i++) {
+        var row = lines[i];
+        if (! /\S/.test(row)) {
+            // row is empty and only has whitespace
+            continue;
+        }
+        var cells = row.split(d);
+        var data_point = [];
+        for (var j = 0; j < cells.length; j++) {
+            if (cells[j].length !== 0) {
+                data_point.push(parseFloat(cells[j]));
+            }
+        }
+        var dl = data_point.length;
+        if (i === 0) { dlen = dl; }
+        if (dlen !== dl) {
+            // TROUBLE. Not all same length.
+            console.log('TROUBLE: row ' + i + ' has bad length ' + dlen);
+            dlen = dl; // hmmm... 
+            dataok = false;
+        }
+        raw_data.push(data_point);
+    }
+    chart_controller.plot_tsne(raw_data, null)
+})
+
 
 
 
