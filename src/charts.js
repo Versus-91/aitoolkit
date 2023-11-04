@@ -50,12 +50,12 @@ export default class ChartController {
         opt.perplexity = 30;
         opt.dim = 2;
         var tsne = new window.tsnejs.tSNE(opt);
-
         tsne.initDataRaw(data);
-        for (var k = 0; k < 2000; k++) {
+        for (var k = 0; k < 500; k++) {
             tsne.step(); // 
         }
         var Y = tsne.getSolution();
+        console.log("trained", Y);
         var uniqueLabels = [...new Set(lables.map(m => m[0]))];
         var colorscale = uniqueLabels.map((label, index) => {
             var hue = (360 * index) / uniqueLabels.length;

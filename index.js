@@ -1,16 +1,13 @@
 "use strict";
-import * as ss from 'simple-statistics'
-import { DataFrame, LabelEncoder, Series, tensorflow, concat, OneHotEncoder, getDummies } from 'danfojs/dist/danfojs-base';
+import { DataFrame, tensorflow, OneHotEncoder, plovt } from 'danfojs/dist/danfojs-base';
 import $ from 'jquery';
 import Papa from 'papaparse';
 import ChartController from "./src/charts.js";
 import DataLoader from "./src/data.js";
 import Trainter from "./src/trainer.js";
 import UI from "./src/ui.js";
-import Classification from "./src/classification.js";
-import { encode_name } from "./src/utils.js";
-import { readCSV } from 'danfojs/dist/danfojs-browser/src/index.js';
-import { FeatureCategories } from './feature_types.js';
+import { FeatureCategories, Settings } from './feature_types.js';
+import { ModelFactory } from './src/model_factory.js';
 
 window.tf = tensorflow
 window.jQuery = window.$ = $
@@ -18,7 +15,6 @@ let data_parser = new DataLoader();
 let ui = new UI(data_parser);
 let trainer = new Trainter();
 let chart_controller = new ChartController(data_parser);
-const classifier = new Classification(chart_controller);
 
 
 function handleFileSelect(evt) {
@@ -73,8 +69,7 @@ function handleFileSelect(evt) {
                 await visualize(dataset)
                 document.getElementById("train-button").classList.remove("is-loading")
             }
-            // const portions = data_parser.findTargetPercents(results.data, "Species");
-            // ui.drawTargetPieChart(portions, Object.keys(portions).filter(m => m !== "count"), "y_pie_chart");
+
         }
     });
 }
@@ -87,37 +82,52 @@ async function visualize(dataset) {
             numericColumns.push(column)
         }
     });
+
     const target = document.getElementById("target").value;
     let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
     if (numericColumns.length > 0) {
         chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : null);
     }
+    if (is_classification) {
+
+        let counts = dataset.column(target).valueCounts()
+        const df = new DataFrame({
+            values: counts.values,
+            labels: counts.$index,
+        });
+
+        df.plot("y_pie_chart").pie({ config: { values: "values", labels: "labels" } });
+    }
+    await train(dataset)
 
 }
 async function train(data) {
-    let dataset = new DataFrame(data)
+    let dataset = data.copy()
     const target = document.getElementById("target").value;
     dataset = data_parser.perprocess_data(dataset)
     let selected_columns = ui.find_selected_columns(dataset.columns)
-    let model = null
+    let model_factory = new ModelFactory()
     selected_columns = selected_columns.filter(m => m !== target)
     const x_train = dataset.loc({ columns: selected_columns })
     const y_train = dataset.column(target)
     const x_test = x_train
     const y_test = y_train
+    var modewl = null
     if (document.getElementById(target).value !== FeatureCategories.Numerical) {
         // is classification
         const unique_classes = [...new Set(dataset.column(target).values)]
         const is_binary_classification = unique_classes.length === 2 ? 1 : 0;
         if (is_binary_classification) {
-            let model = await classifier.trainLogisticRegression(x_train.tensor, y_train.tensor, selected_columns.length, 2)
-            await classifier.evaluate(x_train.tensor, y_train.tensor, model, [], true)
+            let binary_logistic_regression = model_factory.createModel(Settings.classification.logistic_regression)
+            model = await binary_logistic_regression.train(x_train.tensor, y_train.tensor, selected_columns.length, 2)
+            await binary_logistic_regression.evaluate(x_train.tensor, y_train.tensor, model, [], true)
         } else {
+            let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller)
             let encode = new OneHotEncoder()
             encode.fit(dataset[target])
             let sf_enc = encode.transform(dataset[target].values)
-            let model = await classifier.trainLogisticRegression(x_train.tensor, tf.tensor(sf_enc), selected_columns.length, unique_classes.length)
-            await classifier.evaluate(x_train.tensor, tf.tensor(sf_enc), model)
+            let model = await logistic_regression.train(x_train.tensor, tf.tensor(sf_enc), selected_columns.length, unique_classes.length)
+            await logistic_regression.evaluate(x_train.tensor, tf.tensor(sf_enc), model)
         }
     } else {
         model = await trainer.train_linear_regression(selected_columns.length, dataset.loc({ columns: selected_columns }).tensor, dataset.column(target).tensor)
