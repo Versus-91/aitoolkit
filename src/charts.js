@@ -55,7 +55,6 @@ export default class ChartController {
             tsne.step(); // 
         }
         var Y = tsne.getSolution();
-        console.log("trained", Y);
         var uniqueLabels = [...new Set(lables.map(m => m[0]))];
         var colorscale = uniqueLabels.map((label, index) => {
             var hue = (360 * index) / uniqueLabels.length;
@@ -73,7 +72,6 @@ export default class ChartController {
         let traces = []
         uniqueLabels.forEach((lable, i) => {
             var items_for_lable = points_labled.filter(m => m.lable === lable)
-            console.log("lables", items_for_lable);
             traces.push({
                 x: items_for_lable.map(m => m.x),
                 y: items_for_lable.map(m => m.y),

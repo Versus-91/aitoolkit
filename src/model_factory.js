@@ -1,18 +1,17 @@
 import { Settings } from "../feature_types";
 import LogisticRegression from "./logistic_regression";
 import LinearRegression from "./linear_regression";
-
+import KNNModel from './knn';
 
 export var ModelFactory = function () {
-    this.createModel = function (modelName, ChartController = null) {
+    this.createModel = function (modelName, ChartController = null, ...params) {
         var model;
         if (modelName === Settings.classification.logistic_regression) {
             model = new LogisticRegression(ChartController)
         } else if (modelName === Settings.classification.logistic_regression) {
 
         } else if (modelName === Settings.classification.k_nearest_neighbour) {
-            model = new KNN()
-
+            model = new KNNModel()
         } else if (modelName === Settings.classification.random_forest) {
 
         } else if (modelName === Settings.classification.support_vectore_machine) {
@@ -29,8 +28,6 @@ export var ModelFactory = function () {
         model.name = modelName;
         model.train = model.train
         model.evaluate = model.evaluate
-
-        console.log(model);
         return model;
     }
 }

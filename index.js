@@ -28,40 +28,6 @@ function handleFileSelect(evt) {
         skipEmptyLines: true,
         dynamicTyping: true,
         complete: function (result) {
-            // let new_col = new Series({ stats: ["count", "mean", "std", "min", "median", "max", "variance"] })
-            // const headerStyle = {
-            //     align: ["left", "center"],
-            //     line: { width: 1, color: '#506784' },
-            //     fill: { color: '#119DFF' },
-            //     font: { family: "Arial", size: 14, color: "white" }
-            // };
-            // const cellStyle = {
-            //     align: ["left", "center"],
-            //     line: { color: "#506784", width: 1 },
-            //     fill: { color: ['#25FEFD', 'white'] },
-            //     font: { family: "Arial", size: 13, color: ["#506784"] }
-
-            // };
-            // let description = df1.describe().round(2)
-            // description.print()
-            // let z = concat({ dfList: [new_col, description], axis: 1 })
-            // z.plot("desc").table({
-            //     config: {
-            //         tableHeaderStyle: headerStyle,
-            //         tableCellStyle: cellStyle,
-            //     }
-            // })
-            // console.log(df1.shape)
-            // const na = df1.isNa().sum({ axis: 0 }).div(df1.isNa().count({ axis: 0 })).round(2)
-            // na.plot("plot_div").table()
-            // let data = [[1, 2, 3], [NaN, 5, 6], [NaN, 30, 40], [39, undefined, 78]]
-            // let cols = ["A", "B", "C"]
-            // let df = new DataFrame(data, { columns: cols })
-            // Calculate KDE values at specific points
-            // df.isNa().sum().print()
-            // let missing_values = df1.isNa().sum().div(df1.isNa().count()).round(4)
-            // missing_values.print()
-            // sk.setBackend(tf)
             let dataset = new DataFrame(result.data)
             ui.createDatasetPropsDropdown(dataset);
             document.getElementById("train-button").onclick = async () => {
@@ -114,6 +80,11 @@ async function train(data) {
     const y_test = y_train
     var modewl = null
     if (document.getElementById(target).value !== FeatureCategories.Numerical) {
+        //knn
+        let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour)
+        knn_classifier.train(x_train.values, data.column(target).values, 5)
+        console.log(knn_classifier.evaluate(x_train.values))
+        return
         // is classification
         const unique_classes = [...new Set(dataset.column(target).values)]
         const is_binary_classification = unique_classes.length === 2 ? 1 : 0;
@@ -129,6 +100,8 @@ async function train(data) {
             let model = await logistic_regression.train(x_train.tensor, tf.tensor(sf_enc), selected_columns.length, unique_classes.length)
             await logistic_regression.evaluate(x_train.tensor, tf.tensor(sf_enc), model)
         }
+
+
     } else {
         model = await trainer.train_linear_regression(selected_columns.length, dataset.loc({ columns: selected_columns }).tensor, dataset.column(target).tensor)
     }
