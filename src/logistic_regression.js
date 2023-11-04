@@ -1,11 +1,11 @@
 import * as tfvis from '@tensorflow/tfjs-vis';
 import { binarize } from './utils'
 
-export default class Classification {
+export default class LogisticRegression {
     constructor(chart_controller) {
         this.chart_controller = chart_controller
     }
-    async trainLogisticRegression(x_train, y_train, featureCount, num_classes, epochs = 200, batch_size = 32) {
+    async train(x_train, y_train, featureCount, num_classes, epochs = 200, batch_size = 32) {
         const loss = num_classes == 2 ? 'binaryCrossentropy' : 'categoricalCrossentropy';
         const activation = num_classes == 2 ? 'sigmoid' : 'softmax';
         console.log(loss);
@@ -49,8 +49,6 @@ export default class Classification {
         //     predictedLabels,
         //     3
         // );
-
-
         //roc for 1st class        
         const modifiedTensor = is_binary ? [] : tf.where(tf.equal(y_test.argMax(1), 0), 1, 0);
         let [area, fprs, tprs] = is_binary ? this.chart_controller.drawROC(y_test, predictions)
@@ -65,5 +63,6 @@ export default class Classification {
             values: confusionMatrix,
             // tickLabels: lables
         });
+
     }
 }
