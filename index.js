@@ -83,7 +83,8 @@ async function train(data) {
         //knn
         let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour)
         knn_classifier.train(x_train.values, data.column(target).values, 5)
-        console.log(knn_classifier.evaluate(x_train.values))
+        let y_preds = knn_classifier.evaluate(x_train.values)
+        let evaluation_result = evaluate_classification(y_preds, data.column(target).values)
         return
         // is classification
         const unique_classes = [...new Set(dataset.column(target).values)]
@@ -139,7 +140,26 @@ async function train(data) {
     // let y_test = df_test.column("y").tensor;
     // y_test = y_test.toFloat()
 }
+function evaluate_classification(y_preds, y_test) {
+    console.assert(y_preds.length === y_test.length, "preds and test should have the same length.")
+    console.log(y_preds);
+    console.log(y_test);
 
+    let missclassification_indexes = []
+    let currect_classifications_sum = 0
+    y_test.forEach((element, i) => {
+        if (element === y_preds[i]) {
+            currect_classifications_sum++
+        } else {
+            missclassification_indexes.push(i)
+
+        }
+    });
+    return {
+        accuracy: (currect_classifications_sum / y_preds.length) * 100,
+        indexes: missclassification_indexes
+    }
+}
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 document.getElementById("knn").addEventListener("click", trainer.knn_test)
 

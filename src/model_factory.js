@@ -8,8 +8,6 @@ export var ModelFactory = function () {
         var model;
         if (modelName === Settings.classification.logistic_regression) {
             model = new LogisticRegression(ChartController)
-        } else if (modelName === Settings.classification.logistic_regression) {
-
         } else if (modelName === Settings.classification.k_nearest_neighbour) {
             model = new KNNModel()
         } else if (modelName === Settings.classification.random_forest) {
