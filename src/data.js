@@ -150,24 +150,85 @@ export default class DataLoader {
             [array[i], array[j]] = [array[j], array[i]];
         }
     }
-    perprocess_data(data_frame) {
+    perprocess_data(data_frame, impute = true) {
         // to do normalization
-        let cols = []
-        data_frame.columns.forEach((item) => {
-            if (data_frame.column(item).dtype === 'string') {
-                cols.push(item)
-            }
-        })
-        let encoder = new LabelEncoder()
-        cols.forEach((column) => {
-            encoder.fit(data_frame[column])
-            let encoded_column = encoder.transform(data_frame[column])
+        if (impute) {
+            let string_columns = []
+            let numeric_columns = []
+            let string_column_modes = []
+            let numeric_column_means = []
+            data_frame.columns.forEach((item) => {
+                if (data_frame.column(item).dtype === 'string') {
+                    string_columns.push(item)
+                } else {
+                    numeric_columns.push(item)
+                }
+            })
+            console.log(string_columns);
+            string_columns.forEach(element => {
+                let mode = this.getCategoricalMode(element).mode
+                string_column_modes.push(mode)
+            });
+            numeric_columns.forEach(element => {
+                let mean = data_frame.column(element).mean()
+                numeric_column_means.push(mean)
+            });
+            data_frame = data_frame.fillNa(string_column_modes, { columns: string_columns })
+            data_frame = data_frame.fillNa(numeric_column_means, { columns: numeric_columns })
+            data_frame.isNa().print()
 
-            data_frame.addColumn(column, encoded_column.values, { inplace: true })
-        })
+        }
+
+        // let cols = []
+        // data_frame.columns.forEach((item) => {
+        //     if (data_frame.column(item).dtype === 'string') {
+        //         cols.push(item)
+        //     }
+        // })
+        // let encoder = new LabelEncoder()
+        // cols.forEach((column) => {
+        //     encoder.fit(data_frame[column])
+        //     let encoded_column = encoder.transform(data_frame[column])
+
+        //     data_frame.addColumn(column, encoded_column.values, { inplace: true })
+        // })
         return data_frame
     }
-    set_model() {
+    getCategoricalMode(arr) {
+        if (arr.length === 0) {
+            return null;
+        }
 
+        const categoryCount = {};
+        categoryCount['total'] = 0
+        categoryCount['mode'] = ''
+        for (let i = 0; i < arr.length; i++) {
+            const category = arr[i];
+            if (category === null || category === undefined) {
+                continue
+            }
+            categoryCount['total']++
+            if (category in categoryCount) {
+                categoryCount[category]++;
+            } else {
+                categoryCount[category] = 1;
+            }
+        }
+
+        let modeCategory = null;
+        let modeCount = 0;
+        for (const category in categoryCount) {
+            if (category === 'total') {
+                continue
+            }
+            if (categoryCount[category] > modeCount) {
+                modeCategory = category;
+                modeCount = categoryCount[category];
+            }
+        }
+        categoryCount['mode'] = modeCategory;
+
+
+        return categoryCount;
     }
 }
