@@ -228,7 +228,6 @@ export default class ChartController {
         }
     }
     draw_classification_pca(dataset, labels, missclassifications) {
-        console.log(dataset);
         const pca = new PCA(dataset, { center: true, scale: true });
         var uniqueLabels = [...new Set(labels)];
         var colorscale = uniqueLabels.map((label, index) => {

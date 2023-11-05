@@ -125,12 +125,12 @@ export default class UI {
         // $('#kde_select').append(this.createFeaturesDropdown(rowMetadata))
     }
     createAlgorithmsSelect(category) {
-        let result = '<div id="algorithm" class="column is-4"><h4>Algorithm</h4><div class="select mb-1"> <select class="select">'
+        let result = '<div id="algorithm" class="column is-4"><h4>Algorithm</h4><div class="select mb-1"> <select id="model_name" class="select">'
         const lable = category == 1 ? "regression" : "classification"
         for (const key in Settings[lable]) {
             if (Settings.hasOwnProperty.call(Settings[lable], key)) {
                 const item = Settings[lable][key];
-                result += `<option value="${item.value}">${item.lable}</option>`
+                result += `<option value="${item.lable}">${item.lable}</option>`
             }
         }
         result += '</select></div></div>'
