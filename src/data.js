@@ -150,7 +150,7 @@ export default class DataLoader {
             [array[i], array[j]] = [array[j], array[i]];
         }
     }
-    perprocess_data(data_frame, impute = true, one_hot_encode = true) {
+    handle_missing_values(data_frame, impute = true) {
         // to do normalization
         if (impute) {
             let string_columns = []
@@ -164,7 +164,6 @@ export default class DataLoader {
                     numeric_columns.push(item)
                 }
             })
-            console.log(string_columns);
             string_columns.forEach(element => {
                 let mode = this.getCategoricalMode(element).mode
                 string_column_modes.push(mode)
@@ -175,7 +174,11 @@ export default class DataLoader {
             });
             data_frame = data_frame.fillNa(string_column_modes, { columns: string_columns })
             data_frame = data_frame.fillNa(numeric_column_means, { columns: numeric_columns })
+
         }
+        return data_frame
+    }
+    encode_dataset(data_frame) {
         if (one_hot_encode) {
             let cols = []
             data_frame.columns.forEach((item) => {
@@ -191,8 +194,8 @@ export default class DataLoader {
                 data_frame.addColumn(column, encoded_column.values, { inplace: true })
             })
         }
-
         return data_frame
+
     }
     getCategoricalMode(arr) {
         if (arr.length === 0) {
