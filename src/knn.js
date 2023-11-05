@@ -6,6 +6,7 @@ export default class KNNModel {
 
     }
     train(x_train, y_train, k = 3) {
+        console.log(x_train);
         this.model = new KNN(x_train, y_train, { k: k });
     }
     evaluate(x_test) {

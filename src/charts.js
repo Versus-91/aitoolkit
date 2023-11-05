@@ -55,32 +55,44 @@ export default class ChartController {
             tsne.step(); // 
         }
         var Y = tsne.getSolution();
-        var uniqueLabels = [...new Set(lables.map(m => m[0]))];
-        var colorscale = uniqueLabels.map((label, index) => {
-            var hue = (360 * index) / uniqueLabels.length;
-            return `hsl(${hue}, 100%, 50%)`;
-        });
-        var colorIndices = lables.map(label => uniqueLabels.indexOf(label));
-        let points_labled = Y.map(function (item, i) {
-            return {
-                lable: lables[i][0],
-                'x': item[0],
-                'y': item[1]
-            }
-        }
-        )
         let traces = []
-        uniqueLabels.forEach((lable, i) => {
-            var items_for_lable = points_labled.filter(m => m.lable === lable)
+        if (lables.length > 0) {
+            var uniqueLabels = [...new Set(lables.map(m => m[0]))];
+            let points_labled = Y.map(function (item, i) {
+                return {
+                    lable: lables[i][0],
+                    'x': item[0],
+                    'y': item[1]
+                }
+            }
+            )
+            uniqueLabels.forEach((lable, i) => {
+                var items_for_lable = points_labled.filter(m => m.lable === lable)
+                traces.push({
+                    x: items_for_lable.map(m => m.x),
+                    y: items_for_lable.map(m => m.y),
+                    mode: 'markers+text',
+                    type: 'scatter',
+                    name: lable,
+                    marker: { size: 5 }
+                })
+            })
+        } else {
+            let points = Y.map(function (item, i) {
+                return {
+                    'x': item[0],
+                    'y': item[1]
+                }
+            })
             traces.push({
-                x: items_for_lable.map(m => m.x),
-                y: items_for_lable.map(m => m.y),
+                x: points.map(m => m.x),
+                y: points.map(m => m.y),
                 mode: 'markers+text',
                 type: 'scatter',
-                name: lable,
                 marker: { size: 5 }
             })
-        })
+        }
+
 
         var layout = {
             legend: {
@@ -215,6 +227,67 @@ export default class ChartController {
             };
         }
     }
+    draw_classification_pca(dataset, labels, missclassifications) {
+        console.log(dataset);
+        const pca = new PCA(dataset, { center: true, scale: true });
+        var uniqueLabels = [...new Set(labels)];
+        var colorscale = uniqueLabels.map((label, index) => {
+            var hue = (360 * index) / uniqueLabels.length;
+            return `hsl(${hue}, 100%, 50%)`;
+        });
+        var colorIndices = labels.map(label => uniqueLabels.indexOf(label));
+        const pca_data = pca.predict(dataset, { nComponents: 2 })
+        let x = []
+        let y = []
+        let x_error = []
+        let y_error = []
+        pca_data.data.forEach((element, i) => {
+            if (missclassifications.includes(i)) {
+                x_error.push(element[0])
+                y_error.push(element[1])
+            } else {
+                x.push(element[0])
+                y.push(element[1])
+            }
+
+        });
+        var trace1 = {
+            x: x,
+            y: y,
+            text: labels,
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: 10,
+                color: colorIndices,
+                colorscale: [colorscale],
+                symbol: 'circle'
+            },
+        };
+        var trace2 = {
+            x: x_error,
+            y: y_error,
+            text: labels,
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: 10,
+                color: colorIndices,
+                colorscale: [colorscale],
+                symbol: 'cross'
+            },
+        };
+        var data = [trace1, trace2];
+        Plotly.newPlot('pca-1', data, {
+            xaxis: {
+                title: 'PCA component 1'
+            },
+            yaxis: {
+                title: 'PCA component 2'
+            }
+        });
+
+    }
     draw_pca(dataset, labels) {
         const pca = new PCA(dataset, { center: true, scale: true });
         var uniqueLabels = [...new Set(labels)];
@@ -299,32 +372,6 @@ export default class ChartController {
                 title: 'PCA component 3'
             }
         });
-    }
-    draw_scatterplot() {
-        var trace1 = {
-            x: [1, 2, 3, 4],
-            y: [10, 15, 13, 17],
-            mode: 'markers',
-            type: 'scatter'
-        };
-
-        var trace2 = {
-            x: [2, 3, 4, 5],
-            y: [16, 5, 11, 9],
-            mode: 'lines',
-            type: 'scatter'
-        };
-
-        var trace3 = {
-            x: [1, 2, 3, 4],
-            y: [12, 9, 15, 12],
-            mode: 'lines+markers',
-            type: 'scatter'
-        };
-
-        var data = [trace1, trace2, trace3];
-
-        Plotly.newPlot('myDiv', data);
     }
     drawStackedHorizontalChart(categories, lable) {
         var trace1 = {

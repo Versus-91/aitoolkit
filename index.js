@@ -1,5 +1,5 @@
 "use strict";
-import { DataFrame, tensorflow, OneHotEncoder, plovt } from 'danfojs/dist/danfojs-base';
+import { DataFrame, tensorflow, OneHotEncoder } from 'danfojs/dist/danfojs-base';
 import $ from 'jquery';
 import Papa from 'papaparse';
 import ChartController from "./src/charts.js";
@@ -51,9 +51,9 @@ async function visualize(dataset) {
 
     const target = document.getElementById("target").value;
     let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
-    if (numericColumns.length > 0) {
-        chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : null);
-    }
+    // if (numericColumns.length > 0) {
+    //     chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
+    // }
     if (is_classification) {
 
         let counts = dataset.column(target).valueCounts()
@@ -69,6 +69,7 @@ async function visualize(dataset) {
 }
 async function train(data) {
     let dataset = data.copy()
+
     const target = document.getElementById("target").value;
     dataset = data_parser.perprocess_data(dataset)
     let selected_columns = ui.find_selected_columns(dataset.columns)
@@ -82,9 +83,17 @@ async function train(data) {
     if (document.getElementById(target).value !== FeatureCategories.Numerical) {
         //knn
         let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour)
-        knn_classifier.train(x_train.values, data.column(target).values, 5)
+        knn_classifier.train(x_train.values, dataset.column(target).values, 5)
         let y_preds = knn_classifier.evaluate(x_train.values)
-        let evaluation_result = evaluate_classification(y_preds, data.column(target).values)
+        let evaluation_result = evaluate_classification(y_preds, y_train.values)
+        let numericColumns = []
+        x_train.columns.forEach(column => {
+            if (x_train.column(column).dtype !== 'string' && column !== "Id") {
+                numericColumns.push(column)
+            }
+        });
+        chart_controller.draw_classification_pca(x_train.loc({ columns: numericColumns }).values, y_train.values, evaluation_result.indexes)
+
         return
         // is classification
         const unique_classes = [...new Set(dataset.column(target).values)]
@@ -142,9 +151,6 @@ async function train(data) {
 }
 function evaluate_classification(y_preds, y_test) {
     console.assert(y_preds.length === y_test.length, "preds and test should have the same length.")
-    console.log(y_preds);
-    console.log(y_test);
-
     let missclassification_indexes = []
     let currect_classifications_sum = 0
     y_test.forEach((element, i) => {
@@ -159,6 +165,14 @@ function evaluate_classification(y_preds, y_test) {
         accuracy: (currect_classifications_sum / y_preds.length) * 100,
         indexes: missclassification_indexes
     }
+}
+async function plot_confusion_matrix() {
+    const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
+    const container = document.getElementById("confusion-matrix");
+    tfvis.render.confusionMatrix(container, {
+        values: confusionMatrix,
+        // tickLabels: lables
+    });
 }
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 document.getElementById("knn").addEventListener("click", trainer.knn_test)

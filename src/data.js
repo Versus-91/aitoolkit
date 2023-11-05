@@ -150,7 +150,7 @@ export default class DataLoader {
             [array[i], array[j]] = [array[j], array[i]];
         }
     }
-    perprocess_data(data_frame, impute = true) {
+    perprocess_data(data_frame, impute = true, one_hot_encode = true) {
         // to do normalization
         if (impute) {
             let string_columns = []
@@ -175,23 +175,23 @@ export default class DataLoader {
             });
             data_frame = data_frame.fillNa(string_column_modes, { columns: string_columns })
             data_frame = data_frame.fillNa(numeric_column_means, { columns: numeric_columns })
-            data_frame.isNa().print()
+        }
+        if (one_hot_encode) {
+            let cols = []
+            data_frame.columns.forEach((item) => {
+                if (data_frame.column(item).dtype === 'string') {
+                    cols.push(item)
+                }
+            })
+            let encoder = new LabelEncoder()
+            cols.forEach((column) => {
+                encoder.fit(data_frame[column])
+                let encoded_column = encoder.transform(data_frame[column])
 
+                data_frame.addColumn(column, encoded_column.values, { inplace: true })
+            })
         }
 
-        // let cols = []
-        // data_frame.columns.forEach((item) => {
-        //     if (data_frame.column(item).dtype === 'string') {
-        //         cols.push(item)
-        //     }
-        // })
-        // let encoder = new LabelEncoder()
-        // cols.forEach((column) => {
-        //     encoder.fit(data_frame[column])
-        //     let encoded_column = encoder.transform(data_frame[column])
-
-        //     data_frame.addColumn(column, encoded_column.values, { inplace: true })
-        // })
         return data_frame
     }
     getCategoricalMode(arr) {

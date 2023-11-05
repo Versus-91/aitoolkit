@@ -210,7 +210,7 @@ export default class UI {
             const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             const type = document.getElementById(key).value
             if (type !== FeatureCategories.Numerical) {
-                const category_info = this.getCategoricalMode(data.column(key).values)
+                const category_info = this.data_parser.getCategoricalMode(data.column(key).values)
                 let row = "";
                 row += "<td>" + column + "</td>";
                 row += "<td>" + category_info['mode'] + "</td>";
@@ -227,41 +227,5 @@ export default class UI {
             ;
 
     }
-    getCategoricalMode(arr) {
-        if (arr.length === 0) {
-            return null;
-        }
 
-        const categoryCount = {};
-        categoryCount['total'] = 0
-        categoryCount['mode'] = ''
-        for (let i = 0; i < arr.length; i++) {
-            const category = arr[i];
-            if (category === null || category === undefined) {
-                continue
-            }
-            categoryCount['total']++
-            if (category in categoryCount) {
-                categoryCount[category]++;
-            } else {
-                categoryCount[category] = 1;
-            }
-        }
-
-        let modeCategory = null;
-        let modeCount = 0;
-        for (const category in categoryCount) {
-            if (category === 'total') {
-                continue
-            }
-            if (categoryCount[category] > modeCount) {
-                modeCategory = category;
-                modeCount = categoryCount[category];
-            }
-        }
-        categoryCount['mode'] = modeCategory;
-
-
-        return categoryCount;
-    }
 }
