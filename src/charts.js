@@ -5,15 +5,17 @@ import Plotly from 'plotly.js-dist';
 import { PCA } from 'ml-pca';
 import { binarize } from './utils'
 import * as tfvis from '@tensorflow/tfjs-vis';
+import * as d3 from "d3";
+import * as ss from "simple-statistics"
 
 export default class ChartController {
     constructor(data_processor) {
         this.data_processor = data_processor
     }
-    roc_chart(container, tprs, fprs) {
+    roc_chart(container, true_positive_rates, false_positive_rates) {
         var trace = {
-            x: fprs,
-            y: tprs,
+            x: false_positive_rates,
+            y: true_positive_rates,
             type: 'scatter',
             mode: 'lines',
             name: 'ROC Curve',
@@ -127,6 +129,7 @@ export default class ChartController {
         });
     }
     drawROC(targets, probs) {
+
         return tf.tidy(() => {
             const thresholds = [
                 0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55,
@@ -138,8 +141,6 @@ export default class ChartController {
             for (let i = 0; i < thresholds.length; ++i) {
                 const threshold = thresholds[i];
                 const threshPredictions = binarize(probs, threshold).as1D();
-
-
 
                 const fpr = this.falsePositiveRate(targets, threshPredictions).dataSync()[0];
                 const tpr = tf.metrics.recall(targets, threshPredictions).dataSync()[0];
@@ -154,65 +155,65 @@ export default class ChartController {
             return [area, fprs, tprs];
         });
     }
-    draw_kde(items, container) {
-        d3.json("./faithful.json", function (error, faithful) {
-            if (error) throw error;
+    draw_kde(items, label) {
+        let container = document.getElementById("container")
+        // Declare the chart dimensions and margins.
+        const width = 300;
+        const height = 200;
+        const marginTop = 20;
+        const marginRight = 20;
+        const marginBottom = 30;
+        const marginLeft = 40;
+        var n = items.length
+        let min = Math.min(...items)
+        let max = Math.max(...items)
+        console.log(label, items, min, max);
+        let data_range = max - min
+        let buffer = 0.5
+        let plot_min = min - (buffer * data_range)
+        let plot_max = max + (buffer * data_range)
+        var x = d3.scaleLinear()
+            .domain([plot_min, plot_max])
+            .range([marginLeft, width - marginRight]);
+        let density = kernelDensityEstimator(kernelEpanechnikov(0.1), x.ticks(10))(items);
+        var kde = ss.kernelDensityEstimation(data)
+        var breaks = ss.equalIntervalBreaks(data, 100)
+        var y = d3.scaleLinear()
+            .domain([0, d3.max(density, d => d[1])])
+            .range([height - marginBottom, marginTop]);
 
-            var svg = d3.select("svg")
+        // Create the SVG container.
+        const svg = d3.create("svg")
+            .attr("width", width)
+            .attr("height", height);
 
-            let min = Math.min(...faithful) - 1
-            let max = Math.max(...faithful) + 1
+        // Add the x-axis.
+        svg.append("g")
+            .attr("transform", `translate(0,${height - marginBottom})`)
+            .call(d3.axisBottom(x));
 
-            const width = +svg.attr("width")
-            const height = +svg.attr("height")
-
-            const margin = { top: 20, right: 30, bottom: 30, left: 40 };
-            var n = faithful.length
-            var x = d3.scaleLinear()
-                .domain([min, max])
-                .range([margin.left, width - margin.right]);
-            density = kernelDensityEstimator(kernelEpanechnikov(0.1), x.ticks(10))(faithful);
-            var y = d3.scaleLinear()
-                .domain([0, d3.max(density, d => d[1])])
-                .range([height - margin.bottom, margin.top]);
-
-
-            svg.append("g")
-                .attr("class", "axis axis--x")
-                .attr("transform", "translate(0," + (height - margin.bottom) + ")")
-                .call(d3.axisBottom(x))
-                .append("text")
-                .attr("x", width - margin.right)
-                .attr("y", -6)
-                .attr("fill", "#000")
-                .attr("text-anchor", "end")
-                .attr("font-weight", "bold");
-
-            svg.append("g")
-                .attr("class", "axis axis--y")
-                .attr("transform", "translate(" + margin.left + ",0)")
-                .call(d3.axisLeft(y));
-            svg.insert("g", "*")
-                .attr("fill", "#bbb")
-                .selectAll("rect")
-                .enter().append("rect")
-                .attr("x", function (d) { return x(d.x0) + 1; })
-                .attr("y", function (d) { return y(d.length / n); })
-                .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
-                .attr("height", function (d) { return y(0) - y(d.length / n); });
-
-            svg.append("path")
-                .datum(density)
-                .attr("fill", "none")
-                .attr("stroke", "#000")
-                .attr("stroke-width", 1.5)
-                .attr("stroke-linejoin", "round")
-                .attr("d", d3.line()
-                    .curve(d3.curveBasis)
-                    .x(function (d) { return x(d[0]); })
-                    .y(function (d) { return y(d[1]); }));
-        });
-
+        // Add the y-axis.
+        svg.append("g")
+            .attr("transform", `translate(${marginLeft},0)`)
+            .call(d3.axisLeft(y));
+        svg.append("path")
+            .datum(density)
+            .attr("fill", "#85C1E9")
+            .attr("stroke", "#000")
+            .attr("stroke-width", 1)
+            .attr("stroke-linejoin", "round")
+            .attr("d", d3.line()
+                .curve(d3.curveBasis)
+                .x(function (d) { return x(d[0]); })
+                .y(function (d) { return y(d[1]); }));
+        // Append the SVG element.
+        svg.append("text")
+            .attr("x", (width / 2))
+            .attr("y", (marginTop / 2))
+            .attr("text-anchor", "middle")
+            .style("font-size", "10px")
+            .text(label);
+        container.append(svg.node());
         function kernelDensityEstimator(kernel, X) {
             return function (V) {
                 return X.map(function (x) {

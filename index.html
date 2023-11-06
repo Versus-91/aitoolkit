@@ -32,9 +32,7 @@
                 </div>
             </div>
             <div class="column is-6">
-                <button id="apply" class="button is-danger">save</button>
-                <button id="knn" class="button is-danger">knn test</button>
-                <button id="pca-button" class="button is-danger">pca</button>
+                <button id="test_rf" class="button is-danger">Random forest</button>
                 <div class="row overflow-hidden" id="content">
                     <div class="col mh-100 float-left" id="main">
                         <div id="fileinput"></div>
@@ -45,6 +43,12 @@
             <div class="column is-12">
                 <article class="message is-link">
                     <div class="columns mx-1 is-multiline" id="props">
+                    </div>
+                </article>
+            </div>
+            <div class="column is-12">
+                <article class="message is-link">
+                    <div class="columns mx-1 is-multiline" id="container">
                     </div>
                 </article>
             </div>
@@ -96,6 +100,7 @@
             <div id="loss-cont"></div>
             <div id="acc-cont"></div>
             </div>
+            <svg width="960" height="500"></svg>
             <div class="column is-12">
                 <div class="columns is-multiline">
                     <div class="column is-6">

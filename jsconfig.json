@@ -1,0 +1,5 @@
+{
+    "typeAcquisition": {
+        "include": ["@tensorflow/tfjs","jquery","d3","plotly"]
+    }
+}

@@ -9,6 +9,7 @@ import UI from "./src/ui.js";
 import { FeatureCategories, Settings } from './feature_types.js';
 import { ModelFactory } from './src/model_factory.js';
 import * as tfvis from '@tensorflow/tfjs-vis';
+import * as d3 from "d3";
 
 window.tf = tensorflow
 window.jQuery = window.$ = $
@@ -52,9 +53,12 @@ async function visualize(dataset) {
 
     const target = document.getElementById("target").value;
     let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
-    // if (numericColumns.length > 0) {
-    //     chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
-    // }
+    if (numericColumns.length > 0) {
+        // chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
+        numericColumns.forEach(column => {
+            chart_controller.draw_kde(dataset.column(column).values, column)
+        });
+    }
     if (is_classification) {
 
         let counts = dataset.column(target).valueCounts()
@@ -65,7 +69,7 @@ async function visualize(dataset) {
 
         df.plot("y_pie_chart").pie({ config: { values: "values", labels: "labels" } });
     }
-    await train(dataset)
+    // await train(dataset)
 
 }
 async function train(data) {
@@ -83,49 +87,46 @@ async function train(data) {
     const y_test = y_train
     var modewl = null
     if (document.getElementById(target).value !== FeatureCategories.Numerical) {
-        //knn
         let model_name = document.getElementById('model_name').value
-
-        if (model_name === Settings.classification.k_nearest_neighbour.lable) {
-            let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour)
-            knn_classifier.train(x_train.values, dataset.column(target).values, 5)
-            let y_preds = knn_classifier.evaluate(x_train.values)
-            let evaluation_result = evaluate_classification(y_preds, y_train.values)
-            let numericColumns = []
-            x_train.columns.forEach(column => {
-                if (x_train.column(column).dtype !== 'string' && column !== "Id") {
-                    numericColumns.push(column)
+        switch (model_name) {
+            case Settings.classification.k_nearest_neighbour.lable:
+                let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour)
+                knn_classifier.train(x_train.values, dataset.column(target).values, 5)
+                let y_preds = knn_classifier.evaluate(x_train.values)
+                let evaluation_result = evaluate_classification(y_preds, y_train.values)
+                let numericColumns = []
+                x_train.columns.forEach(column => {
+                    if (x_train.column(column).dtype !== 'string' && column !== "Id") {
+                        numericColumns.push(column)
+                    }
+                });
+                chart_controller.draw_classification_pca(x_train.loc({ columns: numericColumns }).values, y_train.values, evaluation_result.indexes)
+                console.log(y_preds);
+                plot_confusion_matrix(window.tf.tensor(y_preds), y_train.tensor)
+                break;
+            case Settings.classification.logistic_regression.lable:
+                const unique_classes = [...new Set(dataset.column(target).values)]
+                const is_binary_classification = unique_classes.length === 2 ? 1 : 0;
+                if (is_binary_classification) {
+                    let binary_logistic_regression = model_factory.createModel(Settings.classification.logistic_regression)
+                    model = await binary_logistic_regression.train(x_train.tensor, y_train.tensor, selected_columns.length, 2)
+                    await binary_logistic_regression.evaluate(x_train.tensor, y_train.tensor, model, [], true)
+                } else {
+                    let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller)
+                    let encode = new OneHotEncoder()
+                    encode.fit(dataset[target])
+                    let y_train = encode.transform(dataset[target].values)
+                    y_train = tf.tensor(y_train)
+                    let x_train_tensor = x_train.tensor
+                    await logistic_regression.train(x_train_tensor, y_train, selected_columns.length, unique_classes.length)
+                    await logistic_regression.evaluate(x_train_tensor, y_train)
+                    y_train.dispose()
+                    x_train_tensor.dispose()
+                    console.log(window.tf.memory().numTensors);
                 }
-            });
-            chart_controller.draw_classification_pca(x_train.loc({ columns: numericColumns }).values, y_train.values, evaluation_result.indexes)
-            console.log(y_preds);
-            plot_confusion_matrix(window.tf.tensor(y_preds), y_train.tensor)
+            default:
+                break;
         }
-        else if (model_name === Settings.classification.logistic_regression.lable) {
-            const unique_classes = [...new Set(dataset.column(target).values)]
-            const is_binary_classification = unique_classes.length === 2 ? 1 : 0;
-            if (is_binary_classification) {
-                let binary_logistic_regression = model_factory.createModel(Settings.classification.logistic_regression)
-                model = await binary_logistic_regression.train(x_train.tensor, y_train.tensor, selected_columns.length, 2)
-                await binary_logistic_regression.evaluate(x_train.tensor, y_train.tensor, model, [], true)
-            } else {
-                let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller)
-                let encode = new OneHotEncoder()
-                encode.fit(dataset[target])
-                let y_train = encode.transform(dataset[target].values)
-                y_train = tf.tensor(y_train)
-                let x_train_tensor = x_train.tensor
-                console.log(window.tf.memory().numTensors);
-                await logistic_regression.train(x_train_tensor, y_train, selected_columns.length, unique_classes.length)
-                await logistic_regression.evaluate(x_train_tensor, y_train)
-                y_train.dispose()
-                x_train_tensor.dispose()
-                console.log(window.tf.memory().numTensors);
-            }
-
-        }
-
-
     } else {
         model = await trainer.train_linear_regression(selected_columns.length, dataset.loc({ columns: selected_columns }).tensor, dataset.column(target).tensor)
     }
@@ -188,8 +189,12 @@ async function plot_confusion_matrix(y, predictedLabels) {
         // tickLabels: lables
     });
 }
+function test() {
+    chart_controller.draw_kde(null, null)
+}
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
-document.getElementById("knn").addEventListener("click", trainer.knn_test)
+document.getElementById("test_rf").addEventListener("click", test)
+
 
 
 
