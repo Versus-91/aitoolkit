@@ -155,78 +155,38 @@ export default class ChartController {
             return [area, fprs, tprs];
         });
     }
-    draw_kde(items, label) {
-        let container = document.getElementById("container")
-        // Declare the chart dimensions and margins.
-        const width = 300;
-        const height = 200;
-        const marginTop = 20;
-        const marginRight = 20;
-        const marginBottom = 30;
-        const marginLeft = 40;
-        var n = items.length
-        let min = Math.min(...items)
-        let max = Math.max(...items)
-        console.log(label, items, min, max);
-        let data_range = max - min
-        let buffer = 0.5
-        let plot_min = min - (buffer * data_range)
-        let plot_max = max + (buffer * data_range)
-        var x = d3.scaleLinear()
-            .domain([plot_min, plot_max])
-            .range([marginLeft, width - marginRight]);
-        let density = kernelDensityEstimator(kernelEpanechnikov(0.1), x.ticks(10))(items);
-        var kde = ss.kernelDensityEstimation(data)
-        var breaks = ss.equalIntervalBreaks(data, 100)
-        var y = d3.scaleLinear()
-            .domain([0, d3.max(density, d => d[1])])
-            .range([height - marginBottom, marginTop]);
+    draw_kde(dataset, columns) {
+        let traces = []
+        columns.forEach((column, i) => {
+            let items = dataset.column(column).values
+            var breaks = ss.equalIntervalBreaks(items, 100)
+            var kde = ss.kernelDensityEstimation(items)
+            let min = Math.min(...breaks)
+            let max = Math.max(...breaks)
+            console.log(min, max);
+            let data_range = max - min
+            let buffer = 0.5
+            let plot_min = min - (buffer * data_range)
+            let plot_max = max + (buffer * data_range)
+            let ys = []
+            breaks.forEach((item) => {
+                ys.push(kde(item))
+            })
+            traces.push({
+                x: breaks,
+                y: ys,
+                fill: 'tozeroy',
+                type: 'scatter',
+                xaxis: 'x' + (i > 0 ? i + 1 : null),
+                yaxis: 'y' + (i > 0 ? i + 1 : null),
+                name: column
+            });
+        });
+        var layout = {
+            grid: { rows: 1, columns: 4, pattern: 'independent' },
+        };
 
-        // Create the SVG container.
-        const svg = d3.create("svg")
-            .attr("width", width)
-            .attr("height", height);
-
-        // Add the x-axis.
-        svg.append("g")
-            .attr("transform", `translate(0,${height - marginBottom})`)
-            .call(d3.axisBottom(x));
-
-        // Add the y-axis.
-        svg.append("g")
-            .attr("transform", `translate(${marginLeft},0)`)
-            .call(d3.axisLeft(y));
-        svg.append("path")
-            .datum(density)
-            .attr("fill", "#85C1E9")
-            .attr("stroke", "#000")
-            .attr("stroke-width", 1)
-            .attr("stroke-linejoin", "round")
-            .attr("d", d3.line()
-                .curve(d3.curveBasis)
-                .x(function (d) { return x(d[0]); })
-                .y(function (d) { return y(d[1]); }));
-        // Append the SVG element.
-        svg.append("text")
-            .attr("x", (width / 2))
-            .attr("y", (marginTop / 2))
-            .attr("text-anchor", "middle")
-            .style("font-size", "10px")
-            .text(label);
-        container.append(svg.node());
-        function kernelDensityEstimator(kernel, X) {
-            return function (V) {
-                return X.map(function (x) {
-                    return [x, d3.mean(V, function (v) { return kernel(x - v); })];
-                });
-            };
-        }
-
-        function kernelEpanechnikov(k) {
-            return function (v) {
-                return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-            };
-        }
+        Plotly.newPlot('container', traces, layout);
     }
     draw_classification_pca(dataset, labels, missclassifications) {
         const pca = new PCA(dataset, { center: true, scale: true });

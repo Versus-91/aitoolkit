@@ -55,9 +55,8 @@ async function visualize(dataset) {
     let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
     if (numericColumns.length > 0) {
         // chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
-        numericColumns.forEach(column => {
-            chart_controller.draw_kde(dataset.column(column).values, column)
-        });
+        chart_controller.draw_kde(dataset, numericColumns)
+
     }
     if (is_classification) {
 
