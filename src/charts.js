@@ -159,16 +159,17 @@ export default class ChartController {
         let traces = []
         columns.forEach((column, i) => {
             let items = dataset.column(column).values
-            var breaks = ss.equalIntervalBreaks(items, 100)
             var kde = ss.kernelDensityEstimation(items)
-            let min = Math.min(...breaks)
-            let max = Math.max(...breaks)
-            console.log(min, max);
-            let data_range = max - min
-            let buffer = 0.5
-            let plot_min = min - (buffer * data_range)
-            let plot_max = max + (buffer * data_range)
+            // Calculate the padding and updated data range
+            const padding = 0.5; // 5% padding
+            const minValue = d3.min(items);
+            const maxValue = d3.max(items);
+            const range = maxValue - minValue;
+            const minPadded = minValue - padding * range;
+            const maxPadded = maxValue + padding * range;
+            items.push(minPadded, maxPadded)
             let ys = []
+            var breaks = ss.equalIntervalBreaks(items, 100)
             breaks.forEach((item) => {
                 ys.push(kde(item))
             })
