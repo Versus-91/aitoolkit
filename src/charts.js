@@ -5,7 +5,6 @@ import Plotly from 'plotly.js-dist';
 import { PCA } from 'ml-pca';
 import { binarize } from './utils'
 import * as tfvis from '@tensorflow/tfjs-vis';
-import * as d3 from "d3";
 import * as ss from "simple-statistics"
 
 export default class ChartController {
@@ -162,8 +161,8 @@ export default class ChartController {
             var kde = ss.kernelDensityEstimation(items)
             // Calculate the padding and updated data range
             const padding = 0.5; // 5% padding
-            const minValue = d3.min(items);
-            const maxValue = d3.max(items);
+            const minValue = Math.min(...items);
+            const maxValue = Math.max(...items);
             const range = maxValue - minValue;
             const minPadded = minValue - padding * range;
             const maxPadded = maxValue + padding * range;
@@ -184,7 +183,7 @@ export default class ChartController {
             });
         });
         var layout = {
-            grid: { rows: 1, columns: 4, pattern: 'independent' },
+            grid: { rows: Math.floor(traces.length / 4) + 1, columns: 4, pattern: 'independent' },
         };
 
         Plotly.newPlot('container', traces, layout);
