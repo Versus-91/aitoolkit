@@ -45,6 +45,7 @@ export default class ChartController {
         });
     }
     plot_tsne(data, lables) {
+        document.getElementById("dimensionality_reduction_panel").style.display = "block"
         console.assert(Array.isArray(data));
         var opt = {}
         opt.epsilon = 10;
@@ -155,6 +156,8 @@ export default class ChartController {
         });
     }
     draw_kde(dataset, columns) {
+        document.getElementById("kde_panel").style.display = "block"
+        document.getElementById("container").innerHTML = ""
         let traces = []
         columns.forEach((column, i) => {
             let items = dataset.column(column).values
@@ -249,14 +252,21 @@ export default class ChartController {
 
     }
     draw_pca(dataset, labels) {
+        document.getElementById("dimensionality_reduction_panel").style.display = "block"
+        document.getElementById("pca-1").innerHTML = ""
+        document.getElementById("pca-2").innerHTML = ""
+        document.getElementById("pca-3").innerHTML = ""
         const pca = new PCA(dataset, { center: true, scale: true });
+        labels = labels.flat()
         var uniqueLabels = [...new Set(labels)];
         var colorscale = uniqueLabels.map((label, index) => {
             var hue = (360 * index) / uniqueLabels.length;
             return `hsl(${hue}, 100%, 50%)`;
         });
+
         var colorIndices = labels.map(label => uniqueLabels.indexOf(label));
         const pca_data = pca.predict(dataset, { nComponents: 3 })
+
         let x = []
         let y = []
         let x1 = []

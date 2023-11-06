@@ -65,8 +65,12 @@ export default class LogisticRegression {
             values: confusionMatrix,
             // tickLabels: lables
         });
+        let result = {
+            predictions: predictions.arraySync()
+        }
         window.tf.dispose(predictions)
         window.tf.dispose(y)
         window.tf.dispose(this.model)
+        return result
     }
 }

@@ -1,20 +1,20 @@
 <html>
-    <head>
-        <title>Machine Learning Tools</title>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link
-            rel="stylesheet"
-            href="https://pyscript.net/latest/pyscript.css"
-        />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css"
+
+<head>
+    <title>Machine Learning Tools</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css"
         integrity="sha512-q3eWabyZPc1XTCmF+8/LuE1ozpg5xxn7iO89yfSOd5/oKvyqLngoNGsx8jq92Y8eXJ/IRxQbEC+FGSYxtk2oiw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-    </head>
-    <body>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
 
-        <div class="container mt-4">
+</head>
+
+<body>
+    <div class="container mt-4">
         <div class="columns is-multiline">
             <div class="column is-6">
                 <div class="file mb-2 is-info">
@@ -46,21 +46,28 @@
                     </div>
                 </article>
             </div>
-            <div class="column is-12">
-                <article class="message is-link">
-                    <div class="columns mx-1 is-multiline" id="container">
+            <div class="column is-12 mt-3">
+                <article class="message is-link" id="kde_panel" style="display: none;">
+                    <div class="message-header">
+                        <p>Kernel density estimates</p>
+                    </div>
+                    <div class="message-body">
+                        <div class="columns is-multiline" id="container">
+                        </div>
                     </div>
                 </article>
             </div>
             <div class="column is-12">
-                <div id="kde_plots" class="columns is-multiline">            
+                <div id="kde_plots" class="columns is-multiline">
                 </div>
             </div>
-
-            <div class="column is-12">
-                    <article class="message">
-                        <div class="message-body">
-                            <div class="columns is-multiline">
+            <div class="column is-12" id="stats" style="display: none;">
+                <article class="message">
+                    <div class="message-header">
+                        <p>Dataset Summary</p>
+                    </div>
+                    <div class="message-body">
+                        <div class="columns is-multiline">
                             <div class="column is-6" id="output">
                             </div>
                             <div class="column is-6" id="categorical_features">
@@ -70,49 +77,71 @@
                             </div>
                         </div>
                     </div>
-                      </article>
+                </article>
             </div>
-            <div class="column is-6">
-                <div id="tsne" >            
-                </div>
+            <div class="column is-12" id="dimensionality_reduction_panel" style="display: none;">
+                <article class="message is-link">
+                    <div class="message-header">
+                        <p>dimensionality reduction</p>
+                    </div>
+                    <div class="message-body">
+                        <div class="columns is-multiline">
+                            <div class="column is-6">
+                                <div id="tsne">
+                                </div>
+                            </div>
+                            <div class="column is-6">
+                                <div id="pca-1"></div>
+                            </div>
+                            <div class="column is-6">
+                                <div id="pca-2"></div>
+                            </div>
+                            <div class="column is-6">
+                                <div id="pca-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
             </div>
+
             <div class="column is-6">
                 <div id="desc"></div>
                 <div id="plot_div"></div>
-                <div id="pca-1"></div>
-
-                <button id="draw-kde">draw</button>
                 <div id="results"></div>
             </div>
-            <div class="column is-6">
-                <div id="pca-2"></div>
-            </div>
-            <div class="column is-6">
-                <div id="pca-3"></div>
-            </div>
+
             <div class="column is-12">
                 <div id="pca"></div>
             </div>
             <div class="column is-6">
-            <h1>Outputs</h1>
-            <div id="roc"></div>
-            <div id="roc2"></div>
-            <div id="loss-cont"></div>
-            <div id="acc-cont"></div>
-            </div>
-            <svg width="960" height="500"></svg>
+                <div id="roc2"></div>
+                <div id="loss-cont"></div>
+                <div id="acc-cont"></div>
+            </div>.
+
             <div class="column is-12">
-                <div class="columns is-multiline">
-                    <div class="column is-6">
-                        <div id="output_table"></div>
+                <article class="message is-link">
+                    <div class="message-header">
+                        <p>Results</p>
                     </div>
-                    <div class="column is-6">
-                        <div id="confusion-matrix"></div>
-                    </div>                
-                </div>
+                    <div class="message-body">
+                        <div class="columns is-multiline">
+                            <div class="column is-6">
+                                <div id="roc"></div>
+                            </div>
+                            <div class="column is-6">
+                                <div id="confusion-matrix"></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
             </div>
-    </div>
-    <script type="text/javascript" src="./public/libs/tsne.js"></script>
-    <script type="module" src="index.js"></script>
-    </body>
+            <div class="column is-12">
+                <table id="predictions_table" class="display" width="100%"></table>
+            </div>
+        </div>
+        <script type="text/javascript" src="./public/libs/tsne.js"></script>
+        <script type="module" src="index.js"></script>
+</body>
+
 </html>

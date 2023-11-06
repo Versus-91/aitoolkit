@@ -10,6 +10,7 @@ import { FeatureCategories, Settings } from './feature_types.js';
 import { ModelFactory } from './src/model_factory.js';
 import * as tfvis from '@tensorflow/tfjs-vis';
 import * as d3 from "d3";
+import DataTable from 'datatables.net-dt';
 
 window.tf = tensorflow
 window.jQuery = window.$ = $
@@ -50,16 +51,15 @@ async function visualize(dataset) {
             numericColumns.push(column)
         }
     });
-
     const target = document.getElementById("target").value;
     let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
     if (numericColumns.length > 0) {
-        // chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
-        chart_controller.draw_kde(dataset, numericColumns)
+        chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
+        chart_controller.draw_pca(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
 
+        chart_controller.draw_kde(dataset, numericColumns)
     }
     if (is_classification) {
-
         let counts = dataset.column(target).valueCounts()
         const df = new DataFrame({
             values: counts.values,
@@ -68,7 +68,12 @@ async function visualize(dataset) {
 
         df.plot("y_pie_chart").pie({ config: { values: "values", labels: "labels" } });
     }
-    // await train(dataset)
+    let table_columns = []
+    dataset.columns.forEach(element => {
+        table_columns.push({ title: element })
+    });
+
+    await train(dataset)
 
 }
 async function train(data) {
@@ -77,7 +82,6 @@ async function train(data) {
     const target = document.getElementById("target").value;
     dataset = data_parser.handle_missing_values(dataset)
     let selected_columns = ui.find_selected_columns(dataset.columns)
-
     let model_factory = new ModelFactory()
     selected_columns = selected_columns.filter(m => m !== target)
     const x_train = dataset.loc({ columns: selected_columns })
@@ -100,7 +104,6 @@ async function train(data) {
                     }
                 });
                 chart_controller.draw_classification_pca(x_train.loc({ columns: numericColumns }).values, y_train.values, evaluation_result.indexes)
-                console.log(y_preds);
                 plot_confusion_matrix(window.tf.tensor(y_preds), y_train.tensor)
                 break;
             case Settings.classification.logistic_regression.lable:
@@ -111,14 +114,32 @@ async function train(data) {
                     model = await binary_logistic_regression.train(x_train.tensor, y_train.tensor, selected_columns.length, 2)
                     await binary_logistic_regression.evaluate(x_train.tensor, y_train.tensor, model, [], true)
                 } else {
+
                     let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller)
                     let encode = new OneHotEncoder()
+
                     encode.fit(dataset[target])
                     let y_train = encode.transform(dataset[target].values)
                     y_train = tf.tensor(y_train)
                     let x_train_tensor = x_train.tensor
+
                     await logistic_regression.train(x_train_tensor, y_train, selected_columns.length, unique_classes.length)
-                    await logistic_regression.evaluate(x_train_tensor, y_train)
+                    let result = await logistic_regression.evaluate(x_train_tensor, y_train)
+
+                    let table_columns = []
+                    x_train.addColumn("y", dataset.column(target), { inplace: true })
+                    x_train.addColumn("predictions", result.predictions, { inplace: true })
+
+
+                    x_train.columns.forEach(element => {
+                        table_columns.push({ title: element })
+                    });
+                    new DataTable('#predictions_table', {
+                        responsive: true,
+                        columns: table_columns,
+                        data: x_train.values
+                    });
+
                     y_train.dispose()
                     x_train_tensor.dispose()
                     console.log(window.tf.memory().numTensors);

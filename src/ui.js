@@ -169,6 +169,7 @@ export default class UI {
     }
     renderDatasetStats(data) {
         //build numerical feature table table
+        document.getElementById("stats").style.display = "block"
         var header = "";
         var tbody = "";
         const fileds = ["#", "Min", "Max", "Median", "Mean", "Standard deviation", "p-value"]
@@ -225,7 +226,6 @@ export default class UI {
             tbody_categorical +
             "</tbody></table>"
             ;
-
     }
 
 }
