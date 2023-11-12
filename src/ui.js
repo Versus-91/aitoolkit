@@ -46,7 +46,7 @@ export default class UI {
             items.columns.forEach(column => {
                 let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
                 $('#props').append(`
-                <div class="column is-4">
+                <div class="column is-3">
                     <h4>${this.insertSpaces(key)} - ${key === default_target ? "Output" : "Input"}</h4>
                     <div class="select mb-1">
                         <select id="${column}">
@@ -80,7 +80,7 @@ export default class UI {
                 $("#props").append(this.createAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
             });
             $('#props').append(`
-            <div class="column is-4">
+            <div class="column is-3">
                 <h4>Imputation</h4>
                 <div class="select mb-1">
                     <select id="imputation">
@@ -92,7 +92,7 @@ export default class UI {
             </div>
             `)
             $('#props').append(`
-            <div class="column is-4">
+            <div class="column is-3">
                 <h4>standardize</h4>
                 <div class="select mb-1">
                     <select id="normalization">
@@ -104,7 +104,7 @@ export default class UI {
             </div>
             `)
             $('#props').append(`
-            <div class="column is-4">
+            <div class="column is-3">
                 <h4>Cross Validation</h4>
                 <div class="select mb-1">
                     <select id="cross_validation">
@@ -117,7 +117,7 @@ export default class UI {
             `)
             $('#props').append(this.createTargetDropdown(items))
             $('#target').val(default_target)
-            $('#props').append(`<div class="column is-4"><button class="button is-primary mt-5" id="train-button">train</button></div>`);
+            $('#props').append(`<div class="column is-3"><button class="button is-primary mt-5" id="train-button">train</button></div>`);
         } catch (error) {
             console.log(error);
         }
@@ -125,7 +125,7 @@ export default class UI {
         // $('#kde_select').append(this.createFeaturesDropdown(rowMetadata))
     }
     createAlgorithmsSelect(category) {
-        let result = '<div id="algorithm" class="column is-4"><h4>Algorithm</h4><div class="select mb-1"> <select id="model_name" class="select">'
+        let result = '<div id="algorithm" class="column is-3"><h4>Algorithm</h4><div class="select mb-1"> <select id="model_name" class="select">'
         const lable = category == 1 ? "regression" : "classification"
         for (const key in Settings[lable]) {
             if (Settings.hasOwnProperty.call(Settings[lable], key)) {
@@ -172,7 +172,7 @@ export default class UI {
         document.getElementById("stats").style.display = "block"
         var header = "";
         var tbody = "";
-        const fileds = ["#", "Min", "Max", "Median", "Mean", "Standard deviation", "p-value"]
+        const fileds = ["#", "Min", "Max", "Median", "Mean", "Standard deviation"]
         for (var p in fileds) {
             header += "<th>" + fileds[p] + "</th>";
         }
