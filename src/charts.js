@@ -44,7 +44,7 @@ export default class ChartController {
                 .cast('float32');
         });
     }
-    plot_tsne(data, lables) {
+    plot_tsne(data, labels) {
         document.getElementById("dimensionality_reduction_panel").style.display = "block"
         console.assert(Array.isArray(data));
         var opt = {}
@@ -58,11 +58,11 @@ export default class ChartController {
         }
         var Y = tsne.getSolution();
         let traces = []
-        if (lables.length > 0) {
-            var uniqueLabels = [...new Set(lables.map(m => m[0]))];
+        if (labels.length > 0) {
+            var uniqueLabels = [...new Set(labels.map(m => m[0]))];
             let points_labled = Y.map(function (item, i) {
                 return {
-                    lable: lables[i][0],
+                    lable: labels[i][0],
                     'x': item[0],
                     'y': item[1]
                 }
@@ -76,7 +76,11 @@ export default class ChartController {
                     mode: 'markers+text',
                     type: 'scatter',
                     name: lable,
-                    marker: { size: 5 }
+                    marker: {
+                        size: 5,
+                        colorscale: 'Portland',
+                        color: i,
+                    }
                 })
             })
         } else {
@@ -106,7 +110,7 @@ export default class ChartController {
                     color: 'grey',
                 }
             },
-            title: 'T-sne plot'
+            title: 't-SNE plot'
         };
 
         Plotly.newPlot('tsne', traces, layout);
@@ -194,10 +198,6 @@ export default class ChartController {
     draw_classification_pca(dataset, labels, missclassifications) {
         const pca = new PCA(dataset, { center: true, scale: true });
         var uniqueLabels = [...new Set(labels)];
-        var colorscale = uniqueLabels.map((label, index) => {
-            var hue = (360 * index) / uniqueLabels.length;
-            return `hsl(${hue}, 100%, 50%)`;
-        });
         var colorIndices = labels.map(label => uniqueLabels.indexOf(label));
         const pca_data = pca.predict(dataset, { nComponents: 2 })
         let x = []
@@ -217,17 +217,19 @@ export default class ChartController {
         var trace1 = {
             x: x,
             y: y,
+            name: 'Predictions',
             text: labels,
             mode: 'markers',
             type: 'scatter',
             marker: {
                 size: 10,
                 color: colorIndices,
-                colorscale: [colorscale],
+                colorscale: 'Portland',
                 symbol: 'circle'
             },
         };
         var trace2 = {
+            name: 'Missclassifications',
             x: x_error,
             y: y_error,
             text: labels,
@@ -236,12 +238,12 @@ export default class ChartController {
             marker: {
                 size: 10,
                 color: colorIndices,
-                colorscale: [colorscale],
+                colorscale: 'Portland',
                 symbol: 'cross'
             },
         };
         var data = [trace1, trace2];
-        Plotly.newPlot('pca-1', data, {
+        Plotly.newPlot('pca-results', data, {
             xaxis: {
                 title: 'PCA component 1'
             },
@@ -258,12 +260,11 @@ export default class ChartController {
         document.getElementById("pca-3").innerHTML = ""
         const pca = new PCA(dataset, { center: true, scale: true });
         labels = labels.flat()
-        var uniqueLabels = [...new Set(labels)];
-        var colorscale = uniqueLabels.map((label, index) => {
-            var hue = (360 * index) / uniqueLabels.length;
-            return `hsl(${hue}, 100%, 50%)`;
-        });
+        var saturation = 10; // You can adjust saturation and lightness as needed
+        var lightness = 50;
 
+
+        var uniqueLabels = [...new Set(labels)];
         var colorIndices = labels.map(label => uniqueLabels.indexOf(label));
         const pca_data = pca.predict(dataset, { nComponents: 3 })
 
@@ -273,6 +274,7 @@ export default class ChartController {
         let y1 = []
         let x2 = []
         let y2 = []
+
         pca_data.data.forEach(element => {
             x.push(element[0])
             y.push(element[1])
@@ -290,7 +292,7 @@ export default class ChartController {
             marker: {
                 size: 10,
                 color: colorIndices,
-                colorscale: [colorscale],
+                colorscale: 'Portland',
             },
         };
         var trace2 = {
@@ -302,7 +304,7 @@ export default class ChartController {
             marker: {
                 size: 10,
                 color: colorIndices,
-                colorscale: [colorscale],
+                colorscale: 'Portland',
             },
         };
         var trace3 = {
@@ -314,11 +316,10 @@ export default class ChartController {
             marker: {
                 size: 10,
                 color: colorIndices,
-                colorscale: [colorscale],
+                colorscale: 'Portland',
             },
         };
-        var data = [trace1];
-        Plotly.newPlot('pca-1', data, {
+        Plotly.newPlot('pca-1', [trace1], {
             xaxis: {
                 title: 'PCA component 1'
             },
