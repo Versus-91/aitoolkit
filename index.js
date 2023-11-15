@@ -1,5 +1,5 @@
 "use strict";
-import { DataFrame, tensorflow, OneHotEncoder } from 'danfojs/dist/danfojs-base';
+import { DataFrame, tensorflow, OneHotEncoder, LabelEncoder } from 'danfojs/dist/danfojs-base';
 import $ from 'jquery';
 import Papa from 'papaparse';
 import ChartController from "./src/charts.js";
@@ -11,6 +11,9 @@ import { ModelFactory } from './src/model_factory.js';
 import * as tfvis from '@tensorflow/tfjs-vis';
 import * as d3 from "d3";
 import DataTable from 'datatables.net-dt';
+import * as sk from 'scikitjs'
+
+sk.setBackend(tensorflow)
 
 window.tf = tensorflow
 window.jQuery = window.$ = $
@@ -88,7 +91,6 @@ async function train(data) {
     const y_train = dataset.column(target)
     const x_test = x_train
     const y_test = y_train
-    var modewl = null
     if (document.getElementById(target).value !== FeatureCategories.Numerical) {
         let model_name = document.getElementById('model_name').value
         switch (model_name) {
@@ -97,14 +99,33 @@ async function train(data) {
                 knn_classifier.train(x_train.values, dataset.column(target).values, 5)
                 let y_preds = knn_classifier.evaluate(x_train.values)
                 let evaluation_result = evaluate_classification(y_preds, y_train.values)
+                let encoder = new LabelEncoder()
+                encoder.fit(y_train)
+                let encoded_ys = encoder.transform(y_train.values)
+                let encoded_yhats = encoder.transform(y_preds)
+
                 let numericColumns = []
                 x_train.columns.forEach(column => {
                     if (x_train.column(column).dtype !== 'string' && column !== "Id") {
                         numericColumns.push(column)
                     }
                 });
+                let table_columns = []
+                x_train.addColumn("y", dataset.column(target), { inplace: true })
+                x_train.addColumn("predictions", y_preds, { inplace: true })
+
+                x_train.columns.forEach(element => {
+                    table_columns.push({ title: element })
+                });
+
+                new DataTable('#predictions_table', {
+                    responsive: true,
+                    columns: table_columns,
+                    data: x_train.values
+                });
+
                 chart_controller.draw_classification_pca(x_train.loc({ columns: numericColumns }).values, y_train.values, evaluation_result.indexes)
-                plot_confusion_matrix(window.tf.tensor(y_preds), y_train.tensor)
+                plot_confusion_matrix(window.tf.tensor(encoded_yhats), window.tf.tensor(encoded_ys))
                 break;
             case Settings.classification.logistic_regression.lable:
                 const unique_classes = [...new Set(dataset.column(target).values)]
@@ -114,17 +135,17 @@ async function train(data) {
                     model = await binary_logistic_regression.train(x_train.tensor, y_train.tensor, selected_columns.length, 2)
                     await binary_logistic_regression.evaluate(x_train.tensor, y_train.tensor, model, [], true)
                 } else {
-
                     let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller)
-                    let encode = new OneHotEncoder()
+                    let encoder = new OneHotEncoder()
+                    encoder.fit(y_train.values)
+                    encoder.transform(y_train.values)
+                    let lr = new sk.LogisticRegression({ fitIntercept: false })
+                    await lr.fit(x_train.values, encoder.transform(y_train.values))
+                    console.log(lr.coef)
 
-                    encode.fit(dataset[target])
-                    let y_train = encode.transform(dataset[target].values)
-                    y_train = tf.tensor(y_train)
-                    let x_train_tensor = x_train.tensor
 
-                    await logistic_regression.train(x_train_tensor, y_train, selected_columns.length, unique_classes.length)
-                    let result = await logistic_regression.evaluate(x_train_tensor, y_train)
+                    await logistic_regression.train(x_train_tensor, y_train_tensor, selected_columns.length, unique_classes.length)
+                    let result = await logistic_regression.evaluate(x_train_tensor, y_train_tensor)
 
                     let table_columns = []
                     x_train.addColumn("y", dataset.column(target), { inplace: true })
@@ -140,10 +161,30 @@ async function train(data) {
                         data: x_train.values
                     });
 
-                    y_train.dispose()
+                    x_train_tensor.dispose()
                     x_train_tensor.dispose()
                     console.log(window.tf.memory().numTensors);
                 }
+            case Settings.classification.random_forest.lable:
+                const model = model_factory.createModel(Settings.classification.random_forest, null, {
+                    seed: 3,
+                    maxFeatures: 0.8,
+                    replacement: true,
+                    nEstimators: 25
+                });
+                let encoder_rf = new LabelEncoder()
+                encoder_rf.fit(y_train.values)
+                encoder_rf.transform(y_train.values)
+                let encoded_y = encoder_rf.transform(y_train.values)
+
+                model.train(x_train.values, encoded_y)
+                let preds = model.predict(x_train.values)
+
+                console.log(encoder_rf.classes);
+
+                plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y), encoder_rf.classes)
+                console.log(preds);
+                break;
             default:
                 break;
         }
@@ -201,13 +242,16 @@ function evaluate_classification(y_preds, y_test) {
         indexes: missclassification_indexes
     }
 }
-async function plot_confusion_matrix(y, predictedLabels) {
+async function plot_confusion_matrix(y, predictedLabels, lables) {
     const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
     const container = document.getElementById("confusion-matrix");
     tfvis.render.confusionMatrix(container, {
         values: confusionMatrix,
-        // tickLabels: lables
+        tickLabels: lables ?? null
     });
+    window.tf.dispose(y)
+    window.tf.dispose(predictedLabels)
+    window.tf.dispose(confusionMatrix)
 }
 function test() {
     chart_controller.draw_kde(null, null)
