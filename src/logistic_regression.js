@@ -63,7 +63,7 @@ export default class LogisticRegression {
         const container = document.getElementById("confusion-matrix");
         tfvis.render.confusionMatrix(container, {
             values: confusionMatrix,
-            // tickLabels: lables
+            tickLabels: lables ?? []
         });
         let result = {
             predictions: predictions.arraySync()

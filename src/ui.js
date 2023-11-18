@@ -188,7 +188,6 @@ export default class UI {
                 row += "<td>" + data.column(column).median().toFixed(2) + "</td>";
                 row += "<td>" + data.column(column).mean().toFixed(2) + "</td>";
                 row += "<td>" + data.column(column).std().toFixed(2) + "</td>";
-                row += "<td>" + "NA" + "</td>";
                 tbody += "<tr>" + row + "</tr>";
             }
         });
@@ -202,7 +201,7 @@ export default class UI {
         //build categorical feature table table
         var header_categorical = "";
         var tbody_categorical = "";
-        const fileds_categorical = ["#", "Mode", "Percentage"]
+        const fileds_categorical = ["#", "Shape", "Mode", "Percentage"]
         for (var p in fileds_categorical) {
             header_categorical += "<th>" + fileds_categorical[p] + "</th>";
         }
@@ -211,11 +210,13 @@ export default class UI {
             const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             const type = document.getElementById(key).value
             if (type !== FeatureCategories.Numerical) {
+                const shape = [...new Set(data.column(key).values)];
                 const category_info = this.data_parser.getCategoricalMode(data.column(key).values)
                 let row = "";
                 row += "<td>" + column + "</td>";
+                row += "<td>" + shape.length + "</td>";
                 row += "<td>" + category_info['mode'] + "</td>";
-                row += "<td>" + ((category_info[category_info['mode']] / category_info['total']) * 100).toFixed(2) + "</td>";
+                row += "<td>" + ((category_info[category_info['mode']] / category_info['total'])).toFixed(2) + "</td>";
                 tbody_categorical += "<tr>" + row + "</tr>";
             }
         });

@@ -38,14 +38,14 @@ function handleFileSelect(evt) {
             ui.createDatasetPropsDropdown(dataset);
             document.getElementById("train-button").onclick = async () => {
                 document.getElementById("train-button").classList.add("is-loading")
-                await visualize(dataset)
+                await visualize(dataset, result.data.length)
                 document.getElementById("train-button").classList.remove("is-loading")
             }
 
         }
     });
 }
-async function visualize(dataset) {
+async function visualize(dataset, len) {
     ui.renderDatasetStats(dataset);
 
     let numericColumns = []
@@ -76,21 +76,36 @@ async function visualize(dataset) {
         table_columns.push({ title: element })
     });
 
-    await train(dataset)
+    await train(dataset, len)
 
 }
-async function train(data) {
-    let dataset = data.copy()
 
+async function train(data, len) {
+    const limit = Math.ceil(len * 70 / 100)
+    let dataset = data.copy()
     const target = document.getElementById("target").value;
     dataset = data_parser.handle_missing_values(dataset)
     let selected_columns = ui.find_selected_columns(dataset.columns)
     let model_factory = new ModelFactory()
     selected_columns = selected_columns.filter(m => m !== target)
-    const x_train = dataset.loc({ columns: selected_columns })
-    const y_train = dataset.column(target)
-    const x_test = x_train
-    const y_test = y_train
+
+    const features = dataset.loc({ columns: selected_columns })
+    const targets = dataset.column(target)
+
+    const train_bound = `0:${limit}`
+    const test_bound = `${limit}:${len}`
+
+    const x_train = features.iloc({ rows: [`0: ${limit}`] })
+    const y_train = targets.iloc([train_bound])
+    const x_test = features.iloc({ rows: [`${limit}: ${len}`] });
+    const y_test = targets.iloc([test_bound]);
+
+    let numericColumns = []
+    features.columns.forEach(column => {
+        if (x_train.column(column).dtype !== 'string' && column !== "Id") {
+            numericColumns.push(column)
+        }
+    });
     if (document.getElementById(target).value !== FeatureCategories.Numerical) {
         let model_name = document.getElementById('model_name').value
         switch (model_name) {
@@ -104,12 +119,6 @@ async function train(data) {
                 let encoded_ys = encoder.transform(y_train.values)
                 let encoded_yhats = encoder.transform(y_preds)
 
-                let numericColumns = []
-                x_train.columns.forEach(column => {
-                    if (x_train.column(column).dtype !== 'string' && column !== "Id") {
-                        numericColumns.push(column)
-                    }
-                });
                 let table_columns = []
                 x_train.addColumn("y", dataset.column(target), { inplace: true })
                 x_train.addColumn("predictions", y_preds, { inplace: true })
@@ -138,23 +147,30 @@ async function train(data) {
                     let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller)
                     let encoder = new OneHotEncoder()
                     encoder.fit(y_train.values)
-                    encoder.transform(y_train.values)
-                    let lr = new sk.LogisticRegression({ fitIntercept: false })
-                    await lr.fit(x_train.values, encoder.transform(y_train.values))
-                    console.log(lr.coef)
-
-
+                    let y_train_t = encoder.transform(y_train.values)
+                    let y_train_tensor = tf.tensor(y_train_t)
+                    let x_train_tensor = x_train.tensor
                     await logistic_regression.train(x_train_tensor, y_train_tensor, selected_columns.length, unique_classes.length)
-                    let result = await logistic_regression.evaluate(x_train_tensor, y_train_tensor)
-
+                    let result = await logistic_regression.evaluate(x_train_tensor, y_train_tensor, encoder.$labels)
                     let table_columns = []
                     x_train.addColumn("y", dataset.column(target), { inplace: true })
-                    x_train.addColumn("predictions", result.predictions, { inplace: true })
+                    x_train.addColumn("predictions: " + encoder.$labels, result.predictions, { inplace: true })
 
 
                     x_train.columns.forEach(element => {
                         table_columns.push({ title: element })
                     });
+
+                    const lastColumnIndex = table_columns.length - 1;
+
+                    table_columns[lastColumnIndex].render = function (data, type, row) {
+                        if (type === 'display') {
+                            const maxNumber = Math.max(...data);
+                            data = data.map(num => num === maxNumber ? `<b>${num.toFixed(2)}</b>` : num.toFixed(2));
+                            return data.join(' ')
+                        }
+                        return data;
+                    };
                     new DataTable('#predictions_table', {
                         responsive: true,
                         columns: table_columns,
@@ -162,29 +178,48 @@ async function train(data) {
                     });
 
                     x_train_tensor.dispose()
-                    x_train_tensor.dispose()
+                    y_train_tensor.dispose()
                     console.log(window.tf.memory().numTensors);
+                    break
                 }
-            case Settings.classification.random_forest.lable:
+            case Settings.classification.random_forest.lable: {
                 const model = model_factory.createModel(Settings.classification.random_forest, null, {
                     seed: 3,
                     maxFeatures: 0.8,
                     replacement: true,
-                    nEstimators: 25
+                    nEstimators: 50
                 });
                 let encoder_rf = new LabelEncoder()
                 encoder_rf.fit(y_train.values)
                 encoder_rf.transform(y_train.values)
+
                 let encoded_y = encoder_rf.transform(y_train.values)
+                let encoded_y_test = encoder_rf.transform(y_test.values)
 
                 model.train(x_train.values, encoded_y)
-                let preds = model.predict(x_train.values)
+                let preds = model.predict(x_test.values)
 
-                console.log(encoder_rf.classes);
-
-                plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y), encoder_rf.classes)
                 console.log(preds);
-                break;
+                console.log(encoded_y_test);
+
+
+                plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), encoder_rf.inverseTransform([0, 1, 2]))
+                let table_columns = []
+                x_test.addColumn("y", y_test, { inplace: true })
+                x_test.addColumn("predictions : " + encoder_rf.inverseTransform([0, 1, 2]), preds, { inplace: true })
+
+                x_test.columns.forEach(element => {
+                    table_columns.push({ title: element })
+                });
+
+                new DataTable('#predictions_table', {
+                    responsive: true,
+                    columns: table_columns,
+                    data: x_test.values
+                });
+                console.log(preds);
+                break
+            }
             default:
                 break;
         }
@@ -224,6 +259,14 @@ async function train(data) {
     // let x_test = df_test.loc({ columns: df.columns.slice(1, -1) }).tensor
     // let y_test = df_test.column("y").tensor;
     // y_test = y_test.toFloat()
+}
+function roundInnerArrayNumbers(arr) {
+    for (let i = 0; i < arr.length; i++) {
+        for (let j = 0; j < arr[i].length; j++) {
+            arr[i][j] = (arr[i][j]).toFixed(2); // Round each number in the inner arrays
+        }
+    }
+    return arr;
 }
 function evaluate_classification(y_preds, y_test) {
     console.assert(y_preds.length === y_test.length, "preds and test should have the same length.")

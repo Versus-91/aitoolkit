@@ -230,8 +230,6 @@ export default class DataLoader {
             }
         }
         categoryCount['mode'] = modeCategory;
-
-
         return categoryCount;
     }
 }
