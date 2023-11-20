@@ -12,6 +12,8 @@ import * as tfvis from '@tensorflow/tfjs-vis';
 import * as d3 from "d3";
 import DataTable from 'datatables.net-dt';
 import * as sk from 'scikitjs'
+import { LogisticRegression } from './src/LogisticRegression.js';
+import { Matrix } from 'ml-matrix';
 
 sk.setBackend(tensorflow)
 
@@ -21,7 +23,8 @@ let data_parser = new DataLoader();
 let ui = new UI(data_parser);
 let trainer = new Trainter();
 let chart_controller = new ChartController(data_parser);
-
+let X
+let y
 
 function handleFileSelect(evt) {
     var target = evt.target || evt.srcElement;
@@ -59,8 +62,12 @@ async function visualize(dataset, len) {
     if (numericColumns.length > 0) {
         chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
         chart_controller.draw_pca(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
+        document.getElementById("container").innerHTML = "";
+        numericColumns.forEach(col => {
+            console.log(col);
+            chart_controller.draw_kde(dataset, col)
+        });
 
-        chart_controller.draw_kde(dataset, numericColumns)
     }
     if (is_classification) {
         let counts = dataset.column(target).valueCounts()
@@ -136,7 +143,7 @@ async function train(data, len) {
                 chart_controller.draw_classification_pca(x_train.loc({ columns: numericColumns }).values, y_train.values, evaluation_result.indexes)
                 plot_confusion_matrix(window.tf.tensor(encoded_yhats), window.tf.tensor(encoded_ys))
                 break;
-            case Settings.classification.logistic_regression.lable:
+            case Settings.classification.logistic_regression.lable: {
                 const unique_classes = [...new Set(dataset.column(target).values)]
                 const is_binary_classification = unique_classes.length === 2 ? 1 : 0;
                 if (is_binary_classification) {
@@ -150,38 +157,50 @@ async function train(data, len) {
                     let y_train_t = encoder.transform(y_train.values)
                     let y_train_tensor = tf.tensor(y_train_t)
                     let x_train_tensor = x_train.tensor
-                    await logistic_regression.train(x_train_tensor, y_train_tensor, selected_columns.length, unique_classes.length)
-                    let result = await logistic_regression.evaluate(x_train_tensor, y_train_tensor, encoder.$labels)
-                    let table_columns = []
-                    x_train.addColumn("y", dataset.column(target), { inplace: true })
-                    x_train.addColumn("predictions: " + encoder.$labels, result.predictions, { inplace: true })
+
+                    X = x_train.values;
+                    y = y_train_t;
+                    // let X = new Matrix(x_train.values)
+                    // let xx = Matrix.columnVector(y_train_t)
+                    // const logreg = new LogisticRegression();
+                    // logreg.train(X, xx);
+                    // We try to predict the test set.
+                    // const finalResults = logreg.predict(X);
+                    // console.log(finalResults);
+                    // await logistic_regression.train(x_train_tensor, y_train_tensor, selected_columns.length, unique_classes.length)
+                    // let result = await logistic_regression.evaluate(x_train_tensor, y_train_tensor, encoder.$labels)
+                    // let table_columns = []
+                    // x_train.addColumn("y", dataset.column(target), { inplace: true })
+                    // x_train.addColumn("predictions: " + encoder.$labels, result.predictions, { inplace: true })
 
 
-                    x_train.columns.forEach(element => {
-                        table_columns.push({ title: element })
-                    });
+                    // x_train.columns.forEach(element => {
+                    //     table_columns.push({ title: element })
+                    // });
 
-                    const lastColumnIndex = table_columns.length - 1;
+                    // const lastColumnIndex = table_columns.length - 1;
 
-                    table_columns[lastColumnIndex].render = function (data, type, row) {
-                        if (type === 'display') {
-                            const maxNumber = Math.max(...data);
-                            data = data.map(num => num === maxNumber ? `<b>${num.toFixed(2)}</b>` : num.toFixed(2));
-                            return data.join(' ')
-                        }
-                        return data;
-                    };
-                    new DataTable('#predictions_table', {
-                        responsive: true,
-                        columns: table_columns,
-                        data: x_train.values
-                    });
+                    // table_columns[lastColumnIndex].render = function (data, type, row) {
+                    //     if (type === 'display') {
+                    //         const maxNumber = Math.max(...data);
+                    //         data = data.map(num => num === maxNumber ? `<b>${num.toFixed(2)}</b>` : num.toFixed(2));
+                    //         return data.join(' ')
+                    //     }
+                    //     return data;
+                    // };
+                    // new DataTable('#predictions_table', {
+                    //     responsive: true,
+                    //     columns: table_columns,
+                    //     data: x_train.values
+                    // });
 
-                    x_train_tensor.dispose()
-                    y_train_tensor.dispose()
-                    console.log(window.tf.memory().numTensors);
+                    // x_train_tensor.dispose()
+                    // y_train_tensor.dispose()
+                    // console.log(window.tf.memory().numTensors);
                     break
                 }
+                break
+            }
             case Settings.classification.random_forest.lable: {
                 const model = model_factory.createModel(Settings.classification.random_forest, null, {
                     seed: 3,
@@ -296,11 +315,14 @@ async function plot_confusion_matrix(y, predictedLabels, lables) {
     window.tf.dispose(predictedLabels)
     window.tf.dispose(confusionMatrix)
 }
-function test() {
-    chart_controller.draw_kde(null, null)
+
+async function test() {
 }
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
-document.getElementById("test_rf").addEventListener("click", test)
+document.getElementById("test_rf").onclick = async () => {
+    await test()
+}
+
 
 
 

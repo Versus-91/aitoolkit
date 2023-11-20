@@ -159,41 +159,96 @@ export default class ChartController {
             return [area, fprs, tprs];
         });
     }
-    draw_kde(dataset, columns) {
-        document.getElementById("kde_panel").style.display = "block"
-        document.getElementById("container").innerHTML = ""
-        let traces = []
-        columns.forEach((column, i) => {
-            let items = dataset.column(column).values
-            var kde = ss.kernelDensityEstimation(items)
-            // Calculate the padding and updated data range
-            const padding = 0.5; // 5% padding
-            const minValue = Math.min(...items);
-            const maxValue = Math.max(...items);
-            const range = maxValue - minValue;
-            const minPadded = minValue - padding * range;
-            const maxPadded = maxValue + padding * range;
-            items.push(minPadded, maxPadded)
-            let ys = []
-            var breaks = ss.equalIntervalBreaks(items, 100)
-            breaks.forEach((item) => {
-                ys.push(kde(item))
-            })
+    draw_kde(dataset, column, bandwidth = 1) {
+        document.getElementById("kde_panel").style.display = "block";
+        var newColumn = document.createElement("div");
+        newColumn.className = "column is-4"; // Set the class name for the column
+        newColumn.setAttribute("id", column + '-kde-clomun');
+
+        var container = document.getElementById("container");
+
+        container.appendChild(newColumn);
+
+        let container_id = column + '-kde-clomun';
+        // Create an input element
+        var inputElement = document.createElement("input");
+        inputElement.setAttribute("class", "input");
+        inputElement.setAttribute("id", column + '-kde');
+        inputElement.setAttribute("type", "number");
+        var buttonElement = document.createElement("button");
+        buttonElement.setAttribute("class", "button is-info is-small");
+        buttonElement.textContent = "redraw";
+
+        let traces = [];
+        let items = dataset.column(column).values;
+        var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
+
+        buttonElement.addEventListener("click", function () {
+            var newBandwidth = document.getElementById(column + '-kde').value;
+            redraw_kde(dataset, column, parseFloat(newBandwidth));
+        });
+        function redraw_kde(dataset, column, bandwidth) {
+            document.getElementById(container_id).innerHTML = "";
+
+            Plotly.purge(container_id);
+
+            let traces = [];
+
+            let items = dataset.column(column).values;
+
+            var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
+
+            var breaks = ss.equalIntervalBreaks(items, 100);
+
+            let ys = breaks.map((item) => kde(item, bandwidth));
+
             traces.push({
                 x: breaks,
                 y: ys,
                 fill: 'tozeroy',
                 type: 'scatter',
-                xaxis: 'x' + (i > 0 ? i + 1 : null),
-                yaxis: 'y' + (i > 0 ? i + 1 : null),
+                xaxis: 'x',
+                yaxis: 'y',
                 name: column
             });
+            var layout = {
+                title: column,
+                showlegend: false,
+                height: 400,
+            };
+            Plotly.newPlot(container_id, traces, layout);
+
+            // Append input and button elements to the container if they exist
+            if (inputElement) {
+                document.getElementById(container_id).appendChild(inputElement);
+            }
+            if (buttonElement) {
+                document.getElementById(container_id).appendChild(buttonElement);
+            }
+        }
+        var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
+        var breaks = ss.equalIntervalBreaks(items, 100);
+        let ys = [];
+
+        breaks.forEach((item) => {
+            ys.push(kde(item, bandwidth));
+        });
+        traces.push({
+            x: breaks,
+            y: ys,
+            fill: 'tozeroy',
+            type: 'scatter',
+            xaxis: 'x',
+            yaxis: 'y',
+            name: column
         });
         var layout = {
-            grid: { rows: Math.floor(traces.length / 4) + 1, columns: 4, pattern: 'independent' },
+            title: 'Scroll and Zoom',
+            showlegend: false, height: 400,
         };
-
-        Plotly.newPlot('container', traces, layout);
+        Plotly.newPlot(container_id, traces, layout);
+        document.getElementById(container_id).appendChild(inputElement);
+        document.getElementById(container_id).appendChild(buttonElement);
     }
     draw_classification_pca(dataset, labels, missclassifications) {
         const pca = new PCA(dataset, { center: true, scale: true });
