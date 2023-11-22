@@ -117,31 +117,60 @@ async function train(data, len) {
         let model_name = document.getElementById('model_name').value
         switch (model_name) {
             case Settings.classification.k_nearest_neighbour.lable:
+
                 let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour)
-                knn_classifier.train(x_train.values, dataset.column(target).values, 5)
-                let y_preds = knn_classifier.evaluate(x_train.values)
-                let evaluation_result = evaluate_classification(y_preds, y_train.values)
+                let results = []
+
+                for (let k = 3; k < 9; k++) {
+                    knn_classifier.train(x_train.values, y_train.values, k)
+                    let y_preds = knn_classifier.evaluate(x_test.values)
+                    let evaluation_result = evaluate_classification(y_preds, y_test.values)
+                    results.push({ k: k, predictions: y_preds, evaluation: evaluation_result })
+                }
+                let best_result = results[0];
+
+                results.forEach(element => {
+                    if (element.evaluation.accuracy > best_result.accuracy) {
+                        best_result = element
+                    }
+                });
+                console.log(best_result);
                 let encoder = new LabelEncoder()
-                encoder.fit(y_train)
-                let encoded_ys = encoder.transform(y_train.values)
-                let encoded_yhats = encoder.transform(y_preds)
 
+                encoder.fit(targets)
+                let encoded_ys = encoder.transform(y_test.values)
+                let encoded_yhats = encoder.transform(best_result.predictions)
+
+                //results table
                 let table_columns = []
-                x_train.addColumn("y", dataset.column(target), { inplace: true })
-                x_train.addColumn("predictions", y_preds, { inplace: true })
+                let tbl = x_test.copy()
+                tbl.addColumn("y", y_test, { inplace: true })
+                tbl.addColumn("predictions", best_result.predictions, { inplace: true })
 
-                x_train.columns.forEach(element => {
+                tbl.columns.forEach(element => {
                     table_columns.push({ title: element })
                 });
+
 
                 new DataTable('#predictions_table', {
                     responsive: true,
                     columns: table_columns,
-                    data: x_train.values
+                    data: tbl.values
                 });
 
-                chart_controller.draw_classification_pca(x_train.loc({ columns: numericColumns }).values, y_train.values, evaluation_result.indexes)
+                let knn_table_columns = []
+                knn_table_columns.push({ title: "k" })
+                knn_table_columns.push({ title: "accuracy" })
+                let knn_accuracies = results.map(m => [m.k, m.evaluation.accuracy.toFixed(2)])
+                console.log(knn_accuracies, knn_table_columns);
+                new DataTable('#knn_table', {
+                    responsive: true,
+                    columns: knn_table_columns,
+                    data: knn_accuracies
+                });
+                chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes)
                 plot_confusion_matrix(window.tf.tensor(encoded_yhats), window.tf.tensor(encoded_ys))
+
                 break;
             case Settings.classification.logistic_regression.lable: {
                 const unique_classes = [...new Set(dataset.column(target).values)]
@@ -152,6 +181,7 @@ async function train(data, len) {
                     await binary_logistic_regression.evaluate(x_train.tensor, y_train.tensor, model, [], true)
                 } else {
                     let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller)
+                    let model = LogisticRegression()
                     let encoder = new OneHotEncoder()
                     encoder.fit(y_train.values)
                     let y_train_t = encoder.transform(y_train.values)
@@ -160,53 +190,54 @@ async function train(data, len) {
 
                     X = x_train.values;
                     y = y_train_t;
-                    // let X = new Matrix(x_train.values)
-                    // let xx = Matrix.columnVector(y_train_t)
-                    // const logreg = new LogisticRegression();
-                    // logreg.train(X, xx);
-                    // We try to predict the test set.
-                    // const finalResults = logreg.predict(X);
-                    // console.log(finalResults);
-                    // await logistic_regression.train(x_train_tensor, y_train_tensor, selected_columns.length, unique_classes.length)
-                    // let result = await logistic_regression.evaluate(x_train_tensor, y_train_tensor, encoder.$labels)
-                    // let table_columns = []
-                    // x_train.addColumn("y", dataset.column(target), { inplace: true })
-                    // x_train.addColumn("predictions: " + encoder.$labels, result.predictions, { inplace: true })
+                    let X = new Matrix(x_train.values)
+                    let xx = Matrix.columnVector(y_train_t)
+                    const logreg = new LogisticRegression();
+                    logreg.train(X, xx);
+                    const finalResults = logreg.predict(X);
+                    console.log(finalResults);
+                    await logistic_regression.train(x_train_tensor, y_train_tensor, selected_columns.length, unique_classes.length)
+                    let result = await logistic_regression.evaluate(x_train_tensor, y_train_tensor, encoder.$labels)
+                    let table_columns = []
+                    x_train.addColumn("y", dataset.column(target), { inplace: true })
+                    x_train.addColumn("predictions: " + encoder.$labels, result.predictions, { inplace: true })
+                    x_train.columns.forEach(element => {
+                        table_columns.push({ title: element })
+                    });
 
+                    const lastColumnIndex = table_columns.length - 1;
 
-                    // x_train.columns.forEach(element => {
-                    //     table_columns.push({ title: element })
-                    // });
+                    table_columns[lastColumnIndex].render = function (data, type, row) {
+                        if (type === 'display') {
+                            const maxNumber = Math.max(...data);
+                            data = data.map(num => num === maxNumber ? `<b>${num.toFixed(2)}</b>` : num.toFixed(2));
+                            return data.join(' ')
+                        }
+                        return data;
+                    };
+                    new DataTable('#predictions_table', {
+                        responsive: true,
+                        columns: table_columns,
+                        data: x_train.values
+                    });
 
-                    // const lastColumnIndex = table_columns.length - 1;
-
-                    // table_columns[lastColumnIndex].render = function (data, type, row) {
-                    //     if (type === 'display') {
-                    //         const maxNumber = Math.max(...data);
-                    //         data = data.map(num => num === maxNumber ? `<b>${num.toFixed(2)}</b>` : num.toFixed(2));
-                    //         return data.join(' ')
-                    //     }
-                    //     return data;
-                    // };
-                    // new DataTable('#predictions_table', {
-                    //     responsive: true,
-                    //     columns: table_columns,
-                    //     data: x_train.values
-                    // });
-
-                    // x_train_tensor.dispose()
-                    // y_train_tensor.dispose()
-                    // console.log(window.tf.memory().numTensors);
+                    x_train_tensor.dispose()
+                    y_train_tensor.dispose()
+                    console.log(window.tf.memory().numTensors);
                     break
                 }
                 break
             }
             case Settings.classification.random_forest.lable: {
+
                 const model = model_factory.createModel(Settings.classification.random_forest, null, {
                     seed: 3,
                     maxFeatures: 0.8,
                     replacement: true,
-                    nEstimators: 50
+                    nEstimators: 50,
+                    treeOptions: {
+                        maxDepth: 5
+                    }
                 });
                 let encoder_rf = new LabelEncoder()
                 encoder_rf.fit(y_train.values)
@@ -218,11 +249,10 @@ async function train(data, len) {
                 model.train(x_train.values, encoded_y)
                 let preds = model.predict(x_test.values)
 
-                console.log(preds);
-                console.log(encoded_y_test);
-
-
+                const evaluation_result = evaluate_classification(preds, encoded_y_test)
                 plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), encoder_rf.inverseTransform([0, 1, 2]))
+                chart_controller.draw_classification_pca(x_test.values, encoded_y_test, evaluation_result.indexes)
+
                 let table_columns = []
                 x_test.addColumn("y", y_test, { inplace: true })
                 x_test.addColumn("predictions : " + encoder_rf.inverseTransform([0, 1, 2]), preds, { inplace: true })
@@ -236,7 +266,7 @@ async function train(data, len) {
                     columns: table_columns,
                     data: x_test.values
                 });
-                console.log(preds);
+
                 break
             }
             default:
