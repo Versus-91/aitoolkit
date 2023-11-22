@@ -1,15 +1,14 @@
-const tf = require('@tensorflow/tfjs');
-
-const {
+var tf = window.tf
+import {
     getClasses,
     getClassesAsNumber,
     getCrossValidationSets,
     getDataset,
     getDistinctClasses,
     getNumbers,
-} = require('ml-dataset-iris');
+} from 'ml-dataset-iris';
 
-class LogisticRegression {
+export class LogisticRegression {
     constructor(numFeatures, numClasses, learningRate, l1Regularization = 0, l2Regularization = 0) {
         this.numFeatures = numFeatures;
         this.numClasses = numClasses;
@@ -85,18 +84,18 @@ class LogisticRegression {
     }
 }
 
-const numbers = getNumbers();
-const classes = getClassesAsNumber();
+// const numbers = getNumbers();
+// const classes = getClassesAsNumber();
 
-let preds = tf.tidy(() => {
-    const oneHotEncodedLabels = tf.oneHot(classes, 3);
-    const model = new LogisticRegression(4, 3, 0.1, 0);
-    model.fit(numbers, oneHotEncodedLabels);
-    const predictions = model.predict(numbers);
-    return predictions.arraySync()
-})
+// let preds = tf.tidy(() => {
+//     const oneHotEncodedLabels = tf.oneHot(classes, 3);
+//     const model = new LogisticRegression(4, 3, 0.1, 0);
+//     model.fit(numbers, oneHotEncodedLabels);
+//     const predictions = model.predict(numbers);
+//     return predictions.arraySync()
+// })
 
 
 
-console.log(preds);
-console.log("memory", tf.memory().numTensors);
+// console.log(preds);
+// console.log("memory", tf.memory().numTensors);
