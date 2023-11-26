@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.2",
+    "@vizuaalog/bulmajs": "^0.12.2",
     "css-loader": "^6.8.1",
     "style-loader": "^3.3.3",
     "vite": "^4.4.5"
