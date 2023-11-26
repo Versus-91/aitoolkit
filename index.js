@@ -15,6 +15,8 @@ import * as sk from 'scikitjs'
 import { LogisticRegression } from './src/LogisticRegression.js';
 import { Matrix } from 'ml-matrix';
 import Bulma from '@vizuaalog/bulmajs';
+import { calculateMetrics } from './src/utils.js';
+import SVM from "libsvm-js/asm";
 
 sk.setBackend(tensorflow)
 
@@ -125,7 +127,6 @@ async function train(data, len) {
         let model_name = document.getElementById('model_name').value
         switch (model_name) {
             case Settings.classification.k_nearest_neighbour.lable: {
-
                 let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour)
                 let results = []
                 let encoder = new LabelEncoder()
@@ -190,6 +191,51 @@ async function train(data, len) {
                 plot_confusion_matrix(window.tf.tensor(encoded_yhats), window.tf.tensor(encoded_y_test), encoder.$labels)
                 break;
             }
+            case Settings.classification.support_vectore_machine.lable: {
+                let model = model_factory.createModel(Settings.classification.support_vectore_machine, {
+                    kernel: SVM.KERNEL_TYPES.RBF,
+                    type: SVM.SVM_TYPES.C_SVC,
+                    gamma: 0.25,
+                    cost: 1,
+                    quiet: true
+                })
+                let results = []
+                let encoder = new LabelEncoder()
+                encoder.fit(targets)
+                let encoded_y_train = encoder.transform(y_train.values)
+                let encoded_y_test = encoder.transform(y_test.values)
+                model.train(x_train.values, encoded_y_train)
+                let y_preds = model.predict(x_test.values)
+                let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
+                //results table
+                let table_columns = []
+                let tbl = x_test.copy()
+
+                tbl.addColumn("y", y_test, { inplace: true })
+                tbl.addColumn("predictions", encoder.inverseTransform(y_preds), { inplace: true })
+
+                tbl.columns.forEach(element => {
+                    table_columns.push({ title: element })
+                });
+
+
+                new DataTable('#predictions_table', {
+                    responsive: true,
+                    columns: table_columns,
+                    data: tbl.values,
+                    rowCallback: function (row, data, index) {
+                        var column1Value = data[table_columns.length - 1];
+                        var column2Value = data[table_columns.length - 2];
+                        if (column1Value !== column2Value) {
+                            $(row).css('background-color', '#97233F');
+                            $(row).css('color', 'white');
+                        }
+                    }
+                });
+                chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
+                plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test))
+                break;
+            }
             case Settings.classification.logistic_regression.lable: {
                 const unique_classes = [...new Set(dataset.column(target).values)]
                 const is_binary_classification = unique_classes.length === 2 ? 1 : 0;
@@ -199,7 +245,7 @@ async function train(data, len) {
                     await binary_logistic_regression.evaluate(x_train.tensor, y_train.tensor, model, [], true)
                 } else {
                     let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller)
-                    let model = LogisticRegression()
+                    let model = new LogisticRegression()
                     let encoder = new OneHotEncoder()
                     encoder.fit(y_train.values)
                     let y_train_t = encoder.transform(y_train.values)
@@ -357,7 +403,6 @@ async function plot_confusion_matrix(y, predictedLabels, lables) {
     const container = document.getElementById("confusion-matrix");
     tfvis.render.confusionMatrix(container, {
         values: confusionMatrix,
-        tickLabels: lables ?? null
     });
     window.tf.dispose(y)
     window.tf.dispose(predictedLabels)

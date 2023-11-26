@@ -1,7 +1,9 @@
 import { Settings } from "../feature_types";
 import LogisticRegression from "./logistic_regression";
 import LinearRegression from "./linear_regression";
+import SupportVectorMachine from './svm';
 import KNNModel from './knn';
+
 import RandomForest from "./random_forest";
 export var ModelFactory = function () {
     this.createModel = function (modelName, ChartController = null, options) {
@@ -14,7 +16,7 @@ export var ModelFactory = function () {
             model = new RandomForest(options)
 
         } else if (modelName === Settings.classification.support_vectore_machine) {
-
+            model = new SupportVectorMachine(options)
         } else if (modelName === Settings.classification.boosting) {
 
         } else if (modelName === Settings.classification.discriminant_analysis) {

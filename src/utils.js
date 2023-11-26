@@ -187,3 +187,25 @@ export function encode_name(str) {
     let str_encoded = key.replace(/\s/g, '').replace(/[^\w-]/g, '_');
     return str_encoded
 }
+export function calculateMetrics(y_pred, y_test) {
+    if (y_pred.length !== y_test.length) {
+        throw new Error('Lengths of y_pred and y_test should be the same.');
+    }
+    const metrics = window.tf.tidy(() => {
+        let y_true = window.tf.oneHot(window.tf.tensor(y_test, 'int32'), 3)
+        let y_pred = window.tf.oneHot(window.tf.tensor(y_pred, 'int32'), 3)
+        y_true.print()
+        const precision = tf.metrics.precision(y_pred, y_true).dataSync();
+        const recall = tf.metrics.recall(y_pred, y_true).dataSync();
+        const f1Score = 2 * ((precision * recall) / (precision + recall));
+
+        return {
+            precision: precision,
+            recall: recall,
+            f1Score: f1Score
+        };
+    })
+    return metrics
+
+
+}
