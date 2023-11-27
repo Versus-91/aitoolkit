@@ -15,18 +15,51 @@ export const Settings = {
         },
         "k_nearest_neighbour": {
             "lable": "k nearest neighbor",
-            "value": 3
+            "value": 3,
+            "options": {
+                "K range": {
+                    type: "number",
+                    default: [3, 9]
+                },
+                "distance metric": {
+                    type: "select",
+                    default: "euclidean",
+                    values: ["euclidean", "minkowski", "manhattan"]
+                },
+            },
         },
         "support_vectore_machine": {
             "lable": "support vector machine",
-            "value": 4
+            "value": 4,
+            "options": {
+                "kernel": {
+                    type: "number",
+                    default: [3, 9]
+                },
+                "distance metric": {
+                    type: "select",
+                    default: "euclidean",
+                    values: ["euclidean", "minkowski", "manhattan"]
+                },
+            },
         },
         "random_forest": {
             "lable": "Random forest",
             "value": 5,
-            "a": "no",
-            "b": "square-p",
-            "size": 5,
+            "options": {
+                "Number of Decission trees": {
+                    type: "number",
+                    default: 10
+                },
+                "features selcetion length": {
+                    type: "number",
+                    default: "square-p"
+                },
+                "decission_tree_depth": {
+                    type: "number",
+                    default: 5
+                }
+            },
             "entropy": ["class_error", "gini", "Bernoulli"]
         },
         "boosting": {

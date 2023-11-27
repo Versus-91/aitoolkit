@@ -4,7 +4,6 @@
     <title>Machine Learning Tools</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css"
         integrity="sha512-q3eWabyZPc1XTCmF+8/LuE1ozpg5xxn7iO89yfSOd5/oKvyqLngoNGsx8jq92Y8eXJ/IRxQbEC+FGSYxtk2oiw=="
@@ -40,6 +39,8 @@
                     </label>
                 </div>
             </div>
+
+
             <div class="column is-12">
                 <div class="columns is-multiline">
                     <div class="column is-2">
@@ -150,6 +151,9 @@
                                             <div id="acc-cont"></div>
                                         </div>
                                         <div class="column is-12">
+                                            <div class="column is-6">
+                                                <div id="confusion-matrix"></div>
+                                            </div>
                                             <article class="message is-link">
                                                 <div class="message-header">
                                                     <p>Results</p>
@@ -158,10 +162,9 @@
                                                     <div class="columns is-multiline">
                                                         <div class="column is-6">
                                                             <div id="roc"></div>
+
                                                         </div>
-                                                        <div class="column is-6">
-                                                            <div id="confusion-matrix"></div>
-                                                        </div>
+
                                                         <div class="column is-6">
                                                             <div id="pca-results"></div>
                                                         </div>
@@ -182,14 +185,11 @@
                                 </ul>
                             </div>
                         </div>
-
-
                     </div>
                 </div>
-
             </div>
-
         </div>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
         <script type="text/javascript" src="./public/libs/tsne.js"></script>
         <script type="module" src="index.js"></script>
 </body>

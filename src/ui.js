@@ -79,6 +79,7 @@ export default class UI {
                 $("#algorithm").remove();
                 $("#props").append(this.createAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
             });
+
             $('#props').append(`
             <div class="column is-12">
                 <h4>Imputation</h4>
@@ -119,6 +120,22 @@ export default class UI {
             $('#target').val(default_target)
             $('#props').append(`<div class="column is-12"><button class="button is-primary mt-2" id="visualize">Visualize</button></div>`);
             $('#props').append(`<div class="column is-12"><button class="button is-primary mt-2" id="train-button">train</button></div>`);
+
+            //modle options
+            $('#algorithm').on('change', function (e) {
+                const model_type = items.column(default_target).dtype !== 'string' ? 1 : 2;
+                const lable = model_type == 1 ? "regression" : "classification"
+                for (const key in Settings[lable]) {
+                    if (Settings.hasOwnProperty.call(Settings[lable], key)) {
+                        const item = Settings[lable][key];
+                        if (item.lable === e.target.value) {
+                            console.log(item?.options);
+
+                        }
+                    }
+                }
+            });
+
         } catch (error) {
             console.log(error);
         }
@@ -136,6 +153,9 @@ export default class UI {
         }
         result += '</select></div></div>'
         return result
+    }
+    getval(sel) {
+        alert(sel.value);
     }
     find_selected_columns(columns) {
         const selected_columns = []

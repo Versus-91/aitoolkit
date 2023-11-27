@@ -187,25 +187,25 @@ export function encode_name(str) {
     let str_encoded = key.replace(/\s/g, '').replace(/[^\w-]/g, '_');
     return str_encoded
 }
-export function calculateMetrics(y_pred, y_test) {
-    if (y_pred.length !== y_test.length) {
+export async function calculateMetrics(y_preds, ys) {
+    if (y_preds.length !== ys.length) {
         throw new Error('Lengths of y_pred and y_test should be the same.');
     }
-    const metrics = window.tf.tidy(() => {
-        let y_true = window.tf.oneHot(window.tf.tensor(y_test, 'int32'), 3)
-        let y_pred = window.tf.oneHot(window.tf.tensor(y_pred, 'int32'), 3)
-        y_true.print()
-        const precision = tf.metrics.precision(y_pred, y_true).dataSync();
-        const recall = tf.metrics.recall(y_pred, y_true).dataSync();
-        const f1Score = 2 * ((precision * recall) / (precision + recall));
-
-        return {
-            precision: precision,
-            recall: recall,
-            f1Score: f1Score
-        };
-    })
-    return metrics
+    window.ys = ys
+    window.y_preds = y_preds
+    const res = await window.pyodide.runPythonAsync(`
+    import js
+    from sklearn.metrics import f1_score
+    from sklearn.metrics import recall_score,precision_score
+    y_true = js.ys.to_py()
+    y_pred = js.y_preds.to_py()
+    precision = precision_score(y_true, y_pred, average='weighted')
+    recall = recall_score(y_true, y_pred, average='weighted')
+    f1_score = f1_score(y_true, y_pred, average='macro')
+    precision,recall,f1_score
+  `);
+    const result = res.toJs()
+    return result
 
 
 }

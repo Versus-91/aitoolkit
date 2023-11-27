@@ -1,53 +1,101 @@
-// Function to calculate precision, recall, and support for all classes
-function calculateMetrics(trueLabels, predictedLabels) {
-    const uniqueClasses = [...new Set([...trueLabels, ...predictedLabels])];
-    const metrics = {};
+const tf = require('@tensorflow/tfjs');
+const {
+    getClasses,
+    getClassesAsNumber,
+    getCrossValidationSets,
+    getDataset,
+    getDistinctClasses,
+    getNumbers,
+} = require('ml-dataset-iris');
 
-    uniqueClasses.forEach((classLabel) => {
-        let truePositives = 0;
-        let falsePositives = 0;
-        let falseNegatives = 0;
+class LogisticRegression {
+    constructor(numFeatures, numClasses, learningRate, l1Regularization = 0, l2Regularization = 0) {
+        this.numFeatures = numFeatures;
+        this.numClasses = numClasses;
+        this.learningRate = learningRate;
+        this.l1Regularization = l1Regularization;
+        this.l2Regularization = l2Regularization;
 
-        for (let i = 0; i < trueLabels.length; i++) {
-            if (predictedLabels[i] === classLabel) {
-                if (trueLabels[i] === classLabel) {
-                    truePositives++;
-                } else {
-                    falsePositives++;
-                }
-            } else {
-                if (trueLabels[i] === classLabel) {
-                    falseNegatives++;
-                }
+
+        this.weights = [];
+        this.biases = [];
+
+        for (let i = 0; i < numClasses; i++) {
+            this.weights.push(tf.variable(tf.randomNormal([numFeatures, 1])));
+            this.biases.push(tf.variable(tf.zeros([1])));
+        }
+    }
+
+    _logisticRegression(inputs, classIndex) {
+        const logits = tf.add(tf.matMul(inputs, this.weights[classIndex]), this.biases[classIndex]);
+        return tf.sigmoid(logits);
+    }
+
+    _loss(predictions, targets) {
+        let loss = tf.tidy(() => {
+            const epsilon = 1e-7;
+            const clippedPredictions = tf.clipByValue(predictions, epsilon, 1 - epsilon);
+            const term1 = tf.mul(targets, tf.log(clippedPredictions));
+            const term2 = tf.mul(tf.sub(1, targets), tf.log(tf.sub(1, clippedPredictions)));
+            let loss = tf.neg(tf.mean(tf.add(term1, term2)));
+
+            // L1 regularization
+            if (this.l1Regularization !== 0) {
+                const l1Loss = this.weights.reduce((acc, weight) => tf.add(acc, tf.sum(tf.abs(weight))), tf.scalar(0));
+                loss = tf.add(loss, tf.mul(this.l1Regularization, l1Loss));
+            }
+            // L2 regularization
+            if (this.l2Regularization !== 0) {
+                const l2Loss = this.weights.reduce((acc, weight) => tf.add(acc, tf.sum(tf.square(weight))), tf.scalar(0));
+                loss = tf.add(loss, tf.mul(this.l2Regularization, l2Loss));
+            }
+            return loss;
+        })
+        return loss;
+    }
+
+    fit(features, labels, epochs = 100) {
+        const optimizer = tf.train.sgd(this.learningRate);
+
+        for (let epoch = 0; epoch < epochs; epoch++) {
+            for (let i = 0; i < this.numClasses; i++) {
+                const classLabels = labels.slice([0, i], [labels.shape[0], 1]);
+
+                optimizer.minimize(() => {
+                    const predictions = this._logisticRegression(features, i);
+                    const currentLoss = this._loss(predictions, classLabels);
+                    return currentLoss;
+                });
             }
         }
+    }
 
-        const precision = truePositives / (truePositives + falsePositives);
-        const recall = truePositives / (truePositives + falseNegatives);
-        const support = truePositives + falseNegatives;
-
-        metrics[classLabel] = {
-            precision: isNaN(precision) ? 0 : precision,
-            recall: isNaN(recall) ? 0 : recall,
-            support: support,
-        };
-    });
-
-    return metrics;
+    predict(inputs) {
+        let probs = tf.tidy(() => {
+            const scores = [];
+            for (let i = 0; i < this.numClasses; i++) {
+                const currentClassPrediction = this._logisticRegression(inputs, i);
+                scores.push(currentClassPrediction);
+            }
+            const classProbabilities = tf.stack(scores, 1);
+            classProbabilities.print()
+            return classProbabilities.argMax(1);
+        })
+        return probs;
+    }
 }
 
-// Example usage:
-const trueLabels = [0, 1, 2, 1, 2, 0]; // True labels (multi-class)
-const predictedLabels = [0, 2, 1, 1, 2, 0]; // Predicted labels
+const numbers = getNumbers();
+const classes = getClassesAsNumber();
 
-// Calculate precision, recall, and support for all classes
-const metrics = calculateMetrics(trueLabels, predictedLabels);
+let preds = tf.tidy(() => {
+    const oneHotEncodedLabels = tf.oneHot(classes, 3);
+    const model = new LogisticRegression(4, 3, 0.1, 0);
+    model.fit(numbers, oneHotEncodedLabels);
+    const predictions = model.predict(numbers);
+    return predictions.arraySync()
+})
 
-// Display metrics for each class
-Object.keys(metrics).forEach((classLabel) => {
-    console.log(`Class ${classLabel}:`);
-    console.log(`Precision: ${metrics[classLabel].precision}`);
-    console.log(`Recall: ${metrics[classLabel].recall}`);
-    console.log(`Support: ${metrics[classLabel].support}`);
-    console.log("--------------");
-});
+
+console.log(preds);
+console.log("memory", tf.memory().numTensors);

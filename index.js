@@ -233,7 +233,7 @@ async function train(data, len) {
                     }
                 });
                 chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
-                plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test))
+                plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                 break;
             }
             case Settings.classification.logistic_regression.lable: {
@@ -282,7 +282,15 @@ async function train(data, len) {
                     new DataTable('#predictions_table', {
                         responsive: true,
                         columns: table_columns,
-                        data: x_train.values
+                        data: x_train.values,
+                        rowCallback: function (row, data, index) {
+                            var column1Value = data[table_columns.length - 1];
+                            var column2Value = data[table_columns.length - 2];
+                            if (column1Value !== column2Value) {
+                                $(row).css('background-color', '#97233F');
+                                $(row).css('color', 'white');
+                            }
+                        }
                     });
 
                     x_train_tensor.dispose()
@@ -314,13 +322,14 @@ async function train(data, len) {
                 let preds = model.predict(x_test.values)
 
                 const evaluation_result = evaluate_classification(preds, encoded_y_test)
-                plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), encoder_rf.inverseTransform([0, 1, 2]))
+                plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), encoder_rf.inverseTransform(Object.values(encoder_rf.$labels)))
                 chart_controller.draw_classification_pca(x_test.values, encoded_y_test, evaluation_result.indexes)
 
                 let table_columns = []
                 x_test.addColumn("y", y_test, { inplace: true })
-                x_test.addColumn("predictions : " + encoder_rf.inverseTransform([0, 1, 2]), preds, { inplace: true })
-
+                x_test.addColumn("predictions : " + encoder_rf.inverseTransform([0, 1, 2]), encoder_rf.inverseTransform(preds), { inplace: true })
+                let metrics = await calculateMetrics(encoded_y_test, preds)
+                console.log(metrics);
                 x_test.columns.forEach(element => {
                     table_columns.push({ title: element })
                 });
@@ -398,17 +407,21 @@ function evaluate_classification(y_preds, y_test) {
         indexes: missclassification_indexes
     }
 }
+
 async function plot_confusion_matrix(y, predictedLabels, lables) {
     const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
     const container = document.getElementById("confusion-matrix");
     tfvis.render.confusionMatrix(container, {
         values: confusionMatrix,
+        tickLabels: lables ?? null
     });
     window.tf.dispose(y)
     window.tf.dispose(predictedLabels)
     window.tf.dispose(confusionMatrix)
 }
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
+window.pyodide = await loadPyodide();
+await pyodide.loadPackage("scikit-learn");
 
 
 

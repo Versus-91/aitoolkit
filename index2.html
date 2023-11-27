@@ -16,9 +16,10 @@
             price: 300,
         }];
         async function main() {
+            
             let pyodide = await loadPyodide();
-
             await pyodide.loadPackage("scikit-learn");
+
             const res = await pyodide.runPythonAsync(`
             from sklearn.datasets import load_iris
             from sklearn.model_selection import train_test_split
