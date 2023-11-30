@@ -218,6 +218,53 @@ async function train(data, len) {
                     table_columns.push({ title: element })
                 });
 
+                new DataTable('#predictions_table', {
+                    responsive: true,
+                    columns: table_columns,
+                    data: tbl.values,
+                    rowCallback: function (row, data, index) {
+                        var column1Value = data[table_columns.length - 1];
+                        var column2Value = data[table_columns.length - 2];
+                        if (column1Value !== column2Value) {
+                            $(row).css('background-color', '#97233F');
+                            $(row).css('color', 'white');
+                        }
+                    }
+                });
+                chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
+                plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
+                break;
+            }
+            case Settings.classification.boosting.lable: {
+                let model = model_factory.createModel(Settings.classification.boosting,null, {
+                    booster: 'gbtree',
+                    objective: 'multi:softmax',
+                    max_depth: 5,
+                    eta: 0.1,
+                    min_child_weight: 1,
+                    subsample: 0.5,
+                    colsample_bytree: 1,
+                    silent: 1,
+                    iterations: 200
+                })
+                let results = []
+                let encoder = new LabelEncoder()
+                encoder.fit(targets)
+                let encoded_y_train = encoder.transform(y_train.values)
+                let encoded_y_test = encoder.transform(y_test.values)
+                await model.train(x_train.values, encoded_y_train)
+                let y_preds = await model.predict(x_test.values)
+                let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
+                //results table
+                let table_columns = []
+                let tbl = x_test.copy()
+
+                tbl.addColumn("y", y_test, { inplace: true })
+                tbl.addColumn("predictions", encoder.inverseTransform(y_preds), { inplace: true })
+
+                tbl.columns.forEach(element => {
+                    table_columns.push({ title: element })
+                });
 
                 new DataTable('#predictions_table', {
                     responsive: true,

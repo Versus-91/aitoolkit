@@ -2,6 +2,8 @@ import { Settings } from "../feature_types";
 import LogisticRegression from "./logistic_regression";
 import LinearRegression from "./linear_regression";
 import SupportVectorMachine from './svm';
+import Boosting from './boosting';
+
 import KNNModel from './knn';
 
 import RandomForest from "./random_forest";
@@ -18,7 +20,7 @@ export var ModelFactory = function () {
         } else if (modelName === Settings.classification.support_vectore_machine) {
             model = new SupportVectorMachine(options)
         } else if (modelName === Settings.classification.boosting) {
-
+            model = new Boosting(options)
         } else if (modelName === Settings.classification.discriminant_analysis) {
 
         } else if (modelName === Settings.regression.linear_regression) {
