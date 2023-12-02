@@ -12,8 +12,9 @@ import * as tfvis from '@tensorflow/tfjs-vis';
 import * as d3 from "d3";
 import DataTable from 'datatables.net-dt';
 import * as sk from 'scikitjs'
-import { LogisticRegression } from './src/LogisticRegression.js';
 import { Matrix } from 'ml-matrix';
+import NaiveBayes from './src/NaiveBayes.js';
+
 import Bulma from '@vizuaalog/bulmajs';
 import { calculateMetrics } from './src/utils.js';
 import SVM from "libsvm-js/asm";
@@ -236,7 +237,7 @@ async function train(data, len) {
                 break;
             }
             case Settings.classification.boosting.lable: {
-                let model = model_factory.createModel(Settings.classification.boosting,null, {
+                let model = model_factory.createModel(Settings.classification.boosting, null, {
                     booster: 'gbtree',
                     objective: 'multi:softmax',
                     max_depth: 5,
@@ -284,67 +285,43 @@ async function train(data, len) {
                 break;
             }
             case Settings.classification.logistic_regression.lable: {
-                const unique_classes = [...new Set(dataset.column(target).values)]
-                const is_binary_classification = unique_classes.length === 2 ? 1 : 0;
-                if (is_binary_classification) {
-                    let binary_logistic_regression = model_factory.createModel(Settings.classification.logistic_regression)
-                    model = await binary_logistic_regression.train(x_train.tensor, y_train.tensor, selected_columns.length, 2)
-                    await binary_logistic_regression.evaluate(x_train.tensor, y_train.tensor, model, [], true)
-                } else {
-                    let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller)
-                    let model = new LogisticRegression()
-                    let encoder = new OneHotEncoder()
-                    encoder.fit(y_train.values)
-                    let y_train_t = encoder.transform(y_train.values)
-                    let y_train_tensor = tf.tensor(y_train_t)
-                    let x_train_tensor = x_train.tensor
 
-                    X = x_train.values;
-                    y = y_train_t;
-                    let X = new Matrix(x_train.values)
-                    let xx = Matrix.columnVector(y_train_t)
-                    const logreg = new LogisticRegression();
-                    logreg.train(X, xx);
-                    const finalResults = logreg.predict(X);
-                    console.log(finalResults);
-                    await logistic_regression.train(x_train_tensor, y_train_tensor, selected_columns.length, unique_classes.length)
-                    let result = await logistic_regression.evaluate(x_train_tensor, y_train_tensor, encoder.$labels)
-                    let table_columns = []
-                    x_train.addColumn("y", dataset.column(target), { inplace: true })
-                    x_train.addColumn("predictions: " + encoder.$labels, result.predictions, { inplace: true })
-                    x_train.columns.forEach(element => {
-                        table_columns.push({ title: element })
-                    });
+                let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller,{
+                    numFeatures : 4 , numClasses : 3 , learningRate: 0.01, l1Regularization : 0, l2Regularization : 0 
+                })
 
-                    const lastColumnIndex = table_columns.length - 1;
+                let encoder = new LabelEncoder()
+                encoder.fit(y_train.values)
 
-                    table_columns[lastColumnIndex].render = function (data, type, row) {
-                        if (type === 'display') {
-                            const maxNumber = Math.max(...data);
-                            data = data.map(num => num === maxNumber ? `<b>${num.toFixed(2)}</b>` : num.toFixed(2));
-                            return data.join(' ')
+                let y_train_t = encoder.transform(y_train.values)
+                X = x_train.values;
+                y = y_train_t;
+
+                await logistic_regression.fit(X, y_train_t)
+
+                let probs = await logistic_regression.predict(x_test.values)
+                const preds = logistic_regression.getClasses(probs)
+                console.log(preds);
+                let table_columns = []
+                x_test.addColumn("y", y_test, { inplace: true })
+                x_test.addColumn("predictions: ", preds, { inplace: true })
+                x_test.columns.forEach(element => {
+                    table_columns.push({ title: element })
+                });
+                new DataTable('#predictions_table', {
+                    responsive: true,
+                    columns: table_columns,
+                    data: x_test.values,
+                    rowCallback: function (row, data, index) {
+                        var column1Value = data[table_columns.length - 1];
+                        var column2Value = data[table_columns.length - 2];
+                        if (column1Value !== column2Value) {
+                            $(row).css('background-color', '#97233F');
+                            $(row).css('color', 'white');
                         }
-                        return data;
-                    };
-                    new DataTable('#predictions_table', {
-                        responsive: true,
-                        columns: table_columns,
-                        data: x_train.values,
-                        rowCallback: function (row, data, index) {
-                            var column1Value = data[table_columns.length - 1];
-                            var column2Value = data[table_columns.length - 2];
-                            if (column1Value !== column2Value) {
-                                $(row).css('background-color', '#97233F');
-                                $(row).css('color', 'white');
-                            }
-                        }
-                    });
+                    }
+                });
 
-                    x_train_tensor.dispose()
-                    y_train_tensor.dispose()
-                    console.log(window.tf.memory().numTensors);
-                    break
-                }
                 break
             }
             case Settings.classification.random_forest.lable: {
@@ -384,7 +361,15 @@ async function train(data, len) {
                 new DataTable('#predictions_table', {
                     responsive: true,
                     columns: table_columns,
-                    data: x_test.values
+                    data: x_test.values,
+                    rowCallback: function (row, data, index) {
+                        var column1Value = data[table_columns.length - 1];
+                        var column2Value = data[table_columns.length - 2];
+                        if (column1Value !== column2Value) {
+                            $(row).css('background-color', '#97233F');
+                            $(row).css('color', 'white');
+                        }
+                    }
                 });
 
                 break
@@ -395,48 +380,8 @@ async function train(data, len) {
     } else {
         model = await trainer.train_linear_regression(selected_columns.length, dataset.loc({ columns: selected_columns }).tensor, dataset.column(target).tensor)
     }
-    // else {
-    //     model = await trainer.train_linear_regression(selected_columns.length, dataset.loc({ columns: selected_columns }).tensor, dataset.column(target).tensor)
-    // }
-    // let y = df.loc({ columns: [target] }).tensor
-    // let preds = model.predict(y)
-    // const squaredErrors = tf.square(preds.sub(y))
-    // const mse = squaredErrors.mean().dataSync()[0]
-    // console.log("mse ", mse);
-    // const yMean = y.mean().dataSync()[0];
-    // const totalVariation = tf.sum(tf.square(y.sub(yMean)));
-    // console.log("variance", totalVariation.dataSync()[0]);
-    // const unexplainedVariation = tf.sum(squaredErrors);
-    // const r2 = 1 - unexplainedVariation.dataSync()[0] / totalVariation.dataSync()[0];
-    // console.log("r2", r2);
-    // let encoder = new LabelEncoder()
-    // encoder.fit(df['Species'])
-    // let sf_enc = encoder.transform(df['Species'].values)
-    // df.drop({ columns: ["Species"], inplace: true });
-    // df.addColumn("y", sf_enc, { inplace: true });
-    // const df_test = new DataFrame(data.test_data)
-    // encoder.fit(df_test['Species'])
-    // let sf_enc_test = encoder.transform(df_test['Species'].values)
-    // df_test.drop({ columns: ["Species"], inplace: true });
-    // df_test.addColumn("y", sf_enc_test, { inplace: true });
-    // // let encoded_lables = encoder.transform(lables.values)
-    // // console.log(encoded_lables.tensor);
-    // let X = df.loc({ columns: df.columns.slice(1, -1) }).tensor
-    // let y = df.column("y").tensor;
-    // y = tf.oneHot(tf.tensor1d(sf_enc).toInt(), 3);
-    // console.log(y);
-    // let x_test = df_test.loc({ columns: df.columns.slice(1, -1) }).tensor
-    // let y_test = df_test.column("y").tensor;
-    // y_test = y_test.toFloat()
 }
-function roundInnerArrayNumbers(arr) {
-    for (let i = 0; i < arr.length; i++) {
-        for (let j = 0; j < arr[i].length; j++) {
-            arr[i][j] = (arr[i][j]).toFixed(2); // Round each number in the inner arrays
-        }
-    }
-    return arr;
-}
+
 function evaluate_classification(y_preds, y_test) {
     console.assert(y_preds.length === y_test.length, "preds and test should have the same length.")
     let missclassification_indexes = []
@@ -467,6 +412,11 @@ async function plot_confusion_matrix(y, predictedLabels, lables) {
     window.tf.dispose(confusionMatrix)
 }
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
+document.getElementById("test").addEventListener("click", async function (params) {
+    console.log("clicked");
+    let model = new NaiveBayes()
+    await model.train()
+})
 window.pyodide = await loadPyodide();
 await pyodide.loadPackage("scikit-learn");
 

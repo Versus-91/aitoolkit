@@ -1,15 +1,5 @@
-var tf = window.tf
-import {
-    getClasses,
-    getClassesAsNumber,
-    getCrossValidationSets,
-    getDataset,
-    getDistinctClasses,
-    getNumbers,
-} from 'ml-dataset-iris';
-
 export class LogisticRegression {
-    constructor(numFeatures, numClasses, learningRate, l1Regularization = 0, l2Regularization = 0) {
+    constructor({ numFeatures, numClasses, learningRate, l1Regularization = 0, l2Regularization = 0 }) {
         this.numFeatures = numFeatures;
         this.numClasses = numClasses;
         this.learningRate = learningRate;
@@ -21,33 +11,33 @@ export class LogisticRegression {
         this.biases = [];
 
         for (let i = 0; i < numClasses; i++) {
-            this.weights.push(tf.variable(tf.randomNormal([numFeatures, 1])));
-            this.biases.push(tf.variable(tf.zeros([1])));
+            this.weights.push(window.tf.variable(window.tf.randomNormal([numFeatures, 1])));
+            this.biases.push(window.tf.variable(window.tf.zeros([1])));
         }
     }
 
     _logisticRegression(inputs, classIndex) {
-        const logits = tf.add(tf.matMul(inputs, this.weights[classIndex]), this.biases[classIndex]);
-        return tf.sigmoid(logits);
+        const logits = window.tf.add(window.tf.matMul(inputs, this.weights[classIndex]), this.biases[classIndex]);
+        return window.tf.sigmoid(logits);
     }
 
     _loss(predictions, targets) {
-        let loss = tf.tidy(() => {
+        let loss = window.tf.tidy(() => {
             const epsilon = 1e-7;
-            const clippedPredictions = tf.clipByValue(predictions, epsilon, 1 - epsilon);
-            const term1 = tf.mul(targets, tf.log(clippedPredictions));
-            const term2 = tf.mul(tf.sub(1, targets), tf.log(tf.sub(1, clippedPredictions)));
-            let loss = tf.neg(tf.mean(tf.add(term1, term2)));
+            const clippedPredictions = window.tf.clipByValue(predictions, epsilon, 1 - epsilon);
+            const term1 = window.tf.mul(targets, window.tf.log(clippedPredictions));
+            const term2 = window.tf.mul(window.tf.sub(1, targets), window.tf.log(window.tf.sub(1, clippedPredictions)));
+            let loss = window.tf.neg(window.tf.mean(window.tf.add(term1, term2)));
 
             // L1 regularization
             if (this.l1Regularization !== 0) {
-                const l1Loss = this.weights.reduce((acc, weight) => tf.add(acc, tf.sum(tf.abs(weight))), tf.scalar(0));
-                loss = tf.add(loss, tf.mul(this.l1Regularization, l1Loss));
+                const l1Loss = this.weights.reduce((acc, weight) => window.tf.add(acc, window.tf.sum(window.tf.abs(weight))), window.tf.scalar(0));
+                loss = window.tf.add(loss, window.tf.mul(this.l1Regularization, l1Loss));
             }
             // L2 regularization
             if (this.l2Regularization !== 0) {
-                const l2Loss = this.weights.reduce((acc, weight) => tf.add(acc, tf.sum(tf.square(weight))), tf.scalar(0));
-                loss = tf.add(loss, tf.mul(this.l2Regularization, l2Loss));
+                const l2Loss = this.weights.reduce((acc, weight) => window.tf.add(acc, window.tf.sum(window.tf.square(weight))), window.tf.scalar(0));
+                loss = window.tf.add(loss, window.tf.mul(this.l2Regularization, l2Loss));
             }
             return loss;
         })
@@ -55,7 +45,7 @@ export class LogisticRegression {
     }
 
     fit(features, labels, epochs = 100) {
-        const optimizer = tf.train.sgd(this.learningRate);
+        const optimizer = window.tf.train.sgd(this.learningRate);
 
         for (let epoch = 0; epoch < epochs; epoch++) {
             for (let i = 0; i < this.numClasses; i++) {
@@ -71,13 +61,13 @@ export class LogisticRegression {
     }
 
     predict(inputs) {
-        let probs = tf.tidy(() => {
+        let probs = window.tf.tidy(() => {
             const scores = [];
             for (let i = 0; i < this.numClasses; i++) {
                 const currentClassPrediction = this._logisticRegression(inputs, i);
                 scores.push(currentClassPrediction);
             }
-            const classProbabilities = tf.stack(scores, 1);
+            const classProbabilities = window.tf.stack(scores, 1);
             return classProbabilities.argMax(1);
         })
         return probs;
@@ -87,8 +77,8 @@ export class LogisticRegression {
 // const numbers = getNumbers();
 // const classes = getClassesAsNumber();
 
-// let preds = tf.tidy(() => {
-//     const oneHotEncodedLabels = tf.oneHot(classes, 3);
+// let preds = window.tf.tidy(() => {
+//     const oneHotEncodedLabels = window.tf.oneHot(classes, 3);
 //     const model = new LogisticRegression(4, 3, 0.1, 0);
 //     model.fit(numbers, oneHotEncodedLabels);
 //     const predictions = model.predict(numbers);
@@ -98,4 +88,4 @@ export class LogisticRegression {
 
 
 // console.log(preds);
-// console.log("memory", tf.memory().numTensors);
+// console.log("memory", window.tf.memory().numTensors);
