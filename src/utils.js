@@ -197,6 +197,7 @@ export async function calculateMetrics(y_preds, ys) {
     import js
     from sklearn.metrics import f1_score
     from sklearn.metrics import recall_score,precision_score
+    from sklearn.linear_model import LogisticRegression
     y_true = js.ys.to_py()
     y_pred = js.y_preds.to_py()
     precision = precision_score(y_true, y_pred, average='weighted')

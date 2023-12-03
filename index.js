@@ -286,25 +286,21 @@ async function train(data, len) {
             }
             case Settings.classification.logistic_regression.lable: {
 
-                let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller,{
-                    numFeatures : 4 , numClasses : 3 , learningRate: 0.01, l1Regularization : 0, l2Regularization : 0 
+                let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller, {
+                    numFeatures: 4, numClasses: 3, learningRate: 0.01, l1Regularization: 0, l2Regularization: 0
                 })
+
 
                 let encoder = new LabelEncoder()
                 encoder.fit(y_train.values)
+                let y = encoder.transform(y_train.values)
+                let y_t = encoder.transform(y_test.values)
 
-                let y_train_t = encoder.transform(y_train.values)
-                X = x_train.values;
-                y = y_train_t;
-
-                await logistic_regression.fit(X, y_train_t)
-
-                let probs = await logistic_regression.predict(x_test.values)
-                const preds = logistic_regression.getClasses(probs)
+                let preds = await logistic_regression.fit(x_train.values, y, x_test.values, y_t)
                 console.log(preds);
                 let table_columns = []
                 x_test.addColumn("y", y_test, { inplace: true })
-                x_test.addColumn("predictions: ", preds, { inplace: true })
+                x_test.addColumn("predictions: ", encoder.inverseTransform(Array.from(preds[0])), { inplace: true })
                 x_test.columns.forEach(element => {
                     table_columns.push({ title: element })
                 });

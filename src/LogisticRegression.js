@@ -44,7 +44,52 @@ export class LogisticRegression {
         return loss;
     }
 
-    fit(features, labels, epochs = 100) {
+    async fit(features, labels, x_test, y_test, epochs = 1000) {
+        window.x_train = features
+        window.y_train = labels
+        window.y_test = y_test
+        window.x_test = x_test
+        const res = await window.pyodide.runPythonAsync(`
+        import js
+        from sklearn.metrics import f1_score
+        from sklearn.metrics import recall_score,precision_score
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.metrics import accuracy_score
+        def logspace(start, stop, num):
+            result = []
+            for i in range(num):
+                value = start * ((stop / start) ** (i / (num - 1)))
+                result.append(value)
+            return result
+        x_train = js.x_train.to_py()
+        y_train = js.y_train.to_py()
+        x_test = js.x_test.to_py()
+        y_test = js.y_test.to_py()
+
+        model = LogisticRegression(penalty=None,max_iter= 1000)
+        model.fit(x_train,y_train)
+        preds = model.predict(x_test)
+        probs = model.predict_proba(x_test)
+
+        accuracy = accuracy_score(y_test, preds)
+        # Create different values for alpha
+        alphas = logspace(1e-4, 1e2, 100)
+
+        # Fit logistic regression models for different alpha values
+        coefs = []
+        for a in alphas:
+            clf = LogisticRegression(penalty='l1', C=1/a, solver='liblinear', random_state=42,max_iter= 1000)
+            clf.fit(x_train, y_train)
+            coefs.append(clf.coef_[0])
+        print(accuracy)
+        preds,probs,coefs,alphas
+      `);
+        const result = res.toJs()
+        return result
+
+
+
+
         const optimizer = window.tf.train.sgd(this.learningRate);
 
         for (let epoch = 0; epoch < epochs; epoch++) {
@@ -73,19 +118,3 @@ export class LogisticRegression {
         return probs;
     }
 }
-
-// const numbers = getNumbers();
-// const classes = getClassesAsNumber();
-
-// let preds = window.tf.tidy(() => {
-//     const oneHotEncodedLabels = window.tf.oneHot(classes, 3);
-//     const model = new LogisticRegression(4, 3, 0.1, 0);
-//     model.fit(numbers, oneHotEncodedLabels);
-//     const predictions = model.predict(numbers);
-//     return predictions.arraySync()
-// })
-
-
-
-// console.log(preds);
-// console.log("memory", window.tf.memory().numTensors);
