@@ -29,13 +29,14 @@ let trainer = new Trainter();
 let chart_controller = new ChartController(data_parser);
 let X
 let y
-
+const divs = ["lasso_plot", "predictions_table", "predictions_table", "results", "knn_table"]
 function handleFileSelect(evt) {
     var target = evt.target || evt.srcElement;
     if (target.value.length == 0) {
         return;
     }
     var file = evt.target.files[0];
+    ui.reset(divs)
     Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
@@ -44,6 +45,7 @@ function handleFileSelect(evt) {
             let dataset = new DataFrame(result.data)
             ui.createDatasetPropsDropdown(dataset);
             document.getElementById("train-button").onclick = async () => {
+                ui.reset(divs)
                 document.getElementById("train-button").classList.add("is-loading")
                 await train(dataset, result.data.length)
                 document.getElementById("train-button").classList.remove("is-loading")
@@ -151,32 +153,6 @@ async function train(data, len) {
                 });
 
                 let encoded_yhats = best_result.predictions
-                //results table
-                let table_columns = []
-                let tbl = x_test.copy()
-
-                tbl.addColumn("y", y_test, { inplace: true })
-                tbl.addColumn("predictions", encoder.inverseTransform(best_result.predictions), { inplace: true })
-
-                tbl.columns.forEach(element => {
-                    table_columns.push({ title: element })
-                });
-
-
-                new DataTable('#predictions_table', {
-                    responsive: true,
-                    columns: table_columns,
-                    data: tbl.values,
-                    rowCallback: function (row, data, index) {
-                        var column1Value = data[table_columns.length - 1];
-                        var column2Value = data[table_columns.length - 2];
-                        if (column1Value !== column2Value) {
-                            $(row).css('background-color', '#97233F');
-                            $(row).css('color', 'white');
-                        }
-                    }
-                });
-
                 let knn_table_column_names = []
                 knn_table_column_names.push({ title: "k" })
                 knn_table_column_names.push({ title: "accuracy" })
@@ -186,10 +162,13 @@ async function train(data, len) {
                     responsive: true,
                     columns: knn_table_column_names,
                     data: knn_accuracies,
+                    bDestroy: true,
                 });
                 chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes)
                 console.log(encoder.$labels);
                 plot_confusion_matrix(window.tf.tensor(encoded_yhats), window.tf.tensor(encoded_y_test), encoder.$labels)
+                predictions_table(x_test, y_test, encoder, best_result.predictions)
+
                 break;
             }
             case Settings.classification.support_vectore_machine.lable: {
@@ -208,30 +187,7 @@ async function train(data, len) {
                 model.train(x_train.values, encoded_y_train)
                 let y_preds = model.predict(x_test.values)
                 let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                //results table
-                let table_columns = []
-                let tbl = x_test.copy()
-
-                tbl.addColumn("y", y_test, { inplace: true })
-                tbl.addColumn("predictions", encoder.inverseTransform(y_preds), { inplace: true })
-
-                tbl.columns.forEach(element => {
-                    table_columns.push({ title: element })
-                });
-
-                new DataTable('#predictions_table', {
-                    responsive: true,
-                    columns: table_columns,
-                    data: tbl.values,
-                    rowCallback: function (row, data, index) {
-                        var column1Value = data[table_columns.length - 1];
-                        var column2Value = data[table_columns.length - 2];
-                        if (column1Value !== column2Value) {
-                            $(row).css('background-color', '#97233F');
-                            $(row).css('color', 'white');
-                        }
-                    }
-                });
+                predictions_table(x_test, y_test, encoder, y_preds)
                 chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
                 plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                 break;
@@ -256,30 +212,8 @@ async function train(data, len) {
                 await model.train(x_train.values, encoded_y_train)
                 let y_preds = await model.predict(x_test.values)
                 let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                //results table
-                let table_columns = []
-                let tbl = x_test.copy()
 
-                tbl.addColumn("y", y_test, { inplace: true })
-                tbl.addColumn("predictions", encoder.inverseTransform(y_preds), { inplace: true })
-
-                tbl.columns.forEach(element => {
-                    table_columns.push({ title: element })
-                });
-
-                new DataTable('#predictions_table', {
-                    responsive: true,
-                    columns: table_columns,
-                    data: tbl.values,
-                    rowCallback: function (row, data, index) {
-                        var column1Value = data[table_columns.length - 1];
-                        var column2Value = data[table_columns.length - 2];
-                        if (column1Value !== column2Value) {
-                            $(row).css('background-color', '#97233F');
-                            $(row).css('color', 'white');
-                        }
-                    }
-                });
+                predictions_table(x_test, y_test, encoder, y_preds)
                 chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
                 plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                 break;
@@ -299,28 +233,7 @@ async function train(data, len) {
                 let { preds, probs, coefs, alphas } = await logistic_regression.fit(x_train.values, y, x_test.values, y_t)
                 chart_controller.regularization_plot(alphas, coefs, x_test.columns)
 
-                let table_columns = []
-                x_test.addColumn("probs", probs, { inplace: true })
-                x_test.addColumn("y", y_test, { inplace: true })
-                x_test.addColumn("predictions: ", encoder.inverseTransform(preds), { inplace: true })
-                x_test.columns.forEach(element => {
-                    table_columns.push({ title: element })
-                });
-
-
-                new DataTable('#predictions_table', {
-                    responsive: true,
-                    columns: table_columns,
-                    data: x_test.values,
-                    rowCallback: function (row, data, index) {
-                        var column1Value = data[table_columns.length - 1];
-                        var column2Value = data[table_columns.length - 2];
-                        if (column1Value !== column2Value) {
-                            $(row).css('background-color', '#97233F');
-                            $(row).css('color', 'white');
-                        }
-                    }
-                });
+                predictions_table(x_test, y_test, encoder, preds, probs);
 
                 break
             }
@@ -349,28 +262,7 @@ async function train(data, len) {
                 plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), encoder_rf.inverseTransform(Object.values(encoder_rf.$labels)))
                 chart_controller.draw_classification_pca(x_test.values, encoded_y_test, evaluation_result.indexes)
 
-                let table_columns = []
-                x_test.addColumn("y", y_test, { inplace: true })
-                x_test.addColumn("predictions : " + encoder_rf.inverseTransform([0, 1, 2]), encoder_rf.inverseTransform(preds), { inplace: true })
-                let metrics = await calculateMetrics(encoded_y_test, preds)
-                console.log(metrics);
-                x_test.columns.forEach(element => {
-                    table_columns.push({ title: element })
-                });
-
-                new DataTable('#predictions_table', {
-                    responsive: true,
-                    columns: table_columns,
-                    data: x_test.values,
-                    rowCallback: function (row, data, index) {
-                        var column1Value = data[table_columns.length - 1];
-                        var column2Value = data[table_columns.length - 2];
-                        if (column1Value !== column2Value) {
-                            $(row).css('background-color', '#97233F');
-                            $(row).css('color', 'white');
-                        }
-                    }
-                });
+                predictions_table(x_test, y_test, encoder, preds);
 
                 break
             }
@@ -379,6 +271,34 @@ async function train(data, len) {
         }
     } else {
         model = await trainer.train_linear_regression(selected_columns.length, dataset.loc({ columns: selected_columns }).tensor, dataset.column(target).tensor)
+    }
+
+    function predictions_table(x, y, encoder, preds, probs = null) {
+
+        let table_columns = [];
+        if (probs !== null) {
+            x.addColumn("probs", probs, { inplace: true });
+        }
+        x.addColumn("y", y, { inplace: true });
+        x.addColumn("predictions: ", encoder.inverseTransform(preds), { inplace: true });
+        x.columns.forEach(element => {
+            table_columns.push({ title: element });
+        });
+
+        new DataTable('#predictions_table', {
+            responsive: true,
+            columns: table_columns,
+            data: x.values,
+            bDestroy: true,
+            rowCallback: function (row, data, index) {
+                var column1Value = data[table_columns.length - 1];
+                var column2Value = data[table_columns.length - 2];
+                if (column1Value !== column2Value) {
+                    $(row).css('background-color', '#97233F');
+                    $(row).css('color', 'white');
+                }
+            }
+        });
     }
 }
 

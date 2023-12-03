@@ -142,6 +142,7 @@ export default class UI {
 
         // $('#kde_select').append(this.createFeaturesDropdown(rowMetadata))
     }
+
     createAlgorithmsSelect(category) {
         let result = '<div id="algorithm" class="column is-12"><h4>Algorithm</h4><div class="select mb-1"> <select id="model_name" class="select">'
         const lable = category == 1 ? "regression" : "classification"
@@ -249,5 +250,9 @@ export default class UI {
             "</tbody></table>"
             ;
     }
-
+    reset(ids) {
+        ids.forEach(id => {
+            document.getElementById(id).innerHTML = ""
+        });
+    }
 }
