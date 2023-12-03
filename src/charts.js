@@ -434,4 +434,32 @@ export default class ChartController {
         Plotly.newPlot('myDiv', data, layout);
 
     }
+    regularization_plot(xs, ys, lables) {
+        console.log(xs);
+        console.log(ys);
+
+        console.log(lables);
+
+        const traces = []
+        lables.forEach((element, i) => {
+            traces.push({
+                x: xs,
+                y: ys.map(m => m[i]),
+                type: 'scatter',
+                name: element,
+                mode: 'line'
+            })
+        });
+        var layout = {
+            title: 'Lasso Coefficients as Alpha varies',
+            xaxis: {
+                type: 'log',
+                title: 'Alpha (Regularization Strength)'
+            },
+            yaxis: {
+                title: 'Coefficient Value'
+            }
+        };
+        Plotly.newPlot('lasso_plot', traces, layout);
+    }
 }

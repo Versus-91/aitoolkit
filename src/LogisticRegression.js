@@ -85,7 +85,13 @@ export class LogisticRegression {
         preds,probs,coefs,alphas
       `);
         const result = res.toJs()
-        return result
+        const final_result = {
+            preds: Array.from(result[0]),
+            probs: result[1].map(m => Array.from(m)),
+            coefs: result[2].map(m => Array.from(m)),
+            alphas: result[3],
+        }
+        return final_result
 
 
 

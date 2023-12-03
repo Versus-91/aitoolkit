@@ -296,14 +296,18 @@ async function train(data, len) {
                 let y = encoder.transform(y_train.values)
                 let y_t = encoder.transform(y_test.values)
 
-                let preds = await logistic_regression.fit(x_train.values, y, x_test.values, y_t)
-                console.log(preds);
+                let { preds, probs, coefs, alphas } = await logistic_regression.fit(x_train.values, y, x_test.values, y_t)
+                chart_controller.regularization_plot(alphas, coefs, x_test.columns)
+
                 let table_columns = []
+                x_test.addColumn("probs", probs, { inplace: true })
                 x_test.addColumn("y", y_test, { inplace: true })
-                x_test.addColumn("predictions: ", encoder.inverseTransform(Array.from(preds[0])), { inplace: true })
+                x_test.addColumn("predictions: ", encoder.inverseTransform(preds), { inplace: true })
                 x_test.columns.forEach(element => {
                     table_columns.push({ title: element })
                 });
+
+
                 new DataTable('#predictions_table', {
                     responsive: true,
                     columns: table_columns,
