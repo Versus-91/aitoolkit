@@ -13,7 +13,6 @@ import * as d3 from "d3";
 import DataTable from 'datatables.net-dt';
 import * as sk from 'scikitjs'
 import { Matrix } from 'ml-matrix';
-import NaiveBayes from './src/NaiveBayes.js';
 
 import Bulma from '@vizuaalog/bulmajs';
 import { calculateMetrics } from './src/utils.js';
@@ -63,17 +62,17 @@ function handleFileSelect(evt) {
 }
 async function visualize(dataset, len) {
     ui.renderDatasetStats(dataset);
-
+    let selected_columns = ui.find_selected_columns(dataset.columns)
     let numericColumns = []
     dataset.columns.forEach(column => {
-        if (dataset.column(column).dtype !== 'string' && column !== "Id") {
+        if (dataset.column(column).dtype !== 'string' && column !== "Id" && selected_columns.includes(column)) {
             numericColumns.push(column)
         }
     });
     const target = document.getElementById("target").value;
     let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
     if (numericColumns.length > 0) {
-        chart_controller.plot_tsne(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
+        chart_controller.plot_tsne(dataset.loc({ columns: numericColumns.filter(m => m) }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
         chart_controller.draw_pca(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
         document.getElementById("container").innerHTML = "";
         numericColumns.forEach(col => {
@@ -136,14 +135,12 @@ async function train(data, len) {
                 encoder.fit(targets)
                 let encoded_y_train = encoder.transform(y_train.values)
                 let encoded_y_test = encoder.transform(y_test.values)
-                console.log(window.tf.memory().numTensors);
                 for (let k = 3; k < 9; k++) {
                     await knn_classifier.train(x_train.values, encoded_y_train, k)
                     let y_preds = knn_classifier.predict(x_test.values)
                     let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
                     results.push({ k: k, predictions: y_preds, evaluation: evaluation_result })
                 }
-                console.log(window.tf.memory().numTensors);
 
                 let best_result = results[0];
                 results.forEach(element => {
@@ -187,9 +184,24 @@ async function train(data, len) {
                 model.train(x_train.values, encoded_y_train)
                 let y_preds = model.predict(x_test.values)
                 let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                predictions_table(x_test, y_test, encoder, y_preds)
                 chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
                 plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
+                predictions_table(x_test, y_test, encoder, y_preds)
+                break;
+            }
+            case Settings.classification.naive_bayes.lable: {
+                let model = model_factory.createModel(Settings.classification.naive_bayes)
+                let results = []
+                let encoder = new LabelEncoder()
+                encoder.fit(targets)
+                let encoded_y_train = encoder.transform(y_train.values)
+                let encoded_y_test = encoder.transform(y_test.values)
+                model.train(x_train.values, encoded_y_train)
+                let y_preds = model.predict(x_test.values)
+                let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
+                chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
+                plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
+                predictions_table(x_test, y_test, encoder, y_preds)
                 break;
             }
             case Settings.classification.boosting.lable: {
@@ -212,29 +224,22 @@ async function train(data, len) {
                 await model.train(x_train.values, encoded_y_train)
                 let y_preds = await model.predict(x_test.values)
                 let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-
-                predictions_table(x_test, y_test, encoder, y_preds)
                 chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
                 plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
+                predictions_table(x_test, y_test, encoder, y_preds)
                 break;
             }
             case Settings.classification.logistic_regression.lable: {
-
                 let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller, {
                     numFeatures: 4, numClasses: 3, learningRate: 0.01, l1Regularization: 0, l2Regularization: 0
                 })
-
-
                 let encoder = new LabelEncoder()
                 encoder.fit(y_train.values)
                 let y = encoder.transform(y_train.values)
                 let y_t = encoder.transform(y_test.values)
-
                 let { preds, probs, coefs, alphas } = await logistic_regression.fit(x_train.values, y, x_test.values, y_t)
                 chart_controller.regularization_plot(alphas, coefs, x_test.columns)
-
                 predictions_table(x_test, y_test, encoder, preds, probs);
-
                 break
             }
             case Settings.classification.random_forest.lable: {
@@ -262,7 +267,7 @@ async function train(data, len) {
                 plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), encoder_rf.inverseTransform(Object.values(encoder_rf.$labels)))
                 chart_controller.draw_classification_pca(x_test.values, encoded_y_test, evaluation_result.indexes)
 
-                predictions_table(x_test, y_test, encoder, preds);
+                predictions_table(x_test, y_test, encoder_rf, preds);
 
                 break
             }
@@ -332,11 +337,7 @@ async function plot_confusion_matrix(y, predictedLabels, lables) {
     window.tf.dispose(confusionMatrix)
 }
 document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
-document.getElementById("test").addEventListener("click", async function (params) {
-    console.log("clicked");
-    let model = new NaiveBayes()
-    await model.train()
-})
+
 window.pyodide = await loadPyodide();
 await pyodide.loadPackage("scikit-learn");
 

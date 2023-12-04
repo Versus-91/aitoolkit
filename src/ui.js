@@ -40,7 +40,9 @@ export default class UI {
         });
     };
     createDatasetPropsDropdown(items) {
+
         try {
+            const myClass = this
             $('#props').empty()
             const default_target = items.columns[items.columns.length - 1]
             items.columns.forEach(column => {
@@ -133,6 +135,17 @@ export default class UI {
 
                         }
                     }
+                }
+            });
+            //modle options
+            $('#target').on('change', function (e) {
+                const type = document.getElementById(e.target.value).value
+                console.log(type);
+                $('#algorithm').empty()
+                if (type === 'Numerical') {
+                    $('#algorithm').append(myClass.createAlgorithmsSelect(1));
+                } else {
+                    $('#algorithm').append(myClass.createAlgorithmsSelect(2));
                 }
             });
 

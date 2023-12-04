@@ -6,10 +6,11 @@ import { PCA } from 'ml-pca';
 import { binarize } from './utils'
 import * as tfvis from '@tensorflow/tfjs-vis';
 import * as ss from "simple-statistics"
-
+import { schemeAccent, schemeCategory10 } from 'd3-scale-chromatic';
 export default class ChartController {
     constructor(data_processor) {
         this.data_processor = data_processor
+        this.color_scheme = schemeCategory10;
     }
     roc_chart(container, true_positive_rates, false_positive_rates) {
         var trace = {
@@ -44,9 +45,13 @@ export default class ChartController {
                 .cast('float32');
         });
     }
+    indexToColor(index) {
+        return this.color_scheme[index + 1 % this.color_scheme.length];
+    }
     plot_tsne(data, labels) {
         document.getElementById("dimensionality_reduction_panel").style.display = "block"
         console.assert(Array.isArray(data));
+
         var opt = {}
         opt.epsilon = 10;
         opt.perplexity = 30;
@@ -59,27 +64,28 @@ export default class ChartController {
         var Y = tsne.getSolution();
         let traces = []
         if (labels.length > 0) {
-            var uniqueLabels = [...new Set(labels.map(m => m[0]))];
+            labels = labels.flat()
+            var uniqueLabels = [...new Set(labels)];
+            var colorIndices = labels.map(label => uniqueLabels.indexOf(label));
             let points_labled = Y.map(function (item, i) {
                 return {
-                    lable: labels[i][0],
+                    label: labels[i],
                     'x': item[0],
                     'y': item[1]
                 }
             }
             )
-            uniqueLabels.forEach((lable, i) => {
-                var items_for_lable = points_labled.filter(m => m.lable === lable)
+            uniqueLabels.forEach((label, i) => {
+                var items_for_label = points_labled.filter(m => m.label === label)
                 traces.push({
-                    x: items_for_lable.map(m => m.x),
-                    y: items_for_lable.map(m => m.y),
-                    mode: 'markers+text',
+                    x: items_for_label.map(m => m.x),
+                    y: items_for_label.map(m => m.y),
+                    mode: 'markers',
                     type: 'scatter',
-                    name: lable,
+                    name: label,
                     marker: {
-                        size: 5,
-                        colorscale: 'Portland',
-                        color: i,
+                        size: 4,
+                        color: this.indexToColor(i),
                     }
                 })
             })
@@ -95,10 +101,9 @@ export default class ChartController {
                 y: points.map(m => m.y),
                 mode: 'markers+text',
                 type: 'scatter',
-                marker: { size: 5 }
+                marker: { size: 4 }
             })
         }
-
 
         var layout = {
             legend: {
@@ -112,8 +117,8 @@ export default class ChartController {
             },
             title: 't-SNE plot'
         };
-
-        Plotly.newPlot('tsne', traces, layout);
+        console.log(traces);
+        Plotly.newPlot('tsne', traces, {});
     }
     trueNegatives(yTrue, yPred) {
         return tf.tidy(() => {
@@ -250,7 +255,7 @@ export default class ChartController {
         document.getElementById(container_id).appendChild(inputElement);
         document.getElementById(container_id).appendChild(buttonElement);
     }
-    draw_classification_pca(dataset, labels, missclassifications) {
+    draw_classification_pca(dataset, labels, missclassifications, size = 4, color_scale = "Jet") {
         const pca = new PCA(dataset, { center: true, scale: true });
         var uniqueLabels = [...new Set(labels)];
         var colorIndices = labels.map(label => uniqueLabels.indexOf(label));
@@ -277,9 +282,9 @@ export default class ChartController {
             mode: 'markers',
             type: 'scatter',
             marker: {
-                size: 10,
+                size: size,
                 color: colorIndices,
-                colorscale: 'Portland',
+                colorscale: color_scale,
                 symbol: 'circle'
             },
         };
@@ -291,9 +296,9 @@ export default class ChartController {
             mode: 'markers',
             type: 'scatter',
             marker: {
-                size: 10,
+                size: 7,
                 color: colorIndices,
-                colorscale: 'Portland',
+                colorscale: color_scale,
                 symbol: 'cross'
             },
         };
@@ -308,19 +313,15 @@ export default class ChartController {
         });
 
     }
-    draw_pca(dataset, labels) {
+    draw_pca(dataset, labels, size = 4, color_scale = "Jet") {
         document.getElementById("dimensionality_reduction_panel").style.display = "block"
         document.getElementById("pca-1").innerHTML = ""
         document.getElementById("pca-2").innerHTML = ""
         document.getElementById("pca-3").innerHTML = ""
         const pca = new PCA(dataset, { center: true, scale: true });
         labels = labels.flat()
-        var saturation = 10; // You can adjust saturation and lightness as needed
-        var lightness = 50;
-
-
         var uniqueLabels = [...new Set(labels)];
-        var colorIndices = labels.map(label => uniqueLabels.indexOf(label));
+        var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
         const pca_data = pca.predict(dataset, { nComponents: 3 })
 
         let x = []
@@ -345,9 +346,9 @@ export default class ChartController {
             mode: 'markers',
             type: 'scatter',
             marker: {
-                size: 10,
+                size: size,
                 color: colorIndices,
-                colorscale: 'Portland',
+                // colorscale: color_scale,
             },
         };
         var trace2 = {
@@ -357,9 +358,9 @@ export default class ChartController {
             mode: 'markers',
             type: 'scatter',
             marker: {
-                size: 10,
+                size: size,
                 color: colorIndices,
-                colorscale: 'Portland',
+                // colorscale: color_scale,
             },
         };
         var trace3 = {
@@ -369,11 +370,12 @@ export default class ChartController {
             mode: 'markers',
             type: 'scatter',
             marker: {
-                size: 10,
+                size: size,
                 color: colorIndices,
-                colorscale: 'Portland',
+                colorscale: color_scale,
             },
         };
+        console.log("pca", trace1);
         Plotly.newPlot('pca-1', [trace1], {
             xaxis: {
                 title: 'PCA component 1'
@@ -451,6 +453,7 @@ export default class ChartController {
             })
         });
         var layout = {
+            colorway: ['#f3cec9', '#e7a4b6', '#cd7eaf', '#a262a9', '#6f4d96', '#3d3b72', '#182844'],
             title: 'Lasso Coefficients as Alpha varies',
             xaxis: {
                 type: 'log',
