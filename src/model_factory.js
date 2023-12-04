@@ -5,6 +5,8 @@ import SupportVectorMachine from './svm';
 import Boosting from './boosting';
 import KNNModel from './knn';
 import RandomForest from "./random_forest";
+import NaiveBayes from "./NaiveBayes";
+
 
 export var ModelFactory = function () {
     this.createModel = function (modelName, ChartController = null, options) {
@@ -24,6 +26,8 @@ export var ModelFactory = function () {
 
         } else if (modelName === Settings.regression.linear_regression) {
             model = new LinearRegression()
+        } else if (modelName === Settings.classification.naive_bayes) {
+            model = new NaiveBayes()
         } else {
             throw "model not supported."
         }

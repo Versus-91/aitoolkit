@@ -1,21 +1,12 @@
 import { GaussianNB } from 'scikitjs'
-import {
-    getClasses,
-    getClassesAsNumber,
-    getCrossValidationSets,
-    getDataset,
-    getDistinctClasses,
-    getNumbers,
-} from 'ml-dataset-iris';
 export default class NaiveBayes {
     constructor(options) {
+        this.model = null
     }
     async train(x_train, y_train) {
-        const numbers = getNumbers();
-        const classes = getClassesAsNumber();
-        const clf = new GaussianNB({ priors: [0.5, 0.5, 0.5] })
-        await clf.fit(numbers, classes)
-        console.log(clf.predict(numbers).dataSync())
+        this.model = new GaussianNB()
+        await this.model.fit(x_train, y_train)
+        console.log(this.model.predict(x_train).dataSync())
 
     }
     predict(x_test) {
