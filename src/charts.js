@@ -12,6 +12,30 @@ export default class ChartController {
         this.data_processor = data_processor
         this.color_scheme = schemeCategory10;
     }
+
+    classification_target_chart(values, labels, name, container) {
+        var trace1 = {
+            values: values,
+            labels: labels,
+            name: name.split(".")[0],
+            type: 'pie'
+        };
+        var trace2 = {
+            y: values,
+            x: labels,
+            type: 'bar',
+            xaxis: 'x2',
+            yaxis: 'y2',
+        };
+
+        var data = [trace1, trace2];
+
+        var layout = {
+            grid: { rows: 1, columns: 2, pattern: 'independent' },
+        };
+
+        Plotly.newPlot(container, data, layout);
+    }
     roc_chart(container, true_positive_rates, false_positive_rates) {
         var trace = {
             x: false_positive_rates,
@@ -117,8 +141,7 @@ export default class ChartController {
             },
             title: 't-SNE plot'
         };
-        console.log(traces);
-        Plotly.newPlot('tsne', traces, {});
+        Plotly.newPlot('tsne', traces, layout);
     }
     trueNegatives(yTrue, yPred) {
         return tf.tidy(() => {
@@ -164,7 +187,7 @@ export default class ChartController {
             return [area, fprs, tprs];
         });
     }
-    draw_kde(dataset, column, bandwidth = 1) {
+    draw_kde(dataset, column, bandwidth = "nrd") {
         document.getElementById("kde_panel").style.display = "block";
         var newColumn = document.createElement("div");
         newColumn.className = "column is-4"; // Set the class name for the column
@@ -319,11 +342,11 @@ export default class ChartController {
         document.getElementById("pca-2").innerHTML = ""
         document.getElementById("pca-3").innerHTML = ""
         const pca = new PCA(dataset, { center: true, scale: true });
+
         labels = labels.flat()
         var uniqueLabels = [...new Set(labels)];
         var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
         const pca_data = pca.predict(dataset, { nComponents: 3 })
-
         let x = []
         let y = []
         let x1 = []
@@ -375,7 +398,6 @@ export default class ChartController {
                 colorscale: color_scale,
             },
         };
-        console.log("pca", trace1);
         Plotly.newPlot('pca-1', [trace1], {
             xaxis: {
                 title: 'PCA component 1'
@@ -437,11 +459,6 @@ export default class ChartController {
 
     }
     regularization_plot(xs, ys, lables) {
-        console.log(xs);
-        console.log(ys);
-
-        console.log(lables);
-
         const traces = []
         lables.forEach((element, i) => {
             traces.push({

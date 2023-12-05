@@ -79,7 +79,7 @@ export default class UI {
             }
             $(document).on('change', '#' + default_target + '-y', function (e) {
                 $("#algorithm").remove();
-                $("#props").append(this.createAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
+                $("#algorithm").append(this.updateAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
             });
 
             $('#props').append(`
@@ -140,12 +140,11 @@ export default class UI {
             //modle options
             $('#target').on('change', function (e) {
                 const type = document.getElementById(e.target.value).value
-                console.log(type);
                 $('#algorithm').empty()
                 if (type === 'Numerical') {
-                    $('#algorithm').append(myClass.createAlgorithmsSelect(1));
+                    $('#algorithm').append(myClass.updateAlgorithmsSelect(1));
                 } else {
-                    $('#algorithm').append(myClass.createAlgorithmsSelect(2));
+                    $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
                 }
             });
 
@@ -168,9 +167,19 @@ export default class UI {
         result += '</select></div></div>'
         return result
     }
-    getval(sel) {
-        alert(sel.value);
+    updateAlgorithmsSelect(category) {
+        let result = '<h4>Algorithm</h4><div class="select mb-1"> <select id="model_name" class="select">'
+        const lable = category == 1 ? "regression" : "classification"
+        for (const key in Settings[lable]) {
+            if (Settings.hasOwnProperty.call(Settings[lable], key)) {
+                const item = Settings[lable][key];
+                result += `<option value="${item.lable}">${item.lable}</option>`
+            }
+        }
+        result += '</select></div>'
+        return result
     }
+
     find_selected_columns(columns) {
         const selected_columns = []
         columns.forEach(column => {
