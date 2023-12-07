@@ -1,31 +1,44 @@
-// Require the necessary libraries
-const { LogisticRegression } = require('ml-regression');
-const { Matrix } = require('ml-matrix');
 
-// Example dataset (features and labels)
-const features = [
-  [1, 2],
-  [2, 3],
-  [3, 4],
-  // Add more feature vectors here
+function calculatePrecision(classIndex, confusionMatrix) {
+    let truePositive = confusionMatrix[classIndex][classIndex];
+    let falsePositive = 0;
+    for (let i = 0; i < confusionMatrix.length; i++) {
+        falsePositive += confusionMatrix[i][classIndex];
+    }
+    falsePositive -= truePositive;
+    if (truePositive === 0 && falsePositive === 0) {
+        return 1;
+    }
+    return truePositive / (truePositive + falsePositive);
+}
+
+function calculateRecall(classIndex, confusionMatrix) {
+    let truePositive = confusionMatrix[classIndex][classIndex];
+    let falseNegative = 0;
+    for (let i = 0; i < confusionMatrix.length; i++) {
+        falseNegative += confusionMatrix[classIndex][i];
+    }
+    falseNegative -= truePositive;
+    if (truePositive === 0 && falseNegative === 0) {
+        return 1; 
+    }
+    return truePositive / (truePositive + falseNegative);
+}
+
+
+function calculateF1Score(classIndex, confusionMatrix) {
+    const precision = calculatePrecision(classIndex, confusionMatrix);
+    const recall = calculateRecall(classIndex, confusionMatrix);
+    return (2 * precision * recall) / (precision + recall);
+}
+
+// Example confusion matrix for a 3-class scenario
+const exampleMatrix = [
+    [85, 10],  // true negatives, false positives
+    [5, 100] // Class 2
 ];
-const labels = [0, 1, 1]; // Example binary classification labels (0 or 1)
 
-// Create a matrix from the feature data
-const X = new Matrix(features);
-
-// Create a Logistic Regression model with L1 and L2 regularization
-const model = new LogisticRegression(X, labels, {
-  numSteps: 100, // Number of iterations
-  learningRate: 0.1,
-  lambda: 0.1, // Regularization parameter (adjust for L1 and L2)
-  penalty: 'l1', // Type of penalty ('l1' for L1, 'l2' for L2)
-});
-
-// Train the model
-model.train();
-
-// Predict using the trained model
-const newDataPoint = [4, 5]; // New data point for prediction
-const prediction = model.predict(new Matrix([newDataPoint]));
-console.log('Prediction:', prediction);
+// Calculate and display precision, recall, and F1-score for each class
+for (let i = 0; i < exampleMatrix.length; i++) {
+    console.log(`Class ${i} - Precision: ${calculatePrecision(i, exampleMatrix).toFixed(4)}, Recall: ${calculateRecall(i, exampleMatrix).toFixed(4)}, F1-score: ${calculateF1Score(i, exampleMatrix).toFixed(4)}`);
+}

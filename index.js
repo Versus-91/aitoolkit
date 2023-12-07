@@ -13,10 +13,12 @@ import * as d3 from "d3";
 import DataTable from 'datatables.net-dt';
 import * as sk from 'scikitjs'
 import { Matrix } from 'ml-matrix';
+import { ConfusionMatrix } from 'ml-confusion-matrix';
 
 import Bulma from '@vizuaalog/bulmajs';
-import { calculateMetrics } from './src/utils.js';
+import { calculateRecall, calculateF1Score, calculatePrecision } from './src/utils.js';
 import SVM from "libsvm-js/asm";
+import util from 'libsvm-js/src/util.js';
 document.addEventListener("DOMContentLoaded", async function (event) {
     // your code here
     sk.setBackend(tensorflow)
@@ -29,14 +31,16 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     let chart_controller = new ChartController(data_parser);
     let X
     let y
-    const divs = ["lasso_plot", "predictions_table", "predictions_table", "results", "knn_table"]
+    const divs = ["lasso_plot"]
+    const tbls = ["lasso_plot", "predictions_table", "results", "knn_table"]
+
     function handleFileSelect(evt) {
         var target = evt.target || evt.srcElement;
         if (target.value.length == 0) {
             return;
         }
         var file = evt.target.files[0];
-        ui.reset(divs)
+        ui.reset(divs, tbls)
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
@@ -45,7 +49,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 let dataset = new DataFrame(result.data)
                 ui.createDatasetPropsDropdown(dataset);
                 document.getElementById("train-button").onclick = async () => {
-                    ui.reset(divs)
+                    ui.reset(divs, tbls)
                     document.getElementById("train-button").classList.add("is-loading")
                     await train(dataset, result.data.length)
                     document.getElementById("train-button").classList.remove("is-loading")
@@ -134,7 +138,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     encoder.fit(targets)
                     let encoded_y_train = encoder.transform(y_train.values)
                     let encoded_y_test = encoder.transform(y_test.values)
-                    for (let k = 3; k < 9; k++) {
+                    for (let k = 2; k < 12; k++) {
                         await knn_classifier.train(x_train.values, encoded_y_train, k)
                         let y_preds = knn_classifier.predict(x_test.values)
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
@@ -148,7 +152,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         }
                     });
 
-                    let encoded_yhats = best_result.predictions
+                    let predictions = best_result.predictions
                     let knn_table_column_names = []
                     knn_table_column_names.push({ title: "k" })
                     knn_table_column_names.push({ title: "accuracy" })
@@ -160,9 +164,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         bDestroy: true,
                     });
                     chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes)
-                    plot_confusion_matrix(window.tf.tensor(encoded_yhats), window.tf.tensor(encoded_y_test), encoder.$labels)
+                    plot_confusion_matrix(window.tf.tensor(predictions), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                     predictions_table(x_test, y_test, encoder, best_result.predictions)
-
+                    // The order of the arguments are important !!!
+                    const CM2 = ConfusionMatrix.fromLabels(encoded_y_test, predictions);
+                    console.log(CM2.getAccuracy()); // 0.5
+                    console.log(CM2.getF1Score()); // 0.5
                     break;
                 }
                 case Settings.classification.support_vectore_machine.lable: {
@@ -182,8 +189,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     let y_preds = model.predict(x_test.values)
                     let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
                     chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
-                    plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                     predictions_table(x_test, y_test, encoder, y_preds)
+                    plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                     break;
                 }
                 case Settings.classification.naive_bayes.lable: {
@@ -237,6 +244,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     let { preds, probs, coefs, alphas } = await logistic_regression.fit(x_train.values, y, x_test.values, y_t)
                     chart_controller.regularization_plot(alphas, coefs, x_test.columns)
                     predictions_table(x_test, y_test, encoder, preds, probs);
+                    const classes = encoder.inverseTransform(Object.values(encoder.$labels))
+                    const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(y_t), classes)
+                    metrics_table(classes, matrix)
                     break
                 }
                 case Settings.classification.random_forest.lable: {
@@ -302,6 +312,26 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 }
             });
         }
+        function metrics_table(labels, matrix) {
+
+            let metrics = []
+            for (let i = 0; i < matrix.length; i++) {
+                metrics.push([
+                    labels[i],
+                    calculateRecall(i, matrix).toFixed(4),
+                    calculatePrecision(i, matrix).toFixed(4),
+                    calculateF1Score(i, matrix).toFixed(4),
+                ]
+                )
+            }
+            new DataTable('#metrics_table', {
+                responsive: true,
+                columns: [{ title: "Class" }, { title: "Recall" }, { title: "Precision" }, { title: "f1 score" }],
+                data: metrics,
+                paging: false,
+                bDestroy: true,
+            });
+        }
     }
 
     function evaluate_classification(y_preds, y_test) {
@@ -324,6 +354,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
     async function plot_confusion_matrix(y, predictedLabels, lables) {
         const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
+        console.log(confusionMatrix);
         const container = document.getElementById("confusion-matrix");
         tfvis.render.confusionMatrix(container, {
             values: confusionMatrix,
@@ -331,7 +362,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         });
         window.tf.dispose(y)
         window.tf.dispose(predictedLabels)
-        window.tf.dispose(confusionMatrix)
+        return confusionMatrix
+
     }
     document.getElementById("parseCVS").addEventListener("change", handleFileSelect)
 

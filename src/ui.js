@@ -77,9 +77,9 @@ export default class UI {
             } else {
                 $('#props').append(this.createAlgorithmsSelect(2));
             }
-            $(document).on('change', '#' + default_target + '-y', function (e) {
-                $("#algorithm").remove();
-                $("#algorithm").append(this.updateAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
+            $(document).on('change', '#' + default_target, function (e) {
+                $("#algorithm").empty();
+                $("#algorithm").append(myClass.updateAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
             });
 
             $('#props').append(`
@@ -272,7 +272,15 @@ export default class UI {
             "</tbody></table>"
             ;
     }
-    reset(ids) {
+    reset(ids, tables) {
+        tables.forEach(table => {
+            if ($.fn.DataTable.isDataTable('#' + table)) {
+                $('#' + table).DataTable().destroy();
+                document.getElementById(table).innerHTML = ""
+            }
+
+        });
+
         ids.forEach(id => {
             document.getElementById(id).innerHTML = ""
         });

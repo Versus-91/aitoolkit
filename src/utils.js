@@ -207,6 +207,38 @@ export async function calculateMetrics(y_preds, ys) {
   `);
     const result = res.toJs()
     return result
-
-
 }
+
+export function calculatePrecision(classIndex, confusionMatrix) {
+    let truePositive = confusionMatrix[classIndex][classIndex];
+    let falsePositive = 0;
+    for (let i = 0; i < confusionMatrix.length; i++) {
+        falsePositive += confusionMatrix[i][classIndex];
+    }
+    falsePositive -= truePositive;
+    if (truePositive === 0 && falsePositive === 0) {
+        return 1;
+    }
+    return truePositive / (truePositive + falsePositive);
+}
+
+export function calculateRecall(classIndex, confusionMatrix) {
+    let truePositive = confusionMatrix[classIndex][classIndex];
+    let falseNegative = 0;
+    for (let i = 0; i < confusionMatrix.length; i++) {
+        falseNegative += confusionMatrix[classIndex][i];
+    }
+    falseNegative -= truePositive;
+    if (truePositive === 0 && falseNegative === 0) {
+        return 1;
+    }
+    return truePositive / (truePositive + falseNegative);
+}
+
+
+export function calculateF1Score(classIndex, confusionMatrix) {
+    const precision = calculatePrecision(classIndex, confusionMatrix);
+    const recall = calculateRecall(classIndex, confusionMatrix);
+    return (2 * precision * recall) / (precision + recall);
+}
+

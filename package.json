@@ -29,6 +29,7 @@
     "kernel-smooth": "^0.2.3",
     "libsvm-js": "^0.2.1",
     "mathjs": "^11.11.2",
+    "ml-confusion-matrix": "^2.0.0",
     "ml-dataset-iris": "^1.2.1",
     "ml-knn": "^3.0.0",
     "ml-matrix": "^6.10.7",
