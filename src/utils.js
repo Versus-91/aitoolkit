@@ -187,28 +187,6 @@ export function encode_name(str) {
     let str_encoded = key.replace(/\s/g, '').replace(/[^\w-]/g, '_');
     return str_encoded
 }
-export async function calculateMetrics(y_preds, ys) {
-    if (y_preds.length !== ys.length) {
-        throw new Error('Lengths of y_pred and y_test should be the same.');
-    }
-    window.ys = ys
-    window.y_preds = y_preds
-    const res = await window.pyodide.runPythonAsync(`
-    import js
-    from sklearn.metrics import f1_score
-    from sklearn.metrics import recall_score,precision_score
-    from sklearn.linear_model import LogisticRegression
-    y_true = js.ys.to_py()
-    y_pred = js.y_preds.to_py()
-    precision = precision_score(y_true, y_pred, average='weighted')
-    recall = recall_score(y_true, y_pred, average='weighted')
-    f1_score = f1_score(y_true, y_pred, average='macro')
-    precision,recall,f1_score
-  `);
-    const result = res.toJs()
-    return result
-}
-
 export function calculatePrecision(classIndex, confusionMatrix) {
     let truePositive = confusionMatrix[classIndex][classIndex];
     let falsePositive = 0;
