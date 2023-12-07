@@ -328,6 +328,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 responsive: true,
                 columns: [{ title: "Class" }, { title: "Recall" }, { title: "Precision" }, { title: "f1 score" }],
                 data: metrics,
+                info: false,
+                search: false,
+                ordering: false,
+                searching: false,
                 paging: false,
                 bDestroy: true,
             });
