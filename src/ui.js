@@ -120,8 +120,8 @@ export default class UI {
             `)
             $('#props').append(this.createTargetDropdown(items))
             $('#target').val(default_target)
-            $('#props').append(`<div class="column is-12"><button class="button is-primary mt-2" id="visualize">Visualize</button></div>`);
-            $('#props').append(`<div class="column is-12"><button class="button is-primary mt-2" id="train-button">train</button></div>`);
+            $('#props').append(`<div class="column is-12"><button class="button is-primary mt-2" id="visualize">EDA</button></div>`);
+            $('#props').append(`<div class="column is-12"><button class="button is-info mt-2" id="train-button">train</button></div>`);
 
             //modle options
             $('#algorithm').on('change', function (e) {

@@ -273,7 +273,6 @@ export default class ChartController {
             showlegend: false, height: 400,
             title: column
         };
-        console.log(traces);
         Plotly.newPlot(container_id, traces, layout);
         document.getElementById(container_id).appendChild(inputElement);
         document.getElementById(container_id).appendChild(buttonElement);

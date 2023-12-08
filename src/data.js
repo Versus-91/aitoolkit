@@ -175,25 +175,26 @@ export default class DataLoader {
             data_frame = data_frame.fillNa(string_column_modes, { columns: string_columns })
             data_frame = data_frame.fillNa(numeric_column_means, { columns: numeric_columns })
 
+        } else {
+            data_frame.dropNa({ axis: 1, inplace: true })
         }
         return data_frame
     }
     encode_dataset(data_frame) {
         const encoded_data_set = data_frame.copy()
-        if (one_hot_encode) {
-            let cols = []
-            encoded_data_set.columns.forEach((item) => {
-                if (encoded_data_set.column(item).dtype === 'string') {
-                    cols.push(item)
-                }
-            })
-            let encoder = new LabelEncoder()
-            cols.forEach((column) => {
-                encoder.fit(encoded_data_set[column])
-                let encoded_column = encoder.transform(encoded_data_set[column])
-                encoded_data_set.addColumn(column, encoded_column.values, { inplace: true })
-            })
-        }
+        let cols = []
+        encoded_data_set.columns.forEach((item) => {
+            if (encoded_data_set.column(item).dtype === 'string') {
+                cols.push(item)
+            }
+        })
+        let encoder = new LabelEncoder()
+        cols.forEach((column) => {
+            encoder.fit(encoded_data_set[column])
+            let encoded_column = encoder.transform(encoded_data_set[column])
+            encoded_data_set.addColumn(column, encoded_column.values, { inplace: true })
+        })
+
         return encoded_data_set
 
     }

@@ -87,68 +87,80 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         return numericColumns
     }
     async function visualize(dataset, len, file_name) {
-        
-        ui.renderDatasetStats(dataset);
-        dataset.dropNa({ axis: 1, inplace: true })
-        let numericColumns = get_numeric_columns(dataset)
-        const target = document.getElementById("target").value;
-        numericColumns = numericColumns.filter(m => m !== target)
-        let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
-        if (numericColumns.length > 0) {
-            chart_controller.plot_tsne(dataset.loc({ columns: numericColumns.filter(m => m) }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
-            chart_controller.draw_pca(dataset.loc({ columns: numericColumns }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
-            document.getElementById("container").innerHTML = "";
-            numericColumns.forEach(col => {
-                chart_controller.draw_kde(dataset, col)
-            });
+        try {
+            ui.renderDatasetStats(dataset);
+            let numericColumns = get_numeric_columns(dataset)
+            const target = document.getElementById("target").value;
+            numericColumns.push(target)
+            const filterd_dataset = dataset.loc({ columns: numericColumns })
+            filterd_dataset.dropNa({ axis: 1, inplace: true })
+            numericColumns = numericColumns.filter(m => m !== target)
+            let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+            if (numericColumns.length > 0) {
+                document.getElementById("container").innerHTML = "";
+                numericColumns.forEach(col => {
+                    chart_controller.draw_kde(filterd_dataset, col)
+                });
+                chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
 
+            }
+            if (is_classification) {
+                let counts = filterd_dataset.column(target).valueCounts()
+                chart_controller.classification_target_chart(counts.values, counts.$index, file_name, "y_pie_chart")
+            }
+        } catch (error) {
+            document.getElementById("visualize").classList.remove("is-loading")
+            Toastify({
+                text: "Something went wrong",
+                duration: 3000,
+                style: {
+                    background: "linear-gradient(to right, #00b09b, #96c93d)",
+                },
+            }).showToast();
+            throw error
         }
-        if (is_classification) {
-            let counts = dataset.column(target).valueCounts()
-            const df = new DataFrame({
-                values: counts.values,
-                labels: counts.$index,
-            });
-
-            chart_controller.classification_target_chart(counts.values, counts.$index, file_name, "y_pie_chart")
-        }
-        let table_columns = []
-        dataset.columns.forEach(element => {
-            table_columns.push({ title: element })
-        });
-
-        // await train(dataset, len)
-
     }
 
     async function train(data, len) {
-        const limit = Math.ceil(len * 70 / 100)
         let dataset = data.copy()
         const target = document.getElementById("target").value;
+
         dataset = data_parser.handle_missing_values(dataset)
+
         let selected_columns = ui.find_selected_columns(dataset.columns)
-        let model_factory = new ModelFactory()
-        selected_columns = selected_columns.filter(m => m !== target)
+        const index = selected_columns.findIndex(m => m === target)
+        if (index === -1) {
+            selected_columns.push(target)
+        }
+        const filterd_dataset = dataset.loc({ columns: selected_columns })
+        filterd_dataset.dropNa({ axis: 1, inplace: true })
+        const targets = filterd_dataset.loc({ columns: [target] })
+        filterd_dataset.drop({ columns: target, inplace: true })
 
-        const features = dataset.loc({ columns: selected_columns })
-        const targets = dataset.column(target)
 
-        const train_bound = `0:${limit}`
-        const test_bound = `${limit}:${len}`
+        const cross_validation_setting = +document.getElementById("cross_validation").value
+        let x_train, y_train, x_test, y_test;
 
-        const x_train = features.iloc({ rows: [`0: ${limit}`] })
-        const y_train = targets.iloc([train_bound])
-        const x_test = features.iloc({ rows: [`${limit}: ${len}`] });
-        const y_test = targets.iloc([test_bound]);
+        if (cross_validation_setting === 1) {
+            const limit = Math.ceil(len * 70 / 100)
+            const train_bound = `0:${limit}`
+            const test_bound = `${limit}:${len}`
+            x_train = filterd_dataset.iloc({ rows: [`0: ${limit}`] })
+            y_train = targets.iloc([train_bound])
+            x_test = filterd_dataset.iloc({ rows: [`${limit}: ${len}`] });
+            y_test = targets.iloc([test_bound]);
+        } else if (cross_validation_setting === 2) {
+            x_train = filterd_dataset
+            y_train = targets
+            x_test = filterd_dataset
+            y_test = targets
+        }
 
-        let numericColumns = []
-        features.columns.forEach(column => {
-            if (x_train.column(column).dtype !== 'string' && column !== "Id") {
-                numericColumns.push(column)
-            }
-        });
-        let encoded_dataset = data_parser.encode_dataset(features)
+
+        let encoded_dataset = data_parser.encode_dataset(filterd_dataset)
         if (document.getElementById(target).value !== FeatureCategories.Numerical) {
+            let model_factory = new ModelFactory()
             let model_name = document.getElementById('model_name').value
             switch (model_name) {
                 case Settings.classification.k_nearest_neighbour.lable: {
