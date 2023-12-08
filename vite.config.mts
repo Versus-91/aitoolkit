@@ -5,7 +5,7 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 export default defineConfig({
     plugins: [
         nodePolyfills({
-            include: ['fs', 'crypto', 'path']
+            include: ['fs', 'crypto', 'path', 'stream']
         }),
     ],
 })

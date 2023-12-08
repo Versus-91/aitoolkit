@@ -1,5 +1,6 @@
 import Plotly from 'plotly.js-dist';
 import * as ss from 'simple-statistics';
+import Bulma from '@vizuaalog/bulmajs';
 
 import { FeatureCategories, Settings } from "../feature_types.js";
 export default class UI {
@@ -44,11 +45,17 @@ export default class UI {
         try {
             const myClass = this
             $('#props').empty()
+            $('#features').empty()
+            $('#props').append(`<div class="column is-6"><button id ="feature_selection_modal" class="button is-warning" >Select Fetures</button></div>`)
+            document.querySelector('#feature_selection_modal').addEventListener('click', function (e) {
+                var modalTwo = Bulma('#features_modal').modal();
+                modalTwo.open();
+            });
             const default_target = items.columns[items.columns.length - 1]
             items.columns.forEach(column => {
                 let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-                $('#props').append(`
-                <div class="column is-12">
+                $('#features').append(`
+                <div class="column is-6">
                     <h4>${column} - ${key === default_target ? "Output" : "Input"}</h4>
                     <div class="select mb-1">
                         <select id="${key}">
@@ -71,6 +78,7 @@ export default class UI {
                 }
             });
 
+            $('#props').append(this.createTargetDropdown(items))
 
             if (items.column(default_target).dtype !== 'string') {
                 $('#props').append(this.createAlgorithmsSelect(1));
@@ -118,10 +126,9 @@ export default class UI {
                 </div>
             </div>
             `)
-            $('#props').append(this.createTargetDropdown(items))
             $('#target').val(default_target)
-            $('#props').append(`<div class="column is-12"><button class="button is-primary mt-2" id="visualize">EDA</button></div>`);
-            $('#props').append(`<div class="column is-12"><button class="button is-info mt-2" id="train-button">train</button></div>`);
+            $('#props').append(`<div class="column is-6"><button class="button is-primary is-outlined mt-2" id="visualize">EDA</button></div>`);
+            $('#props').append(`<div class="column is-6"><button class="button is-info is-outlined mt-2" id="train-button">train</button></div>`);
 
             //modle options
             $('#algorithm').on('change', function (e) {
