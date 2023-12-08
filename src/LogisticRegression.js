@@ -87,7 +87,7 @@ export class LogisticRegression {
         const result = res.toJs()
         const final_result = {
             preds: Array.from(result[0]),
-            probs: result[1].map(m => Array.from(m)),
+            probs: result[1].map(m => Array.from(m).map(num => num.toFixed(4))),
             coefs: result[2].map(m => Array.from(m)),
             alphas: result[3],
         }

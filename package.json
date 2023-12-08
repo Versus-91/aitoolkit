@@ -22,6 +22,7 @@
     "d3-scale": "^4.0.2",
     "d3-scale-chromatic": "^3.0.0",
     "danfojs": "^1.1.2",
+    "danfojs-node": "^1.1.2",
     "datatables.net-dt": "^1.13.7",
     "express": "^4.15.2",
     "jquery": "^3.6.0",

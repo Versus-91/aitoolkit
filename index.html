@@ -23,7 +23,6 @@
 </head>
 
 <body>
-    <button class="button" id="test">Naive bayes</button>
     <div class="container mt-4 is-fluid">
         <div class="columns is-multiline">
             <div class="column is-6">
@@ -180,10 +179,12 @@
                                             <table id="metrics_table" class="table display" width="100%"></table>
                                         </div>
                                         <div class="column is-12">
-                                            <table id="knn_table" class="table is-bordered display" width="100%"></table>
+                                            <table id="knn_table" class="table is-bordered display" width="100%">
+                                            </table>
                                         </div>
                                         <div class="column is-12">
-                                            <table id="predictions_table" class="display" width="100%"></table>
+                                            <table id="predictions_table" class="table is-bordered display"
+                                                width="100%"></table>
                                         </div>
                                     </li>
                                 </ul>
@@ -193,11 +194,9 @@
                 </div>
             </div>
         </div>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
-        <script type="text/javascript" src="/tsne.js"></script>
-        <script type="module" src="index.js"></script>
-</body>
+    </div>
 
-</html>
-<!DOCTYPE html>
-<html>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <script type="text/javascript" src="/tsne.js"></script>
+    <script type="module" src="index.js"></script>
+</body>

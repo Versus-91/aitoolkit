@@ -179,22 +179,22 @@ export default class DataLoader {
         return data_frame
     }
     encode_dataset(data_frame) {
+        const encoded_data_set = data_frame.copy()
         if (one_hot_encode) {
             let cols = []
-            data_frame.columns.forEach((item) => {
-                if (data_frame.column(item).dtype === 'string') {
+            encoded_data_set.columns.forEach((item) => {
+                if (encoded_data_set.column(item).dtype === 'string') {
                     cols.push(item)
                 }
             })
             let encoder = new LabelEncoder()
             cols.forEach((column) => {
-                encoder.fit(data_frame[column])
-                let encoded_column = encoder.transform(data_frame[column])
-
-                data_frame.addColumn(column, encoded_column.values, { inplace: true })
+                encoder.fit(encoded_data_set[column])
+                let encoded_column = encoder.transform(encoded_data_set[column])
+                encoded_data_set.addColumn(column, encoded_column.values, { inplace: true })
             })
         }
-        return data_frame
+        return encoded_data_set
 
     }
     getCategoricalMode(arr) {

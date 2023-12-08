@@ -1,4 +1,4 @@
-import xgboostWASM from 'ml-xgboost';
+import * as xgboostWASM from 'ml-xgboost/src/index';
 export default class Boosting {
     constructor(options) {
         this.options = options
