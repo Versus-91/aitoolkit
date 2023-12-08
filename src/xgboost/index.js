@@ -2,8 +2,11 @@
 
 function _interopDefault(ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-import fs from 'fs';
-import Matrix from 'ml-matrix';
+// var fs = _interopDefault(require('fs'));
+// var Matrix = _interopDefault(require('ml-matrix'));
+
+import fs from 'fs'
+import Matrix from 'ml-matrix'
 
 function loadXGBoost(xgboost) {
     /* eslint-disable camelcase */
@@ -222,6 +225,5 @@ function loadXGBoost(xgboost) {
     return XGBoost;
 }
 
-import * as xgboostWASM from './wasm/xgboost'
-module.exports = xgboostWASM.isReady.then((l) => loadXGBoost(l));
-console.log(module.exports);
+import Module from './wasm/xgboost'
+export default Module.isReady.then((l) => loadXGBoost(l));

@@ -56,7 +56,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             skipEmptyLines: true,
             dynamicTyping: true,
             complete: function (result) {
-                console.log(result);
                 let dataset = new DataFrame(result.data)
                 ui.createDatasetPropsDropdown(dataset);
                 document.getElementById("train-button").onclick = async () => {
@@ -101,7 +100,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 numericColumns.forEach(col => {
                     chart_controller.draw_kde(filterd_dataset, col)
                 });
-                chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                // chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
                 chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
 
             }
@@ -135,7 +134,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
         const filterd_dataset = dataset.loc({ columns: selected_columns })
         filterd_dataset.dropNa({ axis: 1, inplace: true })
-        const targets = filterd_dataset.loc({ columns: [target] })
+        const targets = filterd_dataset.column(target)
         filterd_dataset.drop({ columns: target, inplace: true })
 
 
@@ -219,7 +218,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
                     chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
                     predictions_table(x_test, y_test, encoder, y_preds)
-                    const matrix = plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
+                    const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                     metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                     break;
                 }
@@ -394,13 +393,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
     }
 
-    async function plot_confusion_matrix(y, predictedLabels, lables) {
+    async function plot_confusion_matrix(y, predictedLabels, lables = null) {
+        let tabs = Bulma('.tabs-wrapper').data('tabs');
+        tabs.setActive(2)
         const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
-        console.log(confusionMatrix);
         const container = document.getElementById("confusion-matrix");
-        tfvis.render.confusionMatrix(container, {
+        await tfvis.render.confusionMatrix(container, {
             values: confusionMatrix,
-            tickLabels: lables ?? null
+            tickLabels: lables
         });
         window.tf.dispose(y)
         window.tf.dispose(predictedLabels)

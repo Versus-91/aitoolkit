@@ -1,10 +1,10 @@
-import * as xgboostWASM from 'ml-xgboost/src/index';
+import xgb from './xgboost/index';
 export default class Boosting {
     constructor(options) {
         this.options = options
     }
     async init(options) {
-        const XGBoost = await xgboostWASM;
+        const XGBoost = await xgb;
         this.model = new XGBoost(options);
     }
     async train(x_train, y_train) {

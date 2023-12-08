@@ -50,9 +50,12 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.2",
+    "@originjs/vite-plugin-commonjs": "^1.0.3",
+    "@vitejs/plugin-legacy": "^5.2.0",
     "@vizuaalog/bulmajs": "^0.12.2",
     "css-loader": "^6.8.1",
     "style-loader": "^3.3.3",
-    "vite": "^4.4.5"
+    "vite": "^5.0.0",
+    "vite-plugin-node-polyfills": "^0.17.0"
   }
 }
