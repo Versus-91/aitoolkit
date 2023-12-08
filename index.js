@@ -75,8 +75,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             }
         });
     }
-    async function visualize(dataset, len, file_name) {
-        ui.renderDatasetStats(dataset);
+
+    function get_numeric_columns(dataset) {
         let selected_columns = ui.find_selected_columns(dataset.columns)
         let numericColumns = []
         dataset.columns.forEach(column => {
@@ -84,7 +84,15 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 numericColumns.push(column)
             }
         });
+        return numericColumns
+    }
+    async function visualize(dataset, len, file_name) {
+        
+        ui.renderDatasetStats(dataset);
+        dataset.dropNa({ axis: 1, inplace: true })
+        let numericColumns = get_numeric_columns(dataset)
         const target = document.getElementById("target").value;
+        numericColumns = numericColumns.filter(m => m !== target)
         let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
         if (numericColumns.length > 0) {
             chart_controller.plot_tsne(dataset.loc({ columns: numericColumns.filter(m => m) }).values, is_classification ? dataset.loc({ columns: [target] }).values : []);
@@ -139,6 +147,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 numericColumns.push(column)
             }
         });
+        let encoded_dataset = data_parser.encode_dataset(features)
         if (document.getElementById(target).value !== FeatureCategories.Numerical) {
             let model_name = document.getElementById('model_name').value
             switch (model_name) {

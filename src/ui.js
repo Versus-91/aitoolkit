@@ -49,25 +49,25 @@ export default class UI {
                 let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
                 $('#props').append(`
                 <div class="column is-12">
-                    <h4>${this.insertSpaces(key)} - ${key === default_target ? "Output" : "Input"}</h4>
+                    <h4>${column} - ${key === default_target ? "Output" : "Input"}</h4>
                     <div class="select mb-1">
-                        <select id="${column}">
+                        <select id="${key}">
                             <option value="${FeatureCategories.Numerical}">Numerical</option>
                             <option value="${FeatureCategories.Nominal}">Nominal</option>
                             <option value="${FeatureCategories.Ordinal}">Ordinal</option>
                         </select>
                     </div>
                     <label class="checkbox my-2">
-                        <input id="${column + "-checkbox"}" type="checkbox" checked>
+                        <input id="${key + "-checkbox"}" type="checkbox" checked>
                         Ignore
                     </label>
                 </div>
                 `);
                 const id = column
                 if (items.column(column).dtype !== 'string') {
-                    $('#' + id).val(FeatureCategories.Numerical)
+                    $('#' + key).val(FeatureCategories.Numerical)
                 } else {
-                    $('#' + id).val(FeatureCategories.Nominal)
+                    $('#' + key).val(FeatureCategories.Nominal)
                 }
             });
 
@@ -183,7 +183,8 @@ export default class UI {
     find_selected_columns(columns) {
         const selected_columns = []
         columns.forEach(column => {
-            if (!document.getElementById(column + '-checkbox').checked)
+            let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            if (!document.getElementById(key + '-checkbox').checked)
                 selected_columns.push(column)
         });
         return selected_columns

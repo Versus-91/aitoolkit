@@ -268,12 +268,12 @@ export default class ChartController {
             type: 'scatter',
             xaxis: 'x',
             yaxis: 'y',
-            name: column
         });
         var layout = {
-            title: 'Scroll and Zoom',
             showlegend: false, height: 400,
+            title: column
         };
+        console.log(traces);
         Plotly.newPlot(container_id, traces, layout);
         document.getElementById(container_id).appendChild(inputElement);
         document.getElementById(container_id).appendChild(buttonElement);
@@ -346,7 +346,9 @@ export default class ChartController {
         labels = labels.flat()
         var uniqueLabels = [...new Set(labels)];
         var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
+
         const pca_data = pca.predict(dataset, { nComponents: 3 })
+
         let x = []
         let y = []
         let x1 = []
