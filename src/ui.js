@@ -41,22 +41,25 @@ export default class UI {
         });
     };
     createDatasetPropsDropdown(items) {
-
         try {
             const myClass = this
             $('#props').empty()
             $('#features').empty()
-            $('#props').append(`<div class="column is-6"><button id ="feature_selection_modal" class="button is-warning" >Select Fetures</button></div>`)
+            $('#props').append(`<div class="column is-6"><button id ="feature_selection_modal" class="button is-warning" >Select Features</button></div>`)
             document.querySelector('#feature_selection_modal').addEventListener('click', function (e) {
                 var modalTwo = Bulma('#features_modal').modal();
                 modalTwo.open();
+            });
+            document.querySelector('#close_modal').addEventListener('click', function (e) {
+                var modalTwo = Bulma('#features_modal').modal();
+                modalTwo.close();
             });
             const default_target = items.columns[items.columns.length - 1]
             items.columns.forEach(column => {
                 let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
                 $('#features').append(`
                 <div class="column is-6">
-                    <h4>${column} - ${key === default_target ? "Output" : "Input"}</h4>
+                    <h4>${column}  ${key === default_target ? "(default target)" : ""}</h4>
                     <div class="select mb-1">
                         <select id="${key}">
                             <option value="${FeatureCategories.Numerical}">Numerical</option>
@@ -163,7 +166,7 @@ export default class UI {
     }
 
     createAlgorithmsSelect(category) {
-        let result = '<div id="algorithm" class="column is-12"><h4>Algorithm</h4><div class="select mb-1"> <select id="model_name" class="select">'
+        let result = '<div id="algorithm" class="column is-12"><h4>Model</h4><div class="select mb-1"> <select id="model_name" class="select">'
         const lable = category == 1 ? "regression" : "classification"
         for (const key in Settings[lable]) {
             if (Settings.hasOwnProperty.call(Settings[lable], key)) {
@@ -292,5 +295,39 @@ export default class UI {
         ids.forEach(id => {
             document.getElementById(id).innerHTML = ""
         });
+    }
+    init_upload_button(upoad_handler) {
+        $('#props').append(`<div class="column is-12">
+        <div class="file mb-2 is-info">
+            <label class="file-label">
+                <input class="file-input is-info" id="parseCVS" type="file" name="resume">
+                <span class="file-cta">
+                    <span class="file-icon">
+                        <i class="fas fa-upload"></i>
+                    </span>
+                    <span class="file-label">
+                        file select
+                    </span>
+                </span>
+            </label>
+        </div>
+    </div>`)
+        document.getElementById("parseCVS").addEventListener("change", upoad_handler)
+    }
+    start_loading() {
+        document.getElementById("train-button").classList.add("is-loading")
+    }
+    stop_loading() {
+        document.getElementById("train-button").classList.remove("is-loading")
+    }
+    show_error_message(message = "Something went wrong", background = "#7E191B", duration = 3000) {
+        Toastify({
+            text: message,
+            duration: duration,
+            close: true,
+            style: {
+                background: background,
+            },
+        }).showToast();
     }
 }

@@ -9,7 +9,7 @@ import NaiveBayes from "./NaiveBayes";
 
 
 export var ModelFactory = function () {
-    this.createModel = function (modelName, ChartController = null, options) {
+    this.createModel = function (modelName, options) {
         var model;
         if (modelName === Settings.classification.logistic_regression) {
             model = new LogisticRegression(options)

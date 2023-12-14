@@ -46,7 +46,8 @@
     "science": "^1.9.3",
     "scikitjs": "^1.24.0",
     "simple-statistics": "^7.8.3",
-    "tfjs": "^0.6.0"
+    "tfjs": "^0.6.0",
+    "tsne-js": "^1.0.3"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.2",

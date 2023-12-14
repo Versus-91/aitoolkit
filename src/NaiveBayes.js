@@ -6,11 +6,11 @@ export default class NaiveBayes {
     async train(x_train, y_train) {
         this.model = new GaussianNB()
         await this.model.fit(x_train, y_train)
-        console.log(this.model.predict(x_train).dataSync())
+        console.log(this.model.predict(x_train))
 
     }
     predict(x_test) {
         const result = this.model.predict(x_test);
-        return result
+        return result.dataSync()
     }
 }

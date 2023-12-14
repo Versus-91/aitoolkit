@@ -190,13 +190,17 @@ export function encode_name(str) {
 export function calculatePrecision(classIndex, confusionMatrix) {
     let truePositive = confusionMatrix[classIndex][classIndex];
     let falsePositive = 0;
+
     for (let i = 0; i < confusionMatrix.length; i++) {
-        falsePositive += confusionMatrix[i][classIndex];
+        if (i !== classIndex) {
+            falsePositive += confusionMatrix[i][classIndex];
+        }
     }
-    falsePositive -= truePositive;
+
     if (truePositive === 0 && falsePositive === 0) {
         return 1;
     }
+
     return truePositive / (truePositive + falsePositive);
 }
 
