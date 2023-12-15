@@ -1,4 +1,4 @@
-import { FeatureCategories } from "../feature_types.js";
+import { FeatureCategories, Settings } from "../feature_types.js";
 
 import { DataFrame, LabelEncoder, Series, tensorflow, concat, OneHotEncoder, getDummies } from 'danfojs/dist/danfojs-base';
 export default class DataLoader {
@@ -180,23 +180,23 @@ export default class DataLoader {
         }
         return data_frame
     }
-    encode_dataset(data_frame) {
-        const encoded_data_set = data_frame.copy()
-        let cols = []
-        encoded_data_set.columns.forEach((item) => {
-            if (encoded_data_set.column(item).dtype === 'string') {
-                cols.push(item)
+    encode_dataset(data_frame, columns_types) {
+        let df = data_frame.copy()
+
+        columns_types = columns_types.filter(column => column.type === FeatureCategories.Nominal || column.type === FeatureCategories.Ordinal)
+        columns_types.forEach((column) => {
+            if (column.type === FeatureCategories.Ordinal) {
+                let encoder = new LabelEncoder()
+                encoder.fit(df[column.name])
+                let encoded_column = encoder.transform(df[column.name])
+                df.addColumn(column.name, encoded_column.values, { inplace: true })
+            } else {
+                df = getDummies(df, { columns: [column.name] })
             }
-        })
-        let encoder = new LabelEncoder()
-        cols.forEach((column) => {
-            encoder.fit(encoded_data_set[column])
-            let encoded_column = encoder.transform(encoded_data_set[column])
-            encoded_data_set.addColumn(column, encoded_column.values, { inplace: true })
+
         })
 
-        return encoded_data_set
-
+        return df
     }
     getCategoricalMode(arr) {
         if (arr.length === 0) {

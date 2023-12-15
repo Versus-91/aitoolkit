@@ -199,6 +199,19 @@ export default class UI {
         });
         return selected_columns
     }
+    find_selected_columns_types(columns) {
+        const target = document.getElementById("target").value;
+        columns = columns.filter(column => column !== target)
+        const column_types = []
+        columns.forEach(column => {
+            let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            column_types.push({
+                name: column,
+                type: document.getElementById(key).value
+            })
+        });
+        return column_types
+    }
     createTargetDropdown(items) {
         let result = '<div  class="column is-12"><h4>Target</h4><div class="select mb-1"> <select class="select" id="target">'
         items.columns.forEach(column => {

@@ -7,8 +7,6 @@ import { binarize } from './utils'
 import * as tfvis from '@tensorflow/tfjs-vis';
 import * as ss from "simple-statistics"
 import { schemeAccent, schemeCategory10 } from 'd3-scale-chromatic';
-import TSNE from 'tsne-js';
-
 export default class ChartController {
     constructor(data_processor) {
         this.data_processor = data_processor
@@ -78,20 +76,16 @@ export default class ChartController {
         document.getElementById("dimensionality_reduction_panel").style.display = "block"
         console.assert(Array.isArray(data));
 
-        var tsne = new TSNE({
-            dim: 2,
-            perplexity: 30.0,
-            earlyExaggeration: 4.0,
-            learningRate: 100.0,
-            nIter: 1000,
-            metric: 'euclidean'
-        });
-        tsne.init({
-            data: data,
-            type: 'dense'
-        });
-        let [error, iter] = tsne.run();
-        var Y = tsne.getOutput();
+        var opt = {}
+        opt.epsilon = 10;
+        opt.perplexity = 30;
+        opt.dim = 2;
+        var tsne = new window.tsnejs.tSNE(opt);
+        tsne.initDataRaw(data);
+        for (var k = 0; k < 500; k++) {
+            tsne.step(); // 
+        }
+        var Y = tsne.getSolution();
         let traces = []
         if (labels.length > 0) {
             labels = labels.flat()

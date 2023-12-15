@@ -87,10 +87,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     }
     async function visualize(dataset, len, file_name) {
         try {
+
             ui.renderDatasetStats(dataset);
             let numericColumns = get_numeric_columns(dataset)
             const target = document.getElementById("target").value;
-            numericColumns.push(target)
+            const index = numericColumns.findIndex(m => m === target)
+            if (index === -1) {
+                numericColumns.push(target)
+            }
             const filterd_dataset = dataset.loc({ columns: numericColumns })
             filterd_dataset.dropNa({ axis: 1, inplace: true })
             numericColumns = numericColumns.filter(m => m !== target)
@@ -128,15 +132,16 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             if (selected_columns.length < 2) {
                 throw new Error("most select at least 2 features")
             }
-            const filterd_dataset = dataset.loc({ columns: selected_columns })
+            let filterd_dataset = dataset.loc({ columns: selected_columns })
             filterd_dataset.dropNa({ axis: 1, inplace: true })
+
             const targets = filterd_dataset.column(target)
             filterd_dataset.drop({ columns: target, inplace: true })
 
 
             const cross_validation_setting = +document.getElementById("cross_validation").value
+            filterd_dataset = data_parser.encode_dataset(filterd_dataset, ui.find_selected_columns_types(filterd_dataset.columns))
             let x_train, y_train, x_test, y_test;
-
             if (cross_validation_setting === 1) {
                 const limit = Math.ceil(len * 70 / 100)
                 const train_bound = `0:${limit}`
@@ -153,7 +158,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             }
 
 
-            let encoded_dataset = data_parser.encode_dataset(filterd_dataset)
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
                 let model_factory = new ModelFactory()
                 let model_name = document.getElementById('model_name').value
