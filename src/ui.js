@@ -92,7 +92,42 @@ export default class UI {
                 $("#algorithm").empty();
                 $("#algorithm").append(myClass.updateAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
             });
-
+            $("#model_options").empty();
+            $('#algorithm').on('change', function () {
+                $("#model_options").empty();
+            });
+            $('#props').append(`
+            <div class="column is-12">
+            <button class="button is-danger" id="config_modal_button">config</button>
+            </div>
+            `)
+            document.querySelector('#config_modal_button').addEventListener('click', function (e) {
+                let model_name = document.getElementById('model_name').value;
+                model_name = model_name.replace(/\s+/g, '_').toLowerCase();
+                var model = Settings.classification[model_name];
+                var options_modal_content = document.getElementById("model_options");
+                options_modal_content.innerHTML = ""
+                for (const key in model.options) {
+                    if (Object.hasOwnProperty.call(model.options, key)) {
+                        const element = model.options[key]["type"]
+                        if (element === "number") {
+                            $('#model_options').append(`
+                            <div class="column is-12">
+                                <div class="field">
+                                    <label class="label">${key}</label>
+                                    <div class="control">
+                                        <input id="${key + "-" + model_name}" class="input" type="number">
+                                    </div>
+                                </div>
+                            </div>
+                            `)
+                            document.getElementById(key + "-" + model_name).value = model.options[key]["default"]
+                        }
+                    }
+                }
+                var modal = Bulma('#config_modal').modal();
+                modal.open();
+            });
             $('#props').append(`
             <div class="column is-12">
                 <h4>Imputation</h4>

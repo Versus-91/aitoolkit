@@ -14,14 +14,18 @@ export const Settings = {
             "value": 2
         },
         "k_nearest_neighbour": {
-            "lable": "k nearest neighbor",
+            "lable": "k nearest neighbour",
             "value": 3,
             "options": {
-                "K range": {
+                "min": {
                     type: "number",
-                    default: [3, 9]
+                    default: 3
                 },
-                "distance metric": {
+                "max": {
+                    type: "number",
+                    default: 9
+                },
+                "metric": {
                     type: "select",
                     default: "euclidean",
                     values: ["euclidean", "minkowski", "manhattan"]
@@ -36,7 +40,7 @@ export const Settings = {
                     type: "number",
                     default: [3, 9]
                 },
-                "distance metric": {
+                "metric": {
                     type: "select",
                     default: "euclidean",
                     values: ["euclidean", "minkowski", "manhattan"]
@@ -47,15 +51,15 @@ export const Settings = {
             "lable": "Random forest",
             "value": 5,
             "options": {
-                "Number of Decission trees": {
+                "estimators": {
                     type: "number",
                     default: 10
                 },
-                "features selcetion length": {
+                "features": {
                     type: "number",
                     default: "square-p"
                 },
-                "decission_tree_depth": {
+                "depth": {
                     type: "number",
                     default: 5
                 }
