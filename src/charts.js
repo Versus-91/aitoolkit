@@ -483,4 +483,54 @@ export default class ChartController {
         };
         Plotly.newPlot('lasso_plot', traces, layout);
     }
+
+    probablities_boxplot(probs, classes) {
+        const num_columns = probs[0].length
+        let traces = []
+        for (let i = 0; i < num_columns; i++) {
+            traces.push({
+                type: 'box',
+                name: classes[i],
+                y: probs.map((item, i) => item[i])
+            })
+        }
+        Plotly.newPlot("probs_box_plot", traces)
+    }
+    probablities_violin_plot(probs, classes) {
+        const arrayColumn = (arr, n) => arr.map(x => x[n]);
+        const num_columns = probs[0].length
+        let cols = []
+        for (let i = 0; i < num_columns; i++) {
+            cols.push(arrayColumn(probs, i))
+        }
+        console.log(cols);
+        var data = [{
+
+            type: 'violin',
+            y: cols[2],
+            points: 'none',
+            box: {
+                visible: true
+            },
+            boxpoints: false,
+            line: {
+                color: 'black'
+            },
+            fillcolor: '#8dd3c7',
+            opacity: 0.6,
+            meanline: {
+                visible: true
+            },
+            x0: "Total Bill"
+        }]
+
+        var layout = {
+            title: "",
+            yaxis: {
+                zeroline: false
+            }
+        }
+
+        Plotly.newPlot('probs_violin_plot', data, layout);
+    }
 }

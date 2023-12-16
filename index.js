@@ -268,6 +268,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller, {
                             numFeatures: 4, numClasses: 3, learningRate: 0.01, l1Regularization: 0, l2Regularization: 0
                         })
+
                         let encoder = new LabelEncoder()
                         encoder.fit(y_train.values)
                         let y = encoder.transform(y_train.values)
@@ -282,6 +283,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
                         chart_controller.regularization_plot(alphas, coefs, x_test.columns)
                         predictions_table(x_test, y_test, encoder, preds, probs);
+                        chart_controller.probablities_boxplot(probs, classes)
+                        chart_controller.probablities_violin_plot(probs, classes)
+
                         break
                     }
                     case Settings.classification.random_forest.lable: {

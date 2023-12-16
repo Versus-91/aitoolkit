@@ -106,6 +106,11 @@ export default class UI {
                 model_name = model_name.replace(/\s+/g, '_').toLowerCase();
                 var model = Settings.classification[model_name];
                 var options_modal_content = document.getElementById("model_options");
+                var modal = Bulma('#config_modal').modal();
+                if (options_modal_content.innerHTML !== "") {
+                    modal.open();
+                    return
+                }
                 options_modal_content.innerHTML = ""
                 for (const key in model.options) {
                     if (Object.hasOwnProperty.call(model.options, key)) {
@@ -125,7 +130,6 @@ export default class UI {
                         }
                     }
                 }
-                var modal = Bulma('#config_modal').modal();
                 modal.open();
             });
             $('#props').append(`

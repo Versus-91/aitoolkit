@@ -37,8 +37,8 @@ export const Settings = {
             "value": 4,
             "options": {
                 "kernel": {
-                    type: "number",
-                    default: [3, 9]
+                    type: "select",
+                    values: []
                 },
                 "metric": {
                     type: "select",
@@ -73,10 +73,25 @@ export const Settings = {
         "naive_bayes": {
             "lable": "Naive Bayes",
             "value": 7,
-            "laplace": "no",
-            "class_priors": "no",
-            "feature_selection": ["no", "Lasso", "ridge"],
-            "type": ["Gaussian", "Multinomial", "Bernoulli"]
+            "options": {
+                "laplace": {
+                    type: "number",
+                    default: 0.05
+                },
+                "priors": {
+                    type: "number",
+                    default: 0.05
+                },
+                "laplace": {
+                    type: "number",
+                    default: 0.05
+                },
+                "type": {
+                    type: "select",
+                    values: ["Gaussian", "Multinomial", "Bernoulli"]
+                }
+            }
+
         },
     },
     "regression": {
