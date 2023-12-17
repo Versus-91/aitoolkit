@@ -421,7 +421,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
     ui.init_upload_button(handleFileSelect)
     window.pyodide = await loadPyodide();
-    await pyodide.loadPackage("scikit-learn");
+    await pyodide.loadPackage(["scikit-learn", "statsmodels"]);
 
 });
 

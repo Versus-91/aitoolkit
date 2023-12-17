@@ -98,7 +98,12 @@ export default class UI {
             });
             $('#props').append(`
             <div class="column is-12">
-            <button class="button is-danger" id="config_modal_button">config</button>
+            <button class="button is-danger" id="config_modal_button">
+            <span class="icon is-small">
+            <i class="fas fa-cog"></i>
+            </span>
+            <span>config</span>
+            </button>
             </div>
             `)
             document.querySelector('#config_modal_button').addEventListener('click', function (e) {
@@ -127,6 +132,21 @@ export default class UI {
                             </div>
                             `)
                             document.getElementById(key + "-" + model_name).value = model.options[key]["default"]
+                        } else if (element === "select") {
+                            let result = ""
+                            let options = model.options[key]["values"]
+                            result = `
+                            <div class="column is-12">
+                                <div class="field">
+                                    <label class="label">${key}</label>
+                                    <div class="select">
+                                        <select id="${key + "-" + model_name}">
+                            `
+                            for (let i = 0; i < options.length; i++) {
+                                result += `<option>${options[i]}</option>`
+                            }
+                            result += "</select></div></div></div>"
+                            $('#model_options').append(result)
                         }
                     }
                 }
@@ -169,8 +189,8 @@ export default class UI {
             </div>
             `)
             $('#target').val(default_target)
-            $('#props').append(`<div class="column is-6"><button class="button is-primary is-outlined mt-2" id="visualize">EDA</button></div>`);
-            $('#props').append(`<div class="column is-6"><button class="button is-info is-outlined mt-2" id="train-button">train</button></div>`);
+            $('#props').append(`<div class="column is-6"><button class="button is-primary mt-2" id="visualize">EDA</button></div>`);
+            $('#props').append(`<div class="column is-6"><button class="button is-info mt-2" id="train-button">train</button></div>`);
 
             //modle options
             $('#algorithm').on('change', function (e) {

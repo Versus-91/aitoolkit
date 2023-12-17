@@ -7,7 +7,14 @@ export const Settings = {
     "classification": {
         "logistic_regression": {
             "lable": "logistic regression",
-            "value": 1
+            "value": 1,
+            "options":{
+                "regularization":{
+                    "label":"regulrization",
+                    "type" :"select",
+                    "values":["no","lasso","ridge"]
+                }
+            }
         },
         "discriminant_analysis": {
             "lable": "discriminant analysis",
