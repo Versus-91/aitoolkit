@@ -102,20 +102,18 @@ export default class UI {
             <span class="icon is-small">
             <i class="fas fa-cog"></i>
             </span>
-            <span>config</span>
+            <span>settings</span>
             </button>
             </div>
+            <div class="column is-12" id="settings">
+            </div>
+
             `)
             document.querySelector('#config_modal_button').addEventListener('click', function (e) {
                 let model_name = document.getElementById('model_name').value;
                 model_name = model_name.replace(/\s+/g, '_').toLowerCase();
                 var model = Settings.classification[model_name];
-                var options_modal_content = document.getElementById("model_options");
-                var modal = Bulma('#config_modal').modal();
-                if (options_modal_content.innerHTML !== "") {
-                    modal.open();
-                    return
-                }
+                var options_modal_content = document.getElementById("settings");
                 options_modal_content.innerHTML = ""
                 for (const key in model.options) {
                     if (Object.hasOwnProperty.call(model.options, key)) {
@@ -146,11 +144,10 @@ export default class UI {
                                 result += `<option>${options[i]}</option>`
                             }
                             result += "</select></div></div></div>"
-                            $('#model_options').append(result)
+                            $('#settings').append(result)
                         }
                     }
                 }
-                modal.open();
             });
             $('#props').append(`
             <div class="column is-12">

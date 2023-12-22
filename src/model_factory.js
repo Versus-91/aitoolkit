@@ -1,5 +1,5 @@
 import { Settings } from "../feature_types";
-import { LogisticRegression } from "./LogisticRegression";
+import LogisticRegression  from "./logistic_regression";
 import LinearRegression from "./linear_regression";
 import SupportVectorMachine from './svm';
 import Boosting from './boosting';

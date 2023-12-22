@@ -8,11 +8,11 @@ export const Settings = {
         "logistic_regression": {
             "lable": "logistic regression",
             "value": 1,
-            "options":{
-                "regularization":{
-                    "label":"regulrization",
-                    "type" :"select",
-                    "values":["no","lasso","ridge"]
+            "options": {
+                "regularization": {
+                    "label": "regulrization",
+                    "type": "select",
+                    "values": ["no", "lasso", "ridge"]
                 }
             }
         },
@@ -39,13 +39,13 @@ export const Settings = {
                 },
             },
         },
-        "support_vectore_machine": {
+        "support_vector_machine": {
             "lable": "support vector machine",
             "value": 4,
             "options": {
                 "kernel": {
                     type: "select",
-                    values: []
+                    values: ["RBF", "Linear", "Polynomial", "Sigmoid"]
                 },
                 "metric": {
                     type: "select",
@@ -69,13 +69,30 @@ export const Settings = {
                 "depth": {
                     type: "number",
                     default: 5
+                },
+                "criteria": {
+                    type: "select",
+                    "values": ["class_error", "gini", "entropy"]
                 }
             },
-            "entropy": ["class_error", "gini", "Bernoulli"]
         },
         "boosting": {
             "lable": "boosting",
-            "value": 6
+            "value": 6,
+            "options": {
+                "estimators": {
+                    type: "number",
+                    default: 10
+                },
+                "features": {
+                    type: "number",
+                    default: "square-p"
+                },
+                "depth": {
+                    type: "number",
+                    default: 5
+                }
+            },
         },
         "naive_bayes": {
             "lable": "Naive Bayes",

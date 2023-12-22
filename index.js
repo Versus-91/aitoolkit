@@ -200,7 +200,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         predictions_table(x_test, y_test, encoder, best_result.predictions)
                         break;
                     }
-                    case Settings.classification.support_vectore_machine.lable: {
+                    case Settings.classification.support_vector_machine.lable: {
                         let model = model_factory.createModel(Settings.classification.support_vectore_machine, {
                             kernel: SVM.KERNEL_TYPES.RBF,
                             type: SVM.SVM_TYPES.C_SVC,
@@ -273,8 +273,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         encoder.fit(y_train.values)
                         let y = encoder.transform(y_train.values)
                         let y_t = encoder.transform(y_test.values)
-                        let { preds, probs, coefs, alphas } = await logistic_regression.fit(x_train.values, y, x_test.values, y_t)
-
+                        logistic_regression.train(x_train.values, y)
+                        const preds = logistic_regression.predict(x_test.values)
                         let evaluation_result = evaluate_classification(preds, y_t)
                         chart_controller.draw_classification_pca(x_test.values, y_t, evaluation_result.indexes)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))

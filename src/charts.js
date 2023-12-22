@@ -491,7 +491,7 @@ export default class ChartController {
             traces.push({
                 type: 'box',
                 name: classes[i],
-                y: probs.map((item, i) => item[i])
+                y: probs.map(item => item[i])
             })
         }
         Plotly.newPlot("probs_box_plot", traces)
