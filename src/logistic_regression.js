@@ -65,6 +65,23 @@ export default class LogisticRegression {
         }
         return finalResults;
     }
+    predict_probas(Xtest) {
+        Xtest = new Matrix(Xtest)
+        let probs = [];
+        let resultsOneClass = new Array(this.numberClasses).fill(0);
+        for (let i = 0; i < this.numberClasses; i++) {
+            resultsOneClass[i] = this.classifiers[i].testScores(Xtest);
+        }
+        for (let i = 0; i < resultsOneClass[0].length; i++) {
+            let class_probs = []
+            for (let j = 0; j < this.numberClasses; j++) {
+                class_probs.push(resultsOneClass[j][i])
+            }
+            probs.push(class_probs);
+        }
+        return probs;
+    }
+
 
     static load(model) {
         if (model.name !== 'LogisticRegression') {

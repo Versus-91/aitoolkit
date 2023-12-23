@@ -280,11 +280,11 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(y_t), classes)
                         metrics_table(classes, matrix)
-
-                        chart_controller.regularization_plot(alphas, coefs, x_test.columns)
+                        let probs = logistic_regression.predict_probas(x_test.values)
+                        // chart_controller.regularization_plot(alphas, coefs, x_test.columns)
                         predictions_table(x_test, y_test, encoder, preds, probs);
-                        chart_controller.probablities_boxplot(probs, classes)
-                        chart_controller.probablities_violin_plot(probs, classes)
+                        // chart_controller.probablities_boxplot(probs, classes)
+                        // chart_controller.probablities_violin_plot(probs, classes)
 
                         break
                     }

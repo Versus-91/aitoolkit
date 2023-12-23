@@ -2,9 +2,11 @@ import { Matrix } from 'ml-matrix';
 
 export default class LogisticRegressionTwoClasses {
     constructor(options = {}) {
-        const { numSteps = 50000, learningRate = 5e-4, weights = null } = options;
+        const { numSteps = 50000, learningRate = 5e-4, l1 = 0.1, l2 = null, weights = null } = options;
         this.numSteps = numSteps;
         this.learningRate = learningRate;
+        this.l1 = l1;
+        this.l2 = l2;
         this.weights = weights ? Matrix.checkMatrix(weights) : null;
     }
 
@@ -16,10 +18,21 @@ export default class LogisticRegressionTwoClasses {
             const predictions = sigmoid(scores);
 
             // Update weights with gradient
-            const outputErrorSignal = Matrix.columnVector(predictions)
+            const error = Matrix.columnVector(predictions)
                 .neg()
                 .add(target);
-            const gradient = features.transpose().mmul(outputErrorSignal);
+            const gradient = features.transpose().mmul(error);
+            // Apply L2 regularization
+            if (this.l2 !== null && this.l2 !== 0) {
+                const l2RegularizationTerm = weights.mul(this.l2);
+                gradient.add(l2RegularizationTerm.transpose());
+            }
+
+            // Apply L1 regularization
+            if (this.l1 !== null && this.l1 !== 0) {
+                const l1RegularizationTerm = weights.abs().mul(this.l1);
+                gradient.add(l1RegularizationTerm.transpose());
+            }
             weights = weights.add(gradient.mul(this.learningRate).transpose());
         }
 
