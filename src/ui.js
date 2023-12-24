@@ -105,7 +105,7 @@ export default class UI {
             <span>settings</span>
             </button>
             </div>
-            <div class="column is-12" id="settings">
+            <div class="column is-12" id="settings" style="display:none">
             </div>
 
             `)
@@ -114,12 +114,17 @@ export default class UI {
                 model_name = model_name.replace(/\s+/g, '_').toLowerCase();
                 var model = Settings.classification[model_name];
                 var options_modal_content = document.getElementById("settings");
+                if (window.getComputedStyle(options_modal_content).display !== "none") {
+                    options_modal_content.style.display = "none"
+                    return
+                }
                 options_modal_content.innerHTML = ""
                 for (const key in model.options) {
+                    options_modal_content.style.display = "block"
                     if (Object.hasOwnProperty.call(model.options, key)) {
                         const element = model.options[key]["type"]
                         if (element === "number") {
-                            $('#model_options').append(`
+                            $('#settings').append(`
                             <div class="column is-12">
                                 <div class="field">
                                     <label class="label">${key}</label>

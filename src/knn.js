@@ -4,7 +4,6 @@ import { KNeighborsClassifier } from 'scikitjs'
 export default class KNNModel {
     constructor() {
         this.model = null
-
     }
     async train(x_train, y_train, k = 3) {
         this.model = new KNeighborsClassifier({ nNeighbors: k })
