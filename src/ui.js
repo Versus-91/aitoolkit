@@ -88,6 +88,16 @@ export default class UI {
             } else {
                 $('#props').append(this.createAlgorithmsSelect(2));
             }
+            $("#props").append(`
+            <div class="column is-2">
+            <button class="button is-success" id="config_modal_button">
+            <span class="icon is-small">
+            <i class="fas fa-cog"></i>
+            </span>
+            </button>
+            </div>
+            <div class="column is-12" id="settings" style="display:none">
+            </div>`)
             $(document).on('change', '#' + default_target, function (e) {
                 $("#algorithm").empty();
                 $("#algorithm").append(myClass.updateAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
@@ -96,19 +106,6 @@ export default class UI {
             $('#algorithm').on('change', function () {
                 $("#model_options").empty();
             });
-            $('#props').append(`
-            <div class="column is-12">
-            <button class="button is-danger" id="config_modal_button">
-            <span class="icon is-small">
-            <i class="fas fa-cog"></i>
-            </span>
-            <span>settings</span>
-            </button>
-            </div>
-            <div class="column is-12" id="settings" style="display:none">
-            </div>
-
-            `)
             document.querySelector('#config_modal_button').addEventListener('click', function (e) {
                 let model_name = document.getElementById('model_name').value;
                 model_name = model_name.replace(/\s+/g, '_').toLowerCase();
@@ -126,10 +123,14 @@ export default class UI {
                         if (element === "number") {
                             $('#settings').append(`
                             <div class="column is-12">
-                                <div class="field">
+                                <div class="field is-horizontal">
+                                    <div class="field-label is-small">
                                     <label class="label">${key}</label>
+                                    </div>
+                                    <div class="field-body">
                                     <div class="control">
-                                        <input id="${key + "-" + model_name}" class="input" type="number">
+                                        <input id="${key + "-" + model_name}" class="input is-small" type="number">
+                                    </div>
                                     </div>
                                 </div>
                             </div>
@@ -140,10 +141,14 @@ export default class UI {
                             let options = model.options[key]["values"]
                             result = `
                             <div class="column is-12">
-                                <div class="field">
-                                    <label class="label">${key}</label>
-                                    <div class="select">
-                                        <select id="${key + "-" + model_name}">
+                                <div class="field is-horizontal">
+                                    <div class="field-label is-small">
+                                       <label class="label mr-1">${key}</label>
+                                    </div>
+                                    <div class="field-body">
+                                        <div class="select is-small">
+                                            <select id="${key + "-" + model_name}">
+                                    </div>
                             `
                             for (let i = 0; i < options.length; i++) {
                                 result += `<option>${options[i]}</option>`
@@ -156,19 +161,20 @@ export default class UI {
             });
             $('#props').append(`
             <div class="column is-12">
-                <h4>Imputation</h4>
+                <div class="label">Imputation</div>
                 <div class="select mb-1">
                     <select id="imputation">
-                        <option value="1">Default</option>
+                        <option value="1">Mean and Mode</option>
                         <option value="2">Linear regression</option>
                         <option value="3">random forest</option>
+                        <option value="3">Delete rows</option>
                     </select>
                 </div>
             </div>
             `)
             $('#props').append(`
             <div class="column is-12">
-                <h4>standardize</h4>
+                <div class="label">standardize</div>
                 <div class="select mb-1">
                     <select id="normalization">
                         <option value="1">No</option>
@@ -180,7 +186,7 @@ export default class UI {
             `)
             $('#props').append(`
             <div class="column is-12">
-                <h4>Cross Validation</h4>
+                <div class="label">Cross Validation</div>
                 <div class="select mb-1">
                     <select id="cross_validation">
                         <option value="1">70 % training - 30 % test</option>
@@ -227,7 +233,7 @@ export default class UI {
     }
 
     createAlgorithmsSelect(category) {
-        let result = '<div id="algorithm" class="column is-12"><h4>Model</h4><div class="select mb-1"> <select id="model_name" class="select">'
+        let result = '<div id="algorithm" class="column is-10"><div class="select mb-1"> <select id="model_name" class="select">'
         const lable = category == 1 ? "regression" : "classification"
         for (const key in Settings[lable]) {
             if (Settings.hasOwnProperty.call(Settings[lable], key)) {
@@ -274,7 +280,7 @@ export default class UI {
         return column_types
     }
     createTargetDropdown(items) {
-        let result = '<div  class="column is-12"><h4>Target</h4><div class="select mb-1"> <select class="select" id="target">'
+        let result = '<div  class="column is-12"><div class="label">Target</div><div class="select mb-1"> <select class="select" id="target">'
         items.columns.forEach(column => {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             result += `<option value="${key}">${key}</option>`
@@ -371,7 +377,7 @@ export default class UI {
         });
     }
     init_upload_button(upoad_handler) {
-        $('#props').append(`<div class="column is-12">
+        $('#upload').append(`<div class="column is-12">
         <div class="file mb-2 is-info">
             <label class="file-label">
                 <input class="file-input is-info" id="parseCVS" type="file" name="resume">

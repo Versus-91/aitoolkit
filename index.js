@@ -55,9 +55,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             },
             skipEmptyLines: true,
             dynamicTyping: true,
-            complete: function (result) {
+            complete: async function (result) {
                 let dataset = new DataFrame(result.data)
                 ui.createDatasetPropsDropdown(dataset);
+                await visualize(dataset, result.data.length, file.name)
                 document.getElementById("train-button").onclick = async () => {
                     ui.reset(divs, tbls)
                     ui.start_loading()
@@ -105,8 +106,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     chart_controller.draw_kde(filterd_dataset, col)
                 });
                 chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
-                chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
-
+                if (numericColumns.length > 2) {
+                    chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                }
             }
             if (is_classification) {
                 let counts = filterd_dataset.column(target).valueCounts()

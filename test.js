@@ -1,67 +1,49 @@
-function calculatePrecision(classIndex, confusionMatrix) {
-    let truePositive = confusionMatrix[classIndex][classIndex];
-    let falsePositive = 0;
-    let falseNegative = 0;
+// Import TensorFlow.js
+const math = require("mathjs")
+const tf = require('@tensorflow/tfjs-node');
+const weights = tf.randomUniform([4], -1, 1);
 
-    for (let i = 0; i < confusionMatrix.length; i++) {
-        falsePositive += confusionMatrix[i][classIndex];
-        falseNegative += confusionMatrix[classIndex][i];
+class LinearRegression {
+    constructor(iterations = 1000, lr = 0.1) {
+        this.iterations = iterations;
+        this.lr = lr;
+        this.weights = null
+    }
+    fit(X, y) {
+        const limit = 1 / Math.sqrt(X.shape[1]);
+        const ones = tf.ones([X.shape[0], 1]);
+        X = tf.concat([X, ones], 1);
+        this.weights = tf.randomUniform([X.shape[1], 1], -limit, limit); // Adjusted initialization
+        const learningRate = 0.01; // Define learning rate
+        const iterations = 1000; // Define the number of iterations
+
+        for (let i = 0; i < iterations; i++) {
+            const y_pred = X.matMul(this.weights);
+            const mse = tf.mean(tf.pow(tf.sub(y, y_pred), 2)).mul(0.5); // Calculate Mean Squared Error (MSE)
+            const error = tf.sub(y_pred, y);
+            const gradient = X.transpose().matMul(error).div(X.shape[0]); // Compute gradient
+            const deltaWeights = gradient.mul(learningRate); // Multiply gradient by learning rate
+            this.weights = this.weights.sub(deltaWeights); // Update weights
+        }
+    }
+    predict(X) {
+        const ones = tf.ones([X.shape[0], 1])
+        X = tf.concat([X, ones], 1)
+        return X.matMul(this.weights)
     }
 
-    falsePositive -= truePositive;
-    falseNegative -= truePositive;
-
-    const precision = truePositive / (truePositive + falsePositive);
-    return isNaN(precision) ? 0 : precision; // Check for NaN (division by zero)
 }
-
-function calculateRecall(classIndex, confusionMatrix) {
-    let truePositive = confusionMatrix[classIndex][classIndex];
-    let falseNegative = 0;
-
-    for (let i = 0; i < confusionMatrix.length; i++) {
-        falseNegative += confusionMatrix[classIndex][i];
-    }
-
-    falseNegative -= truePositive;
-
-    const recall = truePositive / (truePositive + falseNegative);
-    return isNaN(recall) ? 0 : recall; // Check for NaN (division by zero)
-}
-
-function calculateF1Score(classIndex, confusionMatrix) {
-    const precision = calculatePrecision(classIndex, confusionMatrix);
-    const recall = calculateRecall(classIndex, confusionMatrix);
-
-    if (precision === 0 || recall === 0) {
-        return 0; // Handle the case of precision or recall being zero
-    }
-
-    return 2 * ((precision * recall) / (precision + recall));
-}
-
-// Example confusion matrix for a 3-class scenario
-const exampleMatrix = [
-    [0, 0, 0], // Class 0
-    [0, 0, 19], // Class 1
-    [0, 0, 26]  // Class 2
-];
-
-// Calculate and display precision, recall, and F1-score for each class
-for (let i = 0; i < exampleMatrix.length; i++) {
-    console.log(`Class ${i} - Precision: ${calculatePrecision(i, exampleMatrix).toFixed(4)}, Recall: ${calculateRecall(i, exampleMatrix).toFixed(4)}, F1-score: ${calculateF1Score(i, exampleMatrix).toFixed(4)}`);
-}
-
-const val = "First sexual intercourse"; // Replace this with your input string
-const processedString = val.replace(/[^a-zA-Z ]/g, "").trim();
-
-const capitalizeAfterSpace = (str) => {
-    const words = str.split(' ');
-    for (let i = 1; i < words.length; i++) {
-        words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
-    }
-    return words.join(' ');
+const trainingData = {
+    x: [[1, 2], [2, 3], [3, 4], [4, 5]], // Multiple features for each x
+    y: [3, 5, 7, 9] // Corresponding y values
 };
 
-const result = capitalizeAfterSpace(processedString);
-console.log(result);
+// Convert data to TensorFlow tensors
+const X_train = tf.tensor2d(trainingData.x); // Multiple features in each x
+const y_train = tf.tensor2d(trainingData.y, [trainingData.y.length, 1]);
+
+var model = new LinearRegression()
+model.fit(X_train, y_train)
+const preds = model.predict(X_train)
+preds.print()
+
