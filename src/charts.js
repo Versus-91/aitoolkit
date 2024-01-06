@@ -459,9 +459,9 @@ export default class ChartController {
         Plotly.newPlot('myDiv', data, layout);
 
     }
-    regularization_plot(xs, ys, lables) {
+    regularization_plot(xs, ys, labels) {
         const traces = []
-        lables.forEach((element, i) => {
+        labels.forEach((element, i) => {
             traces.push({
                 x: xs,
                 y: ys.map(m => m[i]),

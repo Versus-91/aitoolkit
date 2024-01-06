@@ -124,6 +124,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     async function train(data, len) {
         try {
             let dataset = data.copy()
+            let model_name = document.getElementById('model_name').value
             const target = document.getElementById("target").value;
             dataset = data_parser.handle_missing_values(dataset)
             let selected_columns = ui.find_selected_columns(dataset.columns)
@@ -142,7 +143,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
 
             const cross_validation_setting = +document.getElementById("cross_validation").value
-            filterd_dataset = data_parser.encode_dataset(filterd_dataset, ui.find_selected_columns_types(filterd_dataset.columns))
+            filterd_dataset = data_parser.encode_dataset(filterd_dataset, ui.find_selected_columns_types(filterd_dataset.columns), model_name)
             let x_train, y_train, x_test, y_test;
             if (cross_validation_setting === 1) {
                 const limit = Math.ceil(len * 70 / 100)
@@ -162,9 +163,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
                 let model_factory = new ModelFactory()
-                let model_name = document.getElementById('model_name').value
                 switch (model_name) {
-                    case Settings.classification.k_nearest_neighbour.lable: {
+                    case Settings.classification.k_nearest_neighbour.label: {
                         let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour)
                         let results = []
                         let encoder = new LabelEncoder()
@@ -202,7 +202,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         predictions_table(x_test, y_test, encoder, best_result.predictions)
                         break;
                     }
-                    case Settings.classification.support_vector_machine.lable: {
+                    case Settings.classification.support_vector_machine.label: {
                         let model = model_factory.createModel(Settings.classification.support_vectore_machine, {
                             kernel: SVM.KERNEL_TYPES.RBF,
                             type: SVM.SVM_TYPES.C_SVC,
@@ -224,7 +224,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
                     }
-                    case Settings.classification.naive_bayes.lable: {
+                    case Settings.classification.naive_bayes.label: {
                         let model = model_factory.createModel(Settings.classification.naive_bayes)
                         let results = []
                         let encoder = new LabelEncoder()
@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         predictions_table(x_test, y_test, encoder, y_preds)
                         break;
                     }
-                    case Settings.classification.boosting.lable: {
+                    case Settings.classification.boosting.label: {
                         let model = model_factory.createModel(Settings.classification.boosting, {
                             booster: 'gbtree',
                             objective: 'multi:softmax',
@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
                     }
-                    case Settings.classification.logistic_regression.lable: {
+                    case Settings.classification.logistic_regression.label: {
                         let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller, {
                             numFeatures: 4, numClasses: 3, learningRate: 0.01, l1Regularization: 0, l2Regularization: 0
                         })
@@ -290,7 +290,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
                         break
                     }
-                    case Settings.classification.random_forest.lable: {
+                    case Settings.classification.random_forest.label: {
 
                         const model = model_factory.createModel(Settings.classification.random_forest, null, {
                             seed: 3,
@@ -406,14 +406,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
     }
 
-    async function plot_confusion_matrix(y, predictedLabels, lables = null) {
+    async function plot_confusion_matrix(y, predictedLabels, labels = null) {
         let tabs = Bulma('.tabs-wrapper').data('tabs');
         tabs.setActive(2)
         const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
         const container = document.getElementById("confusion-matrix");
         await tfvis.render.confusionMatrix(container, {
             values: confusionMatrix,
-            tickLabels: lables
+            tickLabels: labels
         });
         window.tf.dispose(y)
         window.tf.dispose(predictedLabels)

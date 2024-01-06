@@ -7,10 +7,10 @@ export default class UI {
     constructor(parser) {
         this.data_parser = parser
     }
-    drawTargetPieChart(values, lables, containerId) {
+    drawTargetPieChart(values, labels, containerId) {
         var data = [{
             values: values,
-            labels: lables,
+            labels: labels,
             type: 'pie'
         }];
         var layout = {
@@ -203,11 +203,11 @@ export default class UI {
             //modle options
             $('#algorithm').on('change', function (e) {
                 const model_type = items.column(default_target).dtype !== 'string' ? 1 : 2;
-                const lable = model_type == 1 ? "regression" : "classification"
-                for (const key in Settings[lable]) {
-                    if (Settings.hasOwnProperty.call(Settings[lable], key)) {
-                        const item = Settings[lable][key];
-                        if (item.lable === e.target.value) {
+                const label = model_type == 1 ? "regression" : "classification"
+                for (const key in Settings[label]) {
+                    if (Settings.hasOwnProperty.call(Settings[label], key)) {
+                        const item = Settings[label][key];
+                        if (item.label === e.target.value) {
                             console.log(item?.options);
 
                         }
@@ -234,23 +234,23 @@ export default class UI {
 
     createAlgorithmsSelect(category) {
         let result = '<div id="algorithm" class="column is-10"><div class="select mb-1"> <select id="model_name" class="select">'
-        const lable = category == 1 ? "regression" : "classification"
-        for (const key in Settings[lable]) {
-            if (Settings.hasOwnProperty.call(Settings[lable], key)) {
-                const item = Settings[lable][key];
-                result += `<option value="${item.lable}">${item.lable}</option>`
+        const label = category == 1 ? "regression" : "classification"
+        for (const key in Settings[label]) {
+            if (Settings.hasOwnProperty.call(Settings[label], key)) {
+                const item = Settings[label][key];
+                result += `<option value="${item.label}">${item.label}</option>`
             }
         }
         result += '</select></div></div>'
         return result
     }
     updateAlgorithmsSelect(category) {
-        let result = '<h4>Algorithm</h4><div class="select mb-1"> <select id="model_name" class="select">'
-        const lable = category == 1 ? "regression" : "classification"
-        for (const key in Settings[lable]) {
-            if (Settings.hasOwnProperty.call(Settings[lable], key)) {
-                const item = Settings[lable][key];
-                result += `<option value="${item.lable}">${item.lable}</option>`
+        let result = '<div class="select mb-1"> <select id="model_name" class="select">'
+        const label = category == 1 ? "regression" : "classification"
+        for (const key in Settings[label]) {
+            if (Settings.hasOwnProperty.call(Settings[label], key)) {
+                const item = Settings[label][key];
+                result += `<option value="${item.label}">${item.label}</option>`
             }
         }
         result += '</select></div>'

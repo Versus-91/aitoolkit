@@ -180,7 +180,7 @@ export default class DataLoader {
         }
         return data_frame
     }
-    encode_dataset(data_frame, columns_types) {
+    encode_dataset(data_frame, columns_types, model) {
         let df = data_frame.copy()
 
         columns_types = columns_types.filter(column => column.type === FeatureCategories.Nominal || column.type === FeatureCategories.Ordinal)
@@ -192,8 +192,10 @@ export default class DataLoader {
                 df.addColumn(column.name, encoded_column.values, { inplace: true })
             } else {
                 df = getDummies(df, { columns: [column.name] })
+                if (model === Settings.classification.logistic_regression.label || model === Settings.regression.linear_regression.label) {
+                    df.drop({ columns: [df.columns.find(m => m.includes(column.name + "_"))], inplace: true })
+                }
             }
-
         })
 
         return df

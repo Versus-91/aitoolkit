@@ -6,7 +6,7 @@ export const FeatureCategories = {
 export const Settings = {
     "classification": {
         "logistic_regression": {
-            "lable": "logistic regression",
+            "label": "logistic regression",
             "value": 1,
             "options": {
                 "regularization": {
@@ -17,11 +17,11 @@ export const Settings = {
             }
         },
         "discriminant_analysis": {
-            "lable": "discriminant analysis",
+            "label": "discriminant analysis",
             "value": 2
         },
         "k_nearest_neighbour": {
-            "lable": "k nearest neighbour",
+            "label": "k nearest neighbour",
             "value": 3,
             "options": {
                 "min": {
@@ -40,7 +40,7 @@ export const Settings = {
             },
         },
         "support_vector_machine": {
-            "lable": "support vector machine",
+            "label": "support vector machine",
             "value": 4,
             "options": {
                 "kernel": {
@@ -55,7 +55,7 @@ export const Settings = {
             },
         },
         "random_forest": {
-            "lable": "Random forest",
+            "label": "Random forest",
             "value": 5,
             "options": {
                 "estimators": {
@@ -77,7 +77,7 @@ export const Settings = {
             },
         },
         "boosting": {
-            "lable": "boosting",
+            "label": "boosting",
             "value": 6,
             "options": {
                 "estimators": {
@@ -95,7 +95,7 @@ export const Settings = {
             },
         },
         "naive_bayes": {
-            "lable": "Naive Bayes",
+            "label": "Naive Bayes",
             "value": 7,
             "options": {
                 "laplace": {
@@ -120,7 +120,7 @@ export const Settings = {
     },
     "regression": {
         "linear_regression": {
-            "lable": "Linear Regression",
+            "label": "Linear Regression",
             "value": 8,
             "feature_selection": ["no", "Lasso", "ridge"],
             "criteria": ["AIC", "BIC", "AR2",],
