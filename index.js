@@ -14,6 +14,7 @@ import DataTable from 'datatables.net-dt';
 import * as sk from 'scikitjs'
 import { Matrix } from 'ml-matrix';
 import { ConfusionMatrix } from 'ml-confusion-matrix';
+import Plotly from 'plotly.js-dist';
 
 import Bulma from '@vizuaalog/bulmajs';
 import { calculateRecall, calculateF1Score, calculatePrecision } from './src/utils.js';
@@ -160,9 +161,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 y_test = targets
             }
 
-
+            let model_factory = new ModelFactory();
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
-                let model_factory = new ModelFactory()
                 switch (model_name) {
                     case Settings.classification.k_nearest_neighbour.label: {
                         let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour)
@@ -327,7 +327,33 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                 }
             } else {
-                model = await trainer.train_linear_regression(selected_columns.length, dataset.loc({ columns: selected_columns }).tensor, dataset.column(target).tensor)
+                switch (model_name) {
+                    case Settings.regression.linear_regression.label:
+                        let model = model_factory.createModel(Settings.regression.linear_regression, null, {});
+                        let y_t = y_train.values.map((item) => [item])
+                        let y_test_t = y_test.values.map((item) => [item])
+                        model.train([x_train.values].flat(), [y_t].flat())
+                        let preds = model.predict([x_test.values].flat(), [y_test_t].flat())
+                        console.log(preds.flat());
+                        const xs = Array.from(Array(x_test.$data.length).keys())
+                        var trace1 = {
+                            x: xs,
+                            y: y_test.values,
+                            type: 'scatter',
+                            name: "y"
+                        };
+                        var trace2 = {
+                            x: xs,
+                            y: preds.flat(),
+                            type: 'scatter',
+                            name: "pred"
+                        };
+
+                        var data = [trace1, trace2];
+
+                        Plotly.newPlot('regression_y_yhat', data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6" });
+
+                }
             }
 
         } catch (error) {

@@ -73,6 +73,15 @@ export default class UI {
                     </label>
                 </div>
                 `);
+                $('#' + key).on('change', function (e) {
+                    const type = e.target.value
+                    $('#algorithm').empty()
+                    if (type === 'Numerical') {
+                        $('#algorithm').append(myClass.updateAlgorithmsSelect(1));
+                    } else {
+                        $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
+                    }
+                });
                 const id = column
                 if (items.column(column).dtype !== 'string') {
                     $('#' + key).val(FeatureCategories.Numerical)
@@ -129,13 +138,13 @@ export default class UI {
                                     </div>
                                     <div class="field-body">
                                     <div class="control">
-                                        <input id="${key + "-" + model_name}" class="input is-small" type="number">
+                                        <input id="${key + "_" + model_name}" class="input is-small" type="number">
                                     </div>
                                     </div>
                                 </div>
                             </div>
                             `)
-                            document.getElementById(key + "-" + model_name).value = model.options[key]["default"]
+                            document.getElementById(key + "_" + model_name).value = model.options[key]["default"]
                         } else if (element === "select") {
                             let result = ""
                             let options = model.options[key]["values"]
@@ -147,7 +156,7 @@ export default class UI {
                                     </div>
                                     <div class="field-body">
                                         <div class="select is-small">
-                                            <select id="${key + "-" + model_name}">
+                                            <select id="${key + "_" + model_name}">
                                     </div>
                             `
                             for (let i = 0; i < options.length; i++) {
@@ -214,7 +223,15 @@ export default class UI {
                     }
                 }
             });
-            //modle options
+            $('#target').on('change', function (e) {
+                const type = document.getElementById(e.target.value).value
+                $('#algorithm').empty()
+                if (type === 'Numerical') {
+                    $('#algorithm').append(myClass.updateAlgorithmsSelect(1));
+                } else {
+                    $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
+                }
+            });
             $('#target').on('change', function (e) {
                 const type = document.getElementById(e.target.value).value
                 $('#algorithm').empty()
