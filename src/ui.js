@@ -173,17 +173,17 @@ export default class UI {
                 <div class="label">Imputation</div>
                 <div class="select mb-1">
                     <select id="imputation">
-                        <option value="1">Mean and Mode</option>
-                        <option value="2">Linear regression</option>
-                        <option value="3">random forest</option>
-                        <option value="3">Delete rows</option>
+                        <option value="1">Delete rows</option>
+                        <option value="2">Mean and Mode</option>
+                        <option value="3">Linear regression</option>
+                        <option value="4">random forest</option>
                     </select>
                 </div>
             </div>
             `)
             $('#props').append(`
             <div class="column is-12">
-                <div class="label">standardize</div>
+                <div class="label">Data Transformation</div>
                 <div class="select mb-1">
                     <select id="normalization">
                         <option value="1">No</option>
@@ -243,12 +243,14 @@ export default class UI {
             });
 
         } catch (error) {
-            console.log(error);
+            throw error
         }
 
         // $('#kde_select').append(this.createFeaturesDropdown(rowMetadata))
     }
+    get_settings() {
 
+    }
     createAlgorithmsSelect(category) {
         let result = '<div id="algorithm" class="column is-10"><div class="select mb-1"> <select id="model_name" class="select">'
         const label = category == 1 ? "regression" : "classification"
@@ -274,11 +276,11 @@ export default class UI {
         return result
     }
 
-    find_selected_columns(columns) {
+    find_selected_columns(columns, get_all = false) {
         const selected_columns = []
         columns.forEach(column => {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-            if (!document.getElementById(key + '-checkbox').checked)
+            if (!document.getElementById(key + '-checkbox').checked || get_all)
                 selected_columns.push(column)
         });
         return selected_columns
@@ -395,7 +397,7 @@ export default class UI {
     }
     init_upload_button(upoad_handler) {
         $('#upload').append(`<div class="column is-12">
-        <div class="file mb-2 is-info">
+        <div class="file is-info">
             <label class="file-label">
                 <input class="file-input is-info" id="parseCVS" type="file" name="resume">
                 <span class="file-cta">
@@ -403,11 +405,12 @@ export default class UI {
                         <i class="fas fa-upload"></i>
                     </span>
                     <span class="file-label">
-                        file select
+                        Upload file
                     </span>
                 </span>
             </label>
         </div>
+        <p class="help is-danger">CSV file is supported for now</p>
     </div>`)
         document.getElementById("parseCVS").addEventListener("change", upoad_handler)
     }

@@ -42,43 +42,49 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
         var file = evt.target.files[0];
         ui.reset(divs, tbls)
-        Papa.parse(file, {
-            header: true,
-            transform: (val) => {
-                if (val === "?") {
-                    return NaN
-                }
-                return val
-            },
-            transformHeader: (val) => {
+        try {
+            Papa.parse(file, {
+                header: true,
+                transform: (val) => {
+                    if (val === "?" || val === "NA") {
+                        return NaN
+                    }
+                    return val
+                },
+                transformHeader: (val) => {
 
-                return val.replace(/[^a-zA-Z ]/g, "").trim()
-            },
-            skipEmptyLines: true,
-            dynamicTyping: true,
-            complete: async function (result) {
-                let dataset = new DataFrame(result.data)
-                ui.createDatasetPropsDropdown(dataset);
-                await visualize(dataset, result.data.length, file.name)
-                document.getElementById("train-button").onclick = async () => {
-                    ui.reset(divs, tbls)
-                    ui.start_loading()
-                    await train(dataset, result.data.length)
-                    ui.stop_loading()
-                }
-
-                document.getElementById("visualize").onclick = async () => {
-                    document.getElementById("visualize").classList.add("is-loading")
+                    return val.replace(/[^a-zA-Z ]/g, "").trim()
+                },
+                skipEmptyLines: true,
+                dynamicTyping: true,
+                complete: async function (result) {
+                    let dataset = new DataFrame(result.data)
+                    ui.createDatasetPropsDropdown(dataset);
                     await visualize(dataset, result.data.length, file.name)
-                    document.getElementById("visualize").classList.remove("is-loading")
-                }
+                    document.getElementById("train-button").onclick = async () => {
+                        ui.reset(divs, tbls)
+                        ui.start_loading()
+                        await train(dataset, result.data.length)
+                        ui.stop_loading()
+                    }
 
-            }
-        });
+                    document.getElementById("visualize").onclick = async () => {
+                        document.getElementById("visualize").classList.add("is-loading")
+                        await visualize(dataset, result.data.length, file.name)
+                        document.getElementById("visualize").classList.remove("is-loading")
+                    }
+
+                }
+            });
+        } catch (error) {
+            ui.stop_loading()
+            ui.show_error_message(error.message, "#7E191B")
+        }
+
     }
 
-    function get_numeric_columns(dataset) {
-        let selected_columns = ui.find_selected_columns(dataset.columns)
+    function get_numeric_columns(dataset, filter) {
+        let selected_columns = ui.find_selected_columns(dataset.columns, !filter)
         let numericColumns = []
         dataset.columns.forEach(column => {
             if (dataset.column(column).dtype !== 'string' && column !== "Id" && selected_columns.includes(column)) {
@@ -91,7 +97,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         try {
 
             ui.renderDatasetStats(dataset);
-            let numericColumns = get_numeric_columns(dataset)
+            let numericColumns = get_numeric_columns(dataset, false)
             const target = document.getElementById("target").value;
             const index = numericColumns.findIndex(m => m === target)
             if (index === -1) {
@@ -106,19 +112,18 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 numericColumns.forEach(col => {
                     chart_controller.draw_kde(filterd_dataset, col)
                 });
-                chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
-                if (numericColumns.length > 2) {
-                    chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
-                }
+                // chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                // if (numericColumns.length > 2) {
+                //     chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                // }
             }
             if (is_classification) {
                 let counts = filterd_dataset.column(target).valueCounts()
                 chart_controller.classification_target_chart(counts.values, counts.$index, file_name, "y_pie_chart")
             }
         } catch (error) {
-            document.getElementById("visualize").classList.remove("is-loading")
-
-            throw error
+            ui.stop_loading()
+            ui.show_error_message(error.message, "#7E191B")
         }
     }
 
@@ -141,8 +146,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
             const targets = filterd_dataset.column(target)
             filterd_dataset.drop({ columns: target, inplace: true })
-
-
             const cross_validation_setting = +document.getElementById("cross_validation").value
             filterd_dataset = data_parser.encode_dataset(filterd_dataset, ui.find_selected_columns_types(filterd_dataset.columns), model_name)
             let x_train, y_train, x_test, y_test;
@@ -334,7 +337,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let y_test_t = y_test.values.map((item) => [item])
                         model.train([x_train.values].flat(), [y_t].flat())
                         let preds = model.predict([x_test.values].flat(), [y_test_t].flat())
-                        console.log(preds.flat());
                         const xs = Array.from(Array(x_test.$data.length).keys())
                         var trace1 = {
                             x: xs,
@@ -350,7 +352,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         };
 
                         var data = [trace1, trace2];
-
+                        console.log(model.stats());
                         Plotly.newPlot('regression_y_yhat', data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6" });
 
                 }

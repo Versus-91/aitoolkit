@@ -18,7 +18,7 @@ export default class LogisticRegression {
     constructor(options = {}) {
         const {
             numSteps = 50000,
-            learningRate = 5e-4,
+            learningRate = 0.001,
             classifiers = [],
             numberClasses = 0,
         } = options;

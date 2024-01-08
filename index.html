@@ -10,7 +10,6 @@
         integrity="sha512-q3eWabyZPc1XTCmF+8/LuE1ozpg5xxn7iO89yfSOd5/oKvyqLngoNGsx8jq92Y8eXJ/IRxQbEC+FGSYxtk2oiw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
     <style>
         .tabs-content li {
@@ -77,8 +76,12 @@
                                         </div>
                                         <div class="column is-12">
                                             <article class="message is-info" id="kde_panel" style="display: none;">
-
                                                 <div class="message-body">
+                                                    <div class="notification">
+                                                        Default bandwidth method : The bandwidth is proportional to
+                                                        n^(-1/(d+4)) where n is the
+                                                        number of points and d is the number of spatial dimensions.
+                                                    </div>
                                                     <div class="columns is-multiline" id="container">
                                                         <div class="columns is-multiline" id="controls">
                                                         </div>
@@ -166,6 +169,10 @@
                                             <table id="knn_table" class="table is-bordered display" width="100%">
                                             </table>
                                         </div>
+                                        <div class="column is-12" id="goodness_of_fit">
+                                            Linear regression formula:
+                                            $$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$
+                                        </div>
                                         <div class="column is-12" id="regression_y_yhat">
                                         </div>
                                         <div class="column is-12">
@@ -214,6 +221,9 @@
         </div>
     </div>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+        </script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
     <script type="text/javascript" src="/tsne.js"></script>
     <script type="module" src="index.js"></script>

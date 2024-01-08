@@ -190,22 +190,20 @@ export default class ChartController {
     draw_kde(dataset, column, bandwidth = "nrd") {
         document.getElementById("kde_panel").style.display = "block";
         var newColumn = document.createElement("div");
-        newColumn.className = "column is-4"; // Set the class name for the column
+        newColumn.className = "column is-4";
         newColumn.setAttribute("id", column + '-kde-clomun');
-
         var container = document.getElementById("container");
-
         container.appendChild(newColumn);
-
         let container_id = column + '-kde-clomun';
         // Create an input element
         var inputElement = document.createElement("input");
-        inputElement.setAttribute("class", "input");
+        inputElement.setAttribute("class", "input is-small");
+        inputElement.setAttribute("placeholder", "bandwidth");
         inputElement.setAttribute("id", column + '-kde');
         inputElement.setAttribute("type", "number");
         var buttonElement = document.createElement("button");
-        buttonElement.setAttribute("class", "button is-info is-small");
-        buttonElement.textContent = "redraw";
+        buttonElement.setAttribute("class", "button is-primary is-small");
+        buttonElement.textContent = "Apply";
 
         let traces = [];
         let items = dataset.column(column).values;
@@ -271,7 +269,8 @@ export default class ChartController {
         });
         var layout = {
             showlegend: false, height: 400,
-            title: column
+            title: column,
+            plot_bgcolor: "#E5ECF6"
         };
         Plotly.newPlot(container_id, traces, layout);
         document.getElementById(container_id).appendChild(inputElement);
