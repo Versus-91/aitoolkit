@@ -25,7 +25,7 @@ import EditorJS from '@editorjs/editorjs';
 document.addEventListener("DOMContentLoaded", async function (event) {
     // your code here
     sk.setBackend(tensorflow)
-
+    let data_frame;
     window.tf = tensorflow
     window.jQuery = window.$ = $
     let data_parser = new DataLoader();
@@ -61,6 +61,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 dynamicTyping: true,
                 complete: async function (result) {
                     let dataset = new DataFrame(result.data)
+                    data_frame = new DataFrame(result.data)
                     ui.createDatasetPropsDropdown(dataset);
                     await visualize(dataset, result.data.length, file.name)
                     document.getElementById("train-button").onclick = async () => {
@@ -114,10 +115,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 numericColumns.forEach(col => {
                     chart_controller.draw_kde(filterd_dataset, col)
                 });
-                // chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
-                // if (numericColumns.length > 2) {
-                //     chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
-                // }
             }
             if (is_classification) {
                 let counts = filterd_dataset.column(target).valueCounts()
@@ -128,7 +125,33 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             ui.show_error_message(error.message, "#7E191B")
         }
     }
+    async function dimension_reduction() {
+        try {
+            let dataset = data_frame;
+            ui.renderDatasetStats(dataset);
+            let numericColumns = get_numeric_columns(dataset, true)
+            const target = document.getElementById("target").value;
+            const index = numericColumns.findIndex(m => m === target)
+            if (index === -1) {
+                numericColumns.push(target)
+            }
+            const filterd_dataset = dataset.loc({ columns: numericColumns })
+            filterd_dataset.dropNa({ axis: 1, inplace: true })
+            numericColumns = numericColumns.filter(m => m !== target)
+            let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+            if (numericColumns.length > 2) {
+                chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+            } else {
+                throw new Error("Most select at least 2 features.")
+            }
 
+
+        } catch (error) {
+            ui.stop_loading()
+            ui.show_error_message(error.message, "#7E191B")
+        }
+    }
     async function train(data, len) {
         try {
             let dataset = data.copy()
@@ -481,8 +504,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     });
     editorjs.isReady.then(() => {
         editorjs.blocks.insert("table")
-
-    })
+    });
+    document.querySelector('#dim_red_button').addEventListener('click', async function (e) {
+        await dimension_reduction();
+    });
 });
 
 

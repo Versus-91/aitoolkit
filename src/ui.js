@@ -447,7 +447,7 @@ export default class UI {
         document.getElementById("train-button").classList.add("is-loading")
     }
     stop_loading() {
-        document.getElementById("train-button").classList.remove("is-loading")
+        document.getElementById("train-button")?.classList.remove("is-loading")
     }
     show_error_message(message = "Something went wrong", background = "#7E191B", duration = 3000) {
         Toastify({
