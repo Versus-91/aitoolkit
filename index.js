@@ -71,12 +71,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         ui.stop_loading()
                     }
 
-                    document.getElementById("visualize").onclick = async () => {
-                        document.getElementById("visualize").classList.add("is-loading")
-                        await visualize(dataset, result.data.length, file.name)
-                        document.getElementById("visualize").classList.remove("is-loading")
-                    }
-
                 }
             });
         } catch (error) {
