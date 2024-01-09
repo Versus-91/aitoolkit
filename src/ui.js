@@ -20,6 +20,24 @@ export default class UI {
 
         Plotly.newPlot(containerId, data, layout);
     }
+    get_model_settings() {
+        let model_settings = {};
+        let model_name = document.getElementById('model_name').value;
+        const target = document.getElementById("target").value;
+        let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+        if (is_classification) {
+            for (const model in Settings.classification) {
+                if (Settings.classification[model].label === model_name) {
+                    model_name = model
+                }
+            }
+            let model = Settings.classification[model_name];
+            for (const option in model.options) {
+                model_settings[option] = parseInt(document.getElementById(option + "_" + model_name)?.value)
+            }
+        }
+        return model_settings
+    }
     renderChart(container, data, column, config) {
         const columnData = data.map(r => r[column]);
         const columnTrace = {

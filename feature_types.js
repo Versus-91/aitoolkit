@@ -72,7 +72,7 @@ export const Settings = {
                 },
                 "criteria": {
                     type: "select",
-                    "values": ["class_error", "gini", "entropy"]
+                    "values": ["gini","class_error",  "entropy"]
                 }
             },
         },

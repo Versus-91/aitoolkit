@@ -168,6 +168,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
             let model_factory = new ModelFactory();
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
+                let model_settings = ui.get_model_settings();
                 switch (model_name) {
                     case Settings.classification.k_nearest_neighbour.label: {
                         let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour)
@@ -296,14 +297,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break
                     }
                     case Settings.classification.random_forest.label: {
-
-                        const model = model_factory.createModel(Settings.classification.random_forest, null, {
+                        let num_features = !model_settings.features ? parseInt(Math.sqrt(x_train.columns.length).toFixed(0)) : model_settings.features
+                        const model = model_factory.createModel(Settings.classification.random_forest, {
                             seed: 3,
-                            maxFeatures: 2,
+                            maxFeatures: num_features,
                             replacement: true,
-                            nEstimators: 50,
+                            nEstimators: model_settings.estimators,
                             treeOptions: {
-                                maxDepth: 5
+                                maxDepth: model_settings.depth
                             }
                         });
                         let encoder_rf = new LabelEncoder()
