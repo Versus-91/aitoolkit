@@ -1,5 +1,5 @@
 import { Settings } from "../feature_types";
-import LogisticRegression  from "./logistic_regression";
+import LogisticRegression from "./logistic_regression";
 import LinearRegression from "./linear_regression";
 import SupportVectorMachine from './svm';
 import Boosting from './boosting';
@@ -14,7 +14,7 @@ export var ModelFactory = function () {
         if (modelName === Settings.classification.logistic_regression) {
             model = new LogisticRegression(options)
         } else if (modelName === Settings.classification.k_nearest_neighbour) {
-            model = new KNNModel()
+            model = new KNNModel(options)
         } else if (modelName === Settings.classification.random_forest) {
             model = new RandomForest(options)
 

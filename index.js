@@ -171,13 +171,13 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 let model_settings = ui.get_model_settings();
                 switch (model_name) {
                     case Settings.classification.k_nearest_neighbour.label: {
-                        let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour)
+                        let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour, model_settings)
                         let results = []
                         let encoder = new LabelEncoder()
                         encoder.fit(targets)
                         let encoded_y_train = encoder.transform(y_train.values)
                         let encoded_y_test = encoder.transform(y_test.values)
-                        for (let k = 2; k < 12; k++) {
+                        for (let k = model_settings.min; k <= model_settings.max; k++) {
                             await knn_classifier.train(x_train.values, encoded_y_train, k)
                             let y_preds = knn_classifier.predict(x_test.values)
                             let evaluation_result = evaluate_classification(y_preds, encoded_y_test)

@@ -33,7 +33,11 @@ export default class UI {
             }
             let model = Settings.classification[model_name];
             for (const option in model.options) {
-                model_settings[option] = parseInt(document.getElementById(option + "_" + model_name)?.value)
+                if (model.options[option].type === "select") {
+                    model_settings[option] = document.getElementById(option + "_" + model_name)?.value
+                } else {
+                    model_settings[option] = parseInt(document.getElementById(option + "_" + model_name)?.value)
+                }
             }
         }
         return model_settings
