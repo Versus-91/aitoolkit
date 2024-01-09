@@ -20,6 +20,8 @@ import Bulma from '@vizuaalog/bulmajs';
 import { calculateRecall, calculateF1Score, calculatePrecision } from './src/utils.js';
 import SVM from "libsvm-js/asm";
 import util from 'libsvm-js/src/util.js';
+import Table from '@editorjs/table';
+import EditorJS from '@editorjs/editorjs';
 document.addEventListener("DOMContentLoaded", async function (event) {
     // your code here
     sk.setBackend(tensorflow)
@@ -450,9 +452,36 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     }
 
     ui.init_upload_button(handleFileSelect)
-    window.pyodide = await loadPyodide();
-    await pyodide.loadPackage(["scikit-learn", "statsmodels"]);
+    // const webR = new WebR();
+    // await webR.init();
+    // let result = await webR.evalR(`
+    // fit <- lm(mpg ~ am, data=mtcars)
+    // summary_data<-summary(fit)
+    // result <- list(
+    //     coefficients = as.data.frame(summary_data$coefficients)
+    //   )
 
+    // `)
+    // console.log((await result.toJs()).values);
+    const editorjs = new EditorJS({
+        holder: 'editorjs',
+        tools: {
+            table: {
+                class: Table,
+                inlineToolbar: true,
+                config: {
+                    rows: 2,
+                    cols: 3,
+                    withHeadings: true,
+                },
+            },
+        },
+        //data: editorjsdata,
+    });
+    editorjs.isReady.then(() => {
+        editorjs.blocks.insert("table")
+
+    })
 });
 
 

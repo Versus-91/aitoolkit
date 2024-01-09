@@ -326,7 +326,7 @@ export default class UI {
         document.getElementById("stats").style.display = "block"
         var header = "";
         var tbody = "";
-        const fileds = ["#", "Min", "Max", "Median", "Mean", "Standard deviation"]
+        const fileds = ["#", "Min", "Max", "Median", "Mean", "Standard deviation", "missing values count"]
         for (var p in fileds) {
             header += "<th>" + fileds[p] + "</th>";
         }
@@ -342,7 +342,9 @@ export default class UI {
                 row += "<td>" + data.column(column).median().toFixed(2) + "</td>";
                 row += "<td>" + data.column(column).mean().toFixed(2) + "</td>";
                 row += "<td>" + data.column(column).std().toFixed(2) + "</td>";
+                row += "<td>" + data.column(column).isNa().sum() + "</td>";
                 tbody += "<tr>" + row + "</tr>";
+
             }
         });
         document.getElementById("output").innerHTML =
@@ -355,7 +357,7 @@ export default class UI {
         //build categorical feature table table
         var header_categorical = "";
         var tbody_categorical = "";
-        const fileds_categorical = ["#", "Shape", "Mode", "Percentage"]
+        const fileds_categorical = ["#", "Shape", "Mode", "Percentage", "missing values count"]
         for (var p in fileds_categorical) {
             header_categorical += "<th>" + fileds_categorical[p] + "</th>";
         }
@@ -371,6 +373,8 @@ export default class UI {
                 row += "<td>" + shape.length + "</td>";
                 row += "<td>" + category_info['mode'] + "</td>";
                 row += "<td>" + ((category_info[category_info['mode']] / category_info['total'])).toFixed(2) + "</td>";
+                row += "<td>" + data.column(column).isNa().sum() + "</td>";
+
                 tbody_categorical += "<tr>" + row + "</tr>";
             }
         });
