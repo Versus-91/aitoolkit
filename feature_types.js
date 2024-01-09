@@ -12,6 +12,7 @@ export const Settings = {
                 "regularization": {
                     "label": "regulrization",
                     "type": "select",
+                    default: "no",
                     "values": ["no", "lasso", "ridge"]
                 }
             }
@@ -45,12 +46,8 @@ export const Settings = {
             "options": {
                 "kernel": {
                     type: "select",
+                    default: "RBF",
                     values: ["RBF", "Linear", "Polynomial", "Sigmoid"]
-                },
-                "metric": {
-                    type: "select",
-                    default: "euclidean",
-                    values: ["euclidean", "minkowski", "manhattan"]
                 },
             },
         },
@@ -60,7 +57,7 @@ export const Settings = {
             "options": {
                 "estimators": {
                     type: "number",
-                    default: 10
+                    default: 100
                 },
                 "features": {
                     type: "number",
@@ -72,7 +69,8 @@ export const Settings = {
                 },
                 "criteria": {
                     type: "select",
-                    "values": ["gini","class_error",  "entropy"]
+                    default: "gini",
+                    "values": ["gini", "class_error", "entropy"]
                 }
             },
         },
@@ -112,6 +110,7 @@ export const Settings = {
                 },
                 "type": {
                     type: "select",
+                    default: "Gaussian",
                     values: ["Gaussian", "Multinomial", "Bernoulli"]
                 }
             }

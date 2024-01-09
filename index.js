@@ -297,7 +297,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break
                     }
                     case Settings.classification.random_forest.label: {
-                        let num_features = !model_settings.features ? parseInt(Math.sqrt(x_train.columns.length).toFixed(0)) : model_settings.features
+                        let num_features = typeof model_settings.features === "number" ? model_settings.features : parseInt(Math.sqrt(x_train.columns.length).toFixed(0))
                         const model = model_factory.createModel(Settings.classification.random_forest, {
                             seed: 3,
                             maxFeatures: num_features,

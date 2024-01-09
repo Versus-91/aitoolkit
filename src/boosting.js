@@ -4,6 +4,7 @@ export default class Boosting {
         this.options = options
     }
     async init(options) {
+        console.log(options);
         const XGBoost = await xgb;
         this.model = new XGBoost(options);
     }

@@ -33,10 +33,13 @@ export default class UI {
             }
             let model = Settings.classification[model_name];
             for (const option in model.options) {
+                let option_element = document.getElementById(option + "_" + model_name);
                 if (model.options[option].type === "select") {
-                    model_settings[option] = document.getElementById(option + "_" + model_name)?.value
+                    let option_value = document.getElementById(option + "_" + model_name)?.value;
+                    model_settings[option] = option_value ?? model.options[option].default
                 } else {
-                    model_settings[option] = parseInt(document.getElementById(option + "_" + model_name)?.value)
+                    let option_value = document.getElementById(option + "_" + model_name);
+                    model_settings[option] = !option_value ? model.options[option].default : parseInt(option_value.value)
                 }
             }
         }
