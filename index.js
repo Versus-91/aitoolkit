@@ -19,9 +19,8 @@ import Plotly from 'plotly.js-dist';
 import Bulma from '@vizuaalog/bulmajs';
 import { calculateRecall, calculateF1Score, calculatePrecision } from './src/utils.js';
 import SVM from "libsvm-js/asm";
-import util from 'libsvm-js/src/util.js';
-import Table from '@editorjs/table';
-import EditorJS from '@editorjs/editorjs';
+import tippy from 'tippy.js';
+
 document.addEventListener("DOMContentLoaded", async function (event) {
     // your code here
     sk.setBackend(tensorflow)
@@ -29,12 +28,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     window.tf = tensorflow
     window.jQuery = window.$ = $
     let data_parser = new DataLoader();
-    let ui = new UI(data_parser);
     let trainer = new Trainter();
     let chart_controller = new ChartController(data_parser);
+    let ui = new UI(data_parser, chart_controller);
     let X
     let y
-    const divs = ["lasso_plot"]
+    const divs = ["lasso_plot", "formulas", "regression_y_yhat"]
     const tbls = ["lasso_plot", "predictions_table", "results", "knn_table", "metrics_table"]
 
     function handleFileSelect(evt) {
@@ -63,7 +62,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     let dataset = new DataFrame(result.data)
                     data_frame = new DataFrame(result.data)
                     ui.createDatasetPropsDropdown(dataset);
-                    await visualize(dataset, result.data.length, file.name)
+                    await ui.visualize(dataset, result.data.length, file.name)
                     document.getElementById("train-button").onclick = async () => {
                         ui.reset(divs, tbls)
                         ui.start_loading()
@@ -80,54 +79,16 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
     }
 
-    function get_numeric_columns(dataset, filter) {
-        let selected_columns = ui.find_selected_columns(dataset.columns, !filter)
-        let numericColumns = []
-        dataset.columns.forEach(column => {
-            if (dataset.column(column).dtype !== 'string' && column !== "Id" && selected_columns.includes(column)) {
-                numericColumns.push(column)
-            }
-        });
-        return numericColumns
-    }
-    async function visualize(dataset, len, file_name) {
-        try {
 
-            ui.renderDatasetStats(dataset);
-            let numericColumns = get_numeric_columns(dataset, false)
-            const target = document.getElementById("target").value;
-            const index = numericColumns.findIndex(m => m === target)
-            if (index === -1) {
-                numericColumns.push(target)
-            }
-            const filterd_dataset = dataset.loc({ columns: numericColumns })
-            filterd_dataset.dropNa({ axis: 1, inplace: true })
-            numericColumns = numericColumns.filter(m => m !== target)
-            let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
-            if (numericColumns.length > 0) {
-                document.getElementById("container").innerHTML = "";
-                numericColumns.forEach(col => {
-                    chart_controller.draw_kde(filterd_dataset, col)
-                });
-            }
-            if (is_classification) {
-                let counts = filterd_dataset.column(target).valueCounts()
-                chart_controller.classification_target_chart(counts.values, counts.$index, file_name, "y_pie_chart")
-            }
-        } catch (error) {
-            ui.stop_loading()
-            ui.show_error_message(error.message, "#7E191B")
-        }
-    }
     async function dimension_reduction() {
         try {
             let dataset = data_frame;
             ui.renderDatasetStats(dataset);
-            let numericColumns = get_numeric_columns(dataset, true)
+            let numericColumns = ui.get_numeric_columns(dataset, true)
             const target = document.getElementById("target").value;
             const index = numericColumns.findIndex(m => m === target)
-            if (index === -1) {
-                numericColumns.push(target)
+            if (index !== -1) {
+                delete numericColumns[index]
             }
             const filterd_dataset = dataset.loc({ columns: numericColumns })
             filterd_dataset.dropNa({ axis: 1, inplace: true })
@@ -359,21 +320,42 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let preds = model.predict([x_test.values].flat(), [y_test_t].flat())
                         const xs = Array.from(Array(x_test.$data.length).keys())
                         var trace1 = {
-                            x: xs,
-                            y: y_test.values,
-                            type: 'scatter',
-                            name: "y"
-                        };
-                        var trace2 = {
-                            x: xs,
+                            x: y_test.values,
                             y: preds.flat(),
                             type: 'scatter',
-                            name: "pred"
+                            name: "y",
+                            mode: 'markers',
                         };
 
-                        var data = [trace1, trace2];
-                        console.log(model.stats());
-                        Plotly.newPlot('regression_y_yhat', data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6" });
+                        var data = [trace1];
+                        let model_stats = model.stats().summary.variables;
+                        let model_stats_matrix = [];
+                        let columns = x_train.columns
+                        columns.push("intercept")
+                        for (let i = 0; i < model_stats.length; i++) {
+                            let row = [];
+                            row.push(columns[i])
+                            row.push(model_stats[i].coefficients[0])
+                            row.push(model_stats[i].standardError)
+                            row.push(model_stats[i].tStat)
+                            model_stats_matrix.push(row)
+                        }
+
+                        new DataTable('#metrics_table', {
+                            responsive: true,
+                            columns: [{ title: "variable" }, { title: "weight" }, { title: "std error" }, { title: "t stat" }],
+                            data: model_stats_matrix,
+                            info: false,
+                            search: false,
+                            ordering: false,
+                            searching: false,
+                            paging: false,
+                            bDestroy: true,
+                        });
+                        $("#formulas").html = "";
+                        $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
+                        MathJax.typeset(["formulas"]);
+                        Plotly.newPlot('regression_y_yhat', data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
 
                 }
             }
@@ -481,26 +463,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
     // `)
     // console.log((await result.toJs()).values);
-    const editorjs = new EditorJS({
-        holder: 'editorjs',
-        tools: {
-            table: {
-                class: Table,
-                inlineToolbar: true,
-                config: {
-                    rows: 2,
-                    cols: 3,
-                    withHeadings: true,
-                },
-            },
-        },
-        //data: editorjsdata,
-    });
-    editorjs.isReady.then(() => {
-        editorjs.blocks.insert("table")
-    });
     document.querySelector('#dim_red_button').addEventListener('click', async function (e) {
         await dimension_reduction();
+    });
+
+    tippy('#myButton', {
+        content: 'My tooltip!',
     });
 });
 

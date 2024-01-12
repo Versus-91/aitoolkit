@@ -14,12 +14,6 @@ export default class ChartController {
     }
 
     classification_target_chart(values, labels, name, container) {
-        var trace1 = {
-            values: values,
-            labels: labels,
-            name: name.split(".")[0],
-            type: 'pie'
-        };
         var trace2 = {
             y: values,
             x: labels,
@@ -28,10 +22,10 @@ export default class ChartController {
             yaxis: 'y2',
         };
 
-        var data = [trace1, trace2];
+        var data = [trace2];
 
         var layout = {
-            grid: { rows: 1, columns: 2, pattern: 'independent' },
+            grid: { rows: 1, columns: 1 },
         };
 
         Plotly.newPlot(container, data, layout);

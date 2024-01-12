@@ -4,8 +4,9 @@ import Bulma from '@vizuaalog/bulmajs';
 
 import { FeatureCategories, Settings } from "../feature_types.js";
 export default class UI {
-    constructor(parser) {
+    constructor(parser, chart_controller) {
         this.data_parser = parser
+        this.chart_controller = chart_controller
     }
     drawTargetPieChart(values, labels, containerId) {
         var data = [{
@@ -75,9 +76,11 @@ export default class UI {
                 var modalTwo = Bulma('#features_modal').modal();
                 modalTwo.open();
             });
-            document.querySelector('#close_modal').addEventListener('click', function (e) {
+            document.querySelector('#close_modal').addEventListener('click', async function (e) {
+                await myClass.visualize(items);
                 var modalTwo = Bulma('#features_modal').modal();
                 modalTwo.close();
+
             });
             const default_target = items.columns[items.columns.length - 1]
             items.columns.forEach(column => {
@@ -100,11 +103,13 @@ export default class UI {
                 `);
                 $('#' + key).on('change', function (e) {
                     const type = e.target.value
-                    $('#algorithm').empty()
-                    if (type === 'Numerical') {
-                        $('#algorithm').append(myClass.updateAlgorithmsSelect(1));
-                    } else {
-                        $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
+                    if (key === document.getElementById("target").value) {
+                        $('#algorithm').empty()
+                        if (type === 'Numerical') {
+                            $('#algorithm').append(myClass.updateAlgorithmsSelect(1));
+                        } else {
+                            $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
+                        }
                     }
                 });
                 const id = column
@@ -132,10 +137,10 @@ export default class UI {
             </div>
             <div class="column is-12" id="settings" style="display:none">
             </div>`)
-            $(document).on('change', '#' + default_target, function (e) {
-                $("#algorithm").empty();
-                $("#algorithm").append(myClass.updateAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
-            });
+            // $(document).on('change', '#' + default_target, function (e) {
+            //     $("#algorithm").empty();
+            //     $("#algorithm").append(myClass.updateAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
+            // });
             $("#model_options").empty();
             $('#algorithm').on('change', function () {
                 $("#model_options").empty();
@@ -256,15 +261,6 @@ export default class UI {
                     $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
                 }
             });
-            $('#target').on('change', function (e) {
-                const type = document.getElementById(e.target.value).value
-                $('#algorithm').empty()
-                if (type === 'Numerical') {
-                    $('#algorithm').append(myClass.updateAlgorithmsSelect(1));
-                } else {
-                    $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
-                }
-            });
 
         } catch (error) {
             throw error
@@ -301,13 +297,15 @@ export default class UI {
     }
 
     find_selected_columns(columns, get_all = false) {
-        const selected_columns = []
+        const selected_columns = [];
+        const selected_columns_types = [];
         columns.forEach(column => {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-            if (!document.getElementById(key + '-checkbox').checked || get_all)
-                selected_columns.push(column)
+            if (!document.getElementById(key + '-checkbox').checked || get_all) {
+                selected_columns.push(column);
+            }
         });
-        return selected_columns
+        return selected_columns;
     }
     find_selected_columns_types(columns) {
         const target = document.getElementById("target").value;
@@ -372,6 +370,7 @@ export default class UI {
             }
         });
         document.getElementById("output").innerHTML =
+            '<h2 class="title is-5"> Number of rows: ' + data.shape[0] + ' Number of columns: ' + data.shape[1] + '</h2>' +
             '<table class="table is-bordered is-striped is-narrow is-hoverable"><thead>' +
             header +
             "</thead><tbody>" +
@@ -457,5 +456,51 @@ export default class UI {
                 background: background,
             },
         }).showToast();
+    }
+    get_numeric_columns(dataset, filter) {
+        let selected_columns = this.find_selected_columns(dataset.columns, !filter)
+        let selected_columns_types = this.find_selected_columns_types(selected_columns);
+        selected_columns = selected_columns.filter(column => {
+            let i = selected_columns_types.findIndex(col => col.name === column)
+            if (selected_columns_types[i]?.type === FeatureCategories.Numerical) {
+                return true;
+            }
+            return false;
+        })
+        let numericColumns = []
+        dataset.columns.forEach(column => {
+            if (dataset.column(column).dtype !== 'string' && column !== "Id" && selected_columns.includes(column)) {
+                numericColumns.push(column)
+            }
+        });
+        return numericColumns
+    }
+    async visualize(dataset, len, file_name) {
+        try {
+
+            this.renderDatasetStats(dataset);
+            let numericColumns = this.get_numeric_columns(dataset, false)
+            const target = document.getElementById("target").value;
+            const index = numericColumns.findIndex(m => m === target)
+            if (index !== -1) {
+                delete numericColumns[index]
+            }
+            const filterd_dataset = dataset.loc({ columns: numericColumns })
+            filterd_dataset.dropNa({ axis: 1, inplace: true })
+            numericColumns = numericColumns.filter(m => m !== target)
+            let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+            if (numericColumns.length > 0) {
+                document.getElementById("container").innerHTML = "";
+                numericColumns.forEach(col => {
+                    this.chart_controller.draw_kde(filterd_dataset, col)
+                });
+            }
+            if (is_classification) {
+                let counts = dataset.column(target).valueCounts()
+                this.chart_controller.classification_target_chart(counts.values, counts.$index, file_name, "y_pie_chart")
+            }
+        } catch (error) {
+            throw error
+        }
     }
 }
