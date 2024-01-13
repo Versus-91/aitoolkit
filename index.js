@@ -20,6 +20,7 @@ import Bulma from '@vizuaalog/bulmajs';
 import { calculateRecall, calculateF1Score, calculatePrecision } from './src/utils.js';
 import SVM from "libsvm-js/asm";
 import tippy from 'tippy.js';
+import { main } from './src/lda.js';
 
 document.addEventListener("DOMContentLoaded", async function (event) {
     // your code here
@@ -470,6 +471,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     tippy('#myButton', {
         content: 'My tooltip!',
     });
+    document.getElementById("test").addEventListener("click", async () => {
+        console.log("click");
+        await main()
+    })
 });
 
 
