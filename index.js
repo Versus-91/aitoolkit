@@ -20,8 +20,7 @@ import Bulma from '@vizuaalog/bulmajs';
 import { calculateRecall, calculateF1Score, calculatePrecision } from './src/utils.js';
 import SVM from "libsvm-js/asm";
 import tippy from 'tippy.js';
-import { main } from './src/lda.js';
-
+import 'tippy.js/dist/tippy.css'; // optional for styling
 document.addEventListener("DOMContentLoaded", async function (event) {
     // your code here
     sk.setBackend(tensorflow)
@@ -64,6 +63,21 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     data_frame = new DataFrame(result.data)
                     ui.createDatasetPropsDropdown(dataset);
                     await ui.visualize(dataset, result.data.length, file.name)
+                    tippy('#kde_help', {
+                        content: 'Default bandwidth method :Silverman’s rule of thumb',
+                    });
+                    tippy('#normalization_help', {
+                        content: '<p>not functional yet</p><p>standard scaler uses z = (x - u) / s</p><p>Transform features by scaling each feature to a given range</p>',
+                        allowHTML: true,
+                    });
+                    tippy('#imputation_help', {
+                        content: 'currently we are just deleting rows with missing values',
+                        allowHTML: true,
+                    });
+                    tippy('#cv_help', {
+                        content: 'option 1 and 2 are working',
+                        allowHTML: true,
+                    });
                     document.getElementById("train-button").onclick = async () => {
                         ui.reset(divs, tbls)
                         ui.start_loading()
@@ -88,8 +102,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             let numericColumns = ui.get_numeric_columns(dataset, true)
             const target = document.getElementById("target").value;
             const index = numericColumns.findIndex(m => m === target)
-            if (index !== -1) {
-                delete numericColumns[index]
+            if (index === -1) {
+                numericColumns.push(target)
             }
             const filterd_dataset = dataset.loc({ columns: numericColumns })
             filterd_dataset.dropNa({ axis: 1, inplace: true })
@@ -273,6 +287,22 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         // chart_controller.probablities_boxplot(probs, classes)
                         // chart_controller.probablities_violin_plot(probs, classes)
 
+                        break
+                    }
+                    case Settings.classification.discriminant_analysis.label: {
+                        let model = model_factory.createModel(Settings.classification.discriminant_analysis, chart_controller, {})
+                        let encoder = new LabelEncoder()
+                        encoder.fit(y_train.values)
+                        let y = encoder.transform(y_train.values)
+                        let y_t = encoder.transform(y_test.values)
+                        let preds = await model.train(x_train.values, y, x_test.values)
+                        preds = Array.from(preds)
+                        let evaluation_result = evaluate_classification(preds, y_t)
+                        chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes)
+                        const classes = encoder.inverseTransform(Object.values(encoder.$labels))
+                        const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(y_t), classes)
+                        metrics_table(classes, matrix)
+                        predictions_table(x_test, y_test, encoder, preds);
                         break
                     }
                     case Settings.classification.random_forest.label: {
@@ -468,13 +498,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         await dimension_reduction();
     });
 
-    tippy('#myButton', {
-        content: 'My tooltip!',
-    });
-    document.getElementById("test").addEventListener("click", async () => {
-        console.log("click");
-        await main()
-    })
 });
 
 

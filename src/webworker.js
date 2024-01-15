@@ -24,7 +24,8 @@ self.onmessage = async (event) => {
   try {
     await self.pyodide.loadPackagesFromImports(python);
     let results = await self.pyodide.runPythonAsync(python);
-    self.postMessage({ results, id });
+    const result = results.toJs()
+    self.postMessage({ results: result, id });
   } catch (error) {
     self.postMessage({ error: error.message, id });
   }

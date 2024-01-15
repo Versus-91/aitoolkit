@@ -18,7 +18,7 @@ export const Settings = {
             }
         },
         "discriminant_analysis": {
-            "label": "discriminant analysis",
+            "label": "Discriminant Analysis",
             "value": 2
         },
         "k_nearest_neighbour": {

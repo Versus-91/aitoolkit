@@ -6,6 +6,8 @@ import Boosting from './boosting';
 import KNNModel from './knn';
 import RandomForest from "./random_forest";
 import NaiveBayes from "./NaiveBayes";
+import DiscriminantAnalysis from "./lda";
+
 
 
 export var ModelFactory = function () {
@@ -23,7 +25,7 @@ export var ModelFactory = function () {
         } else if (modelName === Settings.classification.boosting) {
             model = new Boosting(options)
         } else if (modelName === Settings.classification.discriminant_analysis) {
-
+            model = new DiscriminantAnalysis();
         } else if (modelName === Settings.regression.linear_regression) {
             model = new LinearRegression()
         } else if (modelName === Settings.classification.naive_bayes) {

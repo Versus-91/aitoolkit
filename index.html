@@ -10,6 +10,7 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
+
     <style>
         .tabs-content li {
             display: none;
@@ -23,9 +24,7 @@
 </head>
 
 <body>
-    <div class="container mt-4 is-fluid">
-        <button id="test">ssssssssssssssss</button>
-
+    <div class="container mt-4 is-fluid" style="position: absolute;">
         <div class="columns is-multiline">
             <div class="column is-12">
                 <div class="columns is-multiline">
@@ -63,7 +62,7 @@
                                         <div class="column is-12" id="stats" style="display: none;">
                                             <article class="message is-info">
                                                 <div class="message-header">
-                                                    <P>Data Summary</P>
+                                                    <p>Data Summary</p>
                                                 </div>
                                                 <div class="message-body">
                                                     <div class="columns is-multiline">
@@ -81,14 +80,12 @@
                                         <div class="column is-12">
                                             <article class="message is-info" id="kde_panel" style="display: none;">
                                                 <div class="message-header">
-                                                    <P>Kernel Density Estimates</P>
+                                                    <p>Kernel Density Estimates</p>
+                                                    <span id="kde_help" class="icon has-text-warning">
+                                                        <i class="fas fa-info-circle"></i>
+                                                    </span>
                                                 </div>
                                                 <div class="message-body">
-                                                    <div class="notification">
-                                                        Default bandwidth method : The bandwidth is proportional to
-                                                        n^(-1/(d+4)) where n is the
-                                                        number of points and d is the number of spatial dimensions.
-                                                    </div>
                                                     <div class="columns is-multiline" id="container">
                                                         <div class="columns is-multiline" id="controls">
                                                         </div>

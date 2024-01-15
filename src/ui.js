@@ -200,7 +200,11 @@ export default class UI {
             });
             $('#props').append(`
             <div class="column is-12">
-                <div class="label">Imputation</div>
+                <div class="label">Imputation
+                    <span id="imputation_help" class="icon has-text-success">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </div>
                 <div class="select mb-1">
                     <select id="imputation">
                         <option value="1">Delete rows</option>
@@ -213,7 +217,11 @@ export default class UI {
             `)
             $('#props').append(`
             <div class="column is-12">
-                <div class="label">Data Transformation</div>
+                <div class="label">Data Transformation
+                <span id="normalization_help" class="icon has-text-success">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+                </div>
                 <div class="select mb-1">
                     <select id="normalization">
                         <option value="1">No</option>
@@ -225,7 +233,11 @@ export default class UI {
             `)
             $('#props').append(`
             <div class="column is-12">
-                <div class="label">Cross Validation</div>
+                <div class="label">Cross Validation
+                <span id="cv_help" class="icon has-text-success">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+                </div>
                 <div class="select mb-1">
                     <select id="cross_validation">
                         <option value="1">70 % training - 30 % test</option>
@@ -245,10 +257,6 @@ export default class UI {
                 for (const key in Settings[label]) {
                     if (Settings.hasOwnProperty.call(Settings[label], key)) {
                         const item = Settings[label][key];
-                        if (item.label === e.target.value) {
-                            console.log(item?.options);
-
-                        }
                     }
                 }
             });
@@ -261,6 +269,12 @@ export default class UI {
                     $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
                 }
             });
+            $("#model_name").on("change", () => {
+                console.log("change");
+                document.getElementById("settings").innerHTML = ""
+                document.getElementById("settings").style.display = "none";
+
+            })
 
         } catch (error) {
             throw error
@@ -281,6 +295,7 @@ export default class UI {
             }
         }
         result += '</select></div></div>'
+
         return result
     }
     updateAlgorithmsSelect(category) {
