@@ -13,19 +13,39 @@ export default class ChartController {
         this.color_scheme = schemeCategory10;
     }
 
-    classification_target_chart(values, labels, name, container) {
+    classification_target_chart(values, labels, name, container, title = "") {
         var trace2 = {
             y: values,
             x: labels,
             type: 'bar',
+            width: 0.5,
             xaxis: 'x2',
             yaxis: 'y2',
+            marker: {
+                color: 'rgb(158,202,225)',
+                line: {
+                    color: 'rgb(8,48,107)',
+                    width: 1.5
+                }
+            }
         };
 
         var data = [trace2];
 
         var layout = {
-            grid: { rows: 1, columns: 1 },
+            title: title,
+            font: {
+                family: 'Raleway, sans-serif'
+            },
+            showlegend: false,
+            xaxis: {
+                tickangle: -45
+            },
+            yaxis: {
+                zeroline: false,
+                gridwidth: 1
+            },
+            bargap: 0.05
         };
 
         Plotly.newPlot(container, data, layout);
@@ -181,6 +201,54 @@ export default class ChartController {
             return [area, fprs, tprs];
         });
     }
+    nrd(x) {
+        let s = ss.standardDeviation(x);
+        const iqr = ss.interquartileRange(x);
+        if (typeof iqr === "number") {
+            s = Math.min(s, iqr / 1.34);
+        }
+        return 1.06 * s * Math.pow(x.length, -0.2);
+    }
+    redraw_kde(dataset, column, bandwidth) {
+        document.getElementById(container_id).innerHTML = "";
+
+        Plotly.purge(container_id);
+
+        let traces = [];
+
+        let items = dataset.column(column).values;
+
+        var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
+        let default_bandwidth = this.nrd(items).toFixed(2);
+
+        var breaks = ss.equalIntervalBreaks(items, 100);
+
+        let ys = breaks.map((item) => kde(item, bandwidth));
+
+        traces.push({
+            x: breaks,
+            y: ys,
+            fill: 'tozeroy',
+            type: 'scatter',
+            xaxis: 'x',
+            yaxis: 'y',
+            name: column
+        });
+        var layout = {
+            title: column + "<br> default bandwidth:" + default_bandwidth,
+            showlegend: false,
+            height: 400,
+        };
+        Plotly.newPlot(container_id, traces, layout);
+
+        // Append input and button elements to the container if they exist
+        if (inputElement) {
+            document.getElementById(container_id).appendChild(inputElement);
+        }
+        if (buttonElement) {
+            document.getElementById(container_id).appendChild(buttonElement);
+        }
+    }
     draw_kde(dataset, column, bandwidth = "nrd") {
         document.getElementById("kde_panel").style.display = "block";
         var newColumn = document.createElement("div");
@@ -198,55 +266,16 @@ export default class ChartController {
         var buttonElement = document.createElement("button");
         buttonElement.setAttribute("class", "button is-primary is-small");
         buttonElement.textContent = "Apply";
-
+        let current_class = this;
         let traces = [];
         let items = dataset.column(column).values;
-        var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
-
         buttonElement.addEventListener("click", function () {
             var newBandwidth = document.getElementById(column + '-kde').value;
-            redraw_kde(dataset, column, parseFloat(newBandwidth));
+            current_class.redraw_kde(dataset, column, parseFloat(newBandwidth));
         });
-        function redraw_kde(dataset, column, bandwidth) {
-            document.getElementById(container_id).innerHTML = "";
 
-            Plotly.purge(container_id);
-
-            let traces = [];
-
-            let items = dataset.column(column).values;
-
-            var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
-
-            var breaks = ss.equalIntervalBreaks(items, 100);
-
-            let ys = breaks.map((item) => kde(item, bandwidth));
-
-            traces.push({
-                x: breaks,
-                y: ys,
-                fill: 'tozeroy',
-                type: 'scatter',
-                xaxis: 'x',
-                yaxis: 'y',
-                name: column
-            });
-            var layout = {
-                title: column,
-                showlegend: false,
-                height: 400,
-            };
-            Plotly.newPlot(container_id, traces, layout);
-
-            // Append input and button elements to the container if they exist
-            if (inputElement) {
-                document.getElementById(container_id).appendChild(inputElement);
-            }
-            if (buttonElement) {
-                document.getElementById(container_id).appendChild(buttonElement);
-            }
-        }
         var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
+        let default_bandwidth = this.nrd(items).toFixed(2);
         var breaks = ss.equalIntervalBreaks(items, 100);
         let ys = [];
 
@@ -263,7 +292,7 @@ export default class ChartController {
         });
         var layout = {
             showlegend: false, height: 400,
-            title: column,
+            title: column + "<br> default bandwidth:" + default_bandwidth,
             plot_bgcolor: "#E5ECF6"
         };
         Plotly.newPlot(container_id, traces, layout);

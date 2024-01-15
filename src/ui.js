@@ -1,5 +1,4 @@
 import Plotly from 'plotly.js-dist';
-import * as ss from 'simple-statistics';
 import Bulma from '@vizuaalog/bulmajs';
 
 import { FeatureCategories, Settings } from "../feature_types.js";
@@ -385,12 +384,12 @@ export default class UI {
             }
         });
         document.getElementById("output").innerHTML =
-            '<h2 class="title is-5"> Number of rows: ' + data.shape[0] + ' Number of columns: ' + data.shape[1] + '</h2>' +
             '<table class="table is-bordered is-striped is-narrow is-hoverable"><thead>' +
             header +
             "</thead><tbody>" +
             tbody +
-            "</tbody></table>"
+            "</tbody></table>" +
+            '<h2 class="subtitle "> Data shape : (' + data.shape[0] + ',' + data.shape[1] + ')</h2>'
             ;
         //build categorical feature table table
         var header_categorical = "";
@@ -512,7 +511,7 @@ export default class UI {
             }
             if (is_classification) {
                 let counts = dataset.column(target).valueCounts()
-                this.chart_controller.classification_target_chart(counts.values, counts.$index, file_name, "y_pie_chart")
+                this.chart_controller.classification_target_chart(counts.values, counts.$index, file_name, "y_pie_chart", target)
             }
         } catch (error) {
             throw error
