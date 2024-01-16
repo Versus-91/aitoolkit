@@ -18,7 +18,7 @@ export default class ChartController {
             y: values,
             x: labels,
             type: 'bar',
-            width: 0.5,
+            width: 0.3,
             xaxis: 'x2',
             yaxis: 'y2',
             marker: {
@@ -235,7 +235,7 @@ export default class ChartController {
             name: column
         });
         var layout = {
-            title: column + "<br> default bandwidth:" + default_bandwidth,
+            title: column + "<br> default bandwidth : " + default_bandwidth,
             showlegend: false,
             height: 400,
         };
@@ -292,7 +292,7 @@ export default class ChartController {
         });
         var layout = {
             showlegend: false, height: 400,
-            title: column + "<br> default bandwidth:" + default_bandwidth,
+            title: column + "<br> default bandwidth : " + default_bandwidth,
             plot_bgcolor: "#E5ECF6"
         };
         Plotly.newPlot(container_id, traces, layout);
@@ -521,38 +521,35 @@ export default class ChartController {
     probablities_violin_plot(probs, classes) {
         const arrayColumn = (arr, n) => arr.map(x => x[n]);
         const num_columns = probs[0].length
-        let cols = []
+        let traces = []
         for (let i = 0; i < num_columns; i++) {
-            cols.push(arrayColumn(probs, i))
+            traces.push({
+                name: classes[i],
+                type: 'violin',
+                y: arrayColumn(probs, i),
+                points: 'none',
+                box: {
+                    visible: true
+                },
+                boxpoints: false,
+                line: {
+                    color: 'black'
+                },
+                fillcolor: '#8dd3c7',
+                opacity: 0.6,
+                meanline: {
+                    visible: true
+                },
+
+            });
         }
-        console.log(cols);
-        var data = [{
-
-            type: 'violin',
-            y: cols[2],
-            points: 'none',
-            box: {
-                visible: true
-            },
-            boxpoints: false,
-            line: {
-                color: 'black'
-            },
-            fillcolor: '#8dd3c7',
-            opacity: 0.6,
-            meanline: {
-                visible: true
-            },
-            x0: "Total Bill"
-        }]
-
         var layout = {
-            title: "",
+            title: "Violin Plot",
             yaxis: {
                 zeroline: false
             }
         }
 
-        Plotly.newPlot('probs_violin_plot', data, layout);
+        Plotly.newPlot('probs_violin_plot', traces, layout);
     }
 }

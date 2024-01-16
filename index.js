@@ -274,18 +274,39 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         encoder.fit(y_train.values)
                         let y = encoder.transform(y_train.values)
                         let y_t = encoder.transform(y_test.values)
-                        logistic_regression.train(x_train.values, y)
-                        const preds = logistic_regression.predict(x_test.values)
+                        let probs, stats, test;
+                        [stats, probs, test] = await logistic_regression.train(x_train.values, y_train.values, x_test.values, x_train.columns)
+                        let preds = []
+                        probs.forEach((item => {
+                            let key = Object.keys(encoder.$labels)[item.indexOf(Math.max(...item))]
+                            preds.push(parseInt(encoder.$labels[key]))
+                        }));
+                        // preds = encoder.transform(preds);
                         let evaluation_result = evaluate_classification(preds, y_t)
-                        chart_controller.draw_classification_pca(x_test.values, y_t, evaluation_result.indexes)
+                        chart_controller.draw_classification_pca(x_test.values, y_t, encoder.inverseTransform(evaluation_result.indexes))
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(y_t), classes)
                         metrics_table(classes, matrix)
-                        let probs = logistic_regression.predict_probas(x_test.values)
+                        let metrics = []
+                        for (let i = 0; i < stats.length; i++) {
+                            metrics.push([
+                                ...stats[i]])
+                        }
+                        new DataTable('#stats_table', {
+                            responsive: true,
+                            columns: [{ title: "variable" }, { title: "coefficient" }, { title: "std error" }, { title: "z" }, { title: "p value" }, { title: "[0.025" }, { title: "0.975]" }],
+                            data: metrics,
+                            info: false,
+                            search: false,
+                            ordering: false,
+                            searching: false,
+                            paging: false,
+                            bDestroy: true,
+                        });
                         // chart_controller.regularization_plot(alphas, coefs, x_test.columns)
                         predictions_table(x_test, y_test, encoder, preds, probs);
-                        // chart_controller.probablities_boxplot(probs, classes)
-                        // chart_controller.probablities_violin_plot(probs, classes)
+                        chart_controller.probablities_boxplot(probs, classes)
+                        chart_controller.probablities_violin_plot(probs, classes)
 
                         break
                     }

@@ -159,31 +159,37 @@
                                         </div>
                                     </li>
                                     <li>
-                                        <div class="column is-6">
-                                            <div id="lasso_plot"></div>
-                                        </div>
-                                        <div class="column is-6">
-                                            <table id="metrics_table" class="table display" width="100%"></table>
-                                        </div>
-                                        <div class="column is-6">
-                                            <table id="probs_box_plot" class="table display" width="100%"></table>
-                                        </div>
-                                        <div class="column is-6">
-                                            <table id="probs_violin_plot" class="table display" width="100%"></table>
-                                        </div>
-                                        <div class="column is-12">
-                                            <table id="knn_table" class="table is-bordered display" width="100%">
-                                            </table>
-                                        </div>
-                                        <div class="column is-12" id="formulas">
+                                        <div class="columns is-multiline">
+                                            <div class="column is-6" style="display: none;">
+                                                <div id="lasso_plot"></div>
+                                            </div>
+                                            <div class="column is-4">
+                                                <table id="metrics_table" class="table display" width="100%"></table>
+                                            </div>
+                                            <div class="column is-8">
+                                                <table id="stats_table" class="table display" width="100%"></table>
+                                            </div>
+                                            <div class="column is-6">
+                                                <table id="probs_box_plot" class="table display" width="100%"></table>
+                                            </div>
+                                            <div class="column is-6">
+                                                <table id="probs_violin_plot" class="table display" width="100%">
+                                                </table>
+                                            </div>
+                                            <div class="column is-12">
+                                                <table id="knn_table" class="table is-bordered display" width="100%">
+                                                </table>
+                                            </div>
+                                            <div class="column is-12" id="formulas" style="display: none;">
 
-                                        </div>
-                                        <div class="column is-12" id="regression_y_yhat"
-                                            style="height: 450px;width: 80%;">
-                                        </div>
-                                        <div class="column is-12">
-                                            <table id="predictions_table" class="table is-bordered display"
-                                                width="100%"></table>
+                                            </div>
+                                            <div class="column is-12" id="regression_y_yhat"
+                                                style="height: 450px;width: 80%;display: none;">
+                                            </div>
+                                            <div class="column is-12">
+                                                <table id="predictions_table" class="table is-bordered display"
+                                                    width="100%"></table>
+                                            </div>
                                         </div>
                                     </li>
                                 </ul>
