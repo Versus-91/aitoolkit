@@ -9,10 +9,10 @@
         integrity="sha512-q3eWabyZPc1XTCmF+8/LuE1ozpg5xxn7iO89yfSOd5/oKvyqLngoNGsx8jq92Y8eXJ/IRxQbEC+FGSYxtk2oiw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
-
+    <link href="https://cdn.datatables.net/v/bm/dt-1.13.8/r-2.5.0/sc-2.3.0/sp-2.2.0/datatables.min.css"
+        rel="stylesheet">
     <style>
-        .tabs-content li {
+        .tabs-content li.tabs-li {
             display: none;
             list-style: none;
         }
@@ -24,7 +24,7 @@
 </head>
 
 <body>
-    <div class="container mt-4 is-fluid" style="position: absolute;">
+    <div class="container is-fluid" style="display: absoulte;">
         <div id="syncTypeset"></div>
         <div class="columns is-multiline">
             <div class="column is-12">
@@ -59,7 +59,7 @@
 
                             <div class="tabs-content">
                                 <ul>
-                                    <li class="is-active">
+                                    <li class="is-active tabs-li">
                                         <div class="column is-12" id="stats" style="display: none;">
                                             <article class="message is-info">
                                                 <div class="message-header">
@@ -73,6 +73,11 @@
                                                         </div>
                                                         <div class="column is-6">
                                                             <div id="y_pie_chart"></div>
+                                                        </div>
+                                                        <div class="column is-12">
+                                                            <table style="width:100%" class="table nowrap"
+                                                                id="sample_data_table">
+                                                            </table>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -100,7 +105,7 @@
                                             </div>
                                         </div>
                                     </li>
-                                    <li>
+                                    <li class="tabs-li">
                                         <button class="button is-primary" id="dim_red_button">Find PCA and t-SNE
                                         </button>
                                         <div class="column is-12" id="dimensionality_reduction_panel"
@@ -126,7 +131,7 @@
                                             </article>
                                         </div>
                                     </li>
-                                    <li>
+                                    <li class="tabs-li">
                                         <div class="column is-6">
                                             <div id="desc"></div>
                                             <div id="plot_div"></div>
@@ -159,7 +164,7 @@
                                             </article>
                                         </div>
                                     </li>
-                                    <li>
+                                    <li class="tabs-li">
                                         <div class="columns is-multiline">
                                             <div class="column is-12">
                                                 <div class="columns">
@@ -331,6 +336,8 @@
         </script>
     <script type="text/javascript" src="/tsne.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/v/bm/dt-1.13.8/r-2.5.0/datatables.min.js"></script>
     <script type="module" src="index.js"></script>
 </body>
 

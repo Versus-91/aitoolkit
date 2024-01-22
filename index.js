@@ -1,6 +1,5 @@
 "use strict";
-import { DataFrame, tensorflow, OneHotEncoder, LabelEncoder } from 'danfojs/dist/danfojs-base';
-import $ from 'jquery';
+import { DataFrame, tensorflow, LabelEncoder } from 'danfojs/dist/danfojs-base';
 import Papa from 'papaparse';
 import ChartController from "./src/charts.js";
 import DataLoader from "./src/data.js";
@@ -9,13 +8,8 @@ import UI from "./src/ui.js";
 import { FeatureCategories, Settings } from './feature_types.js';
 import { ModelFactory } from './src/model_factory.js';
 import * as tfvis from '@tensorflow/tfjs-vis';
-import * as d3 from "d3";
-import DataTable from 'datatables.net-dt';
 import * as sk from 'scikitjs'
-import { Matrix } from 'ml-matrix';
-import { ConfusionMatrix } from 'ml-confusion-matrix';
 import Plotly from 'plotly.js-dist';
-
 import Bulma from '@vizuaalog/bulmajs';
 import { calculateRecall, calculateF1Score, calculatePrecision } from './src/utils.js';
 import SVM from "libsvm-js/asm";
@@ -26,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     sk.setBackend(tensorflow)
     let data_frame;
     window.tf = tensorflow
-    window.jQuery = window.$ = $
+    let $
     let data_parser = new DataLoader();
     let trainer = new Trainter();
     let chart_controller = new ChartController(data_parser);
@@ -62,6 +56,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     let dataset = new DataFrame(result.data)
                     data_frame = new DataFrame(result.data)
                     ui.createDatasetPropsDropdown(dataset);
+                    ui.createSampleDataTable(dataset);
                     await ui.visualize(dataset, result.data.length, file.name)
                     tippy('#kde_help', {
                         content: 'Default bandwidth method :Silverman’s rule of thumb',
@@ -433,6 +428,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         });
         new DataTable('#predictions_table', {
             responsive: true,
+            paging: true,
+            "bPaginate": true,
             columns: table_columns,
             data: x.values,
             bDestroy: true,
