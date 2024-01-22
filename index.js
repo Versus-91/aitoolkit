@@ -33,8 +33,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     let ui = new UI(data_parser, chart_controller);
     let X
     let y
-    const divs = ["lasso_plot", "formulas", "regression_y_yhat"]
-    const tbls = ["lasso_plot", "predictions_table", "results", "knn_table", "metrics_table"]
+    const divs = ["lasso_plot", "formulas", "regression_y_yhat", "probs_violin_plot", "probs_box_plot"]
+    const tbls = ["lasso_plot", "predictions_table", "results", "knn_table", "metrics_table", "stats_table"]
 
     function handleFileSelect(evt) {
         var target = evt.target || evt.srcElement;
@@ -283,7 +283,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         }));
                         // preds = encoder.transform(preds);
                         let evaluation_result = evaluate_classification(preds, y_t)
-                        chart_controller.draw_classification_pca(x_test.values, y_t, encoder.inverseTransform(evaluation_result.indexes))
+                        chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(y_t), classes)
                         metrics_table(classes, matrix)
@@ -436,10 +436,21 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             columns: table_columns,
             data: x.values,
             bDestroy: true,
+            columnDefs: [
+                {
+                    render: function (data, type, row) {
+                        for (let i = 0; i < data.length; i++) {
+                            data[i] = data[i].toFixed(2);
+                        }
+                        return data
+                    },
+                    targets: [-3]
+                }
+            ],
             rowCallback: function (row, data, index) {
-                var column1Value = data[table_columns.length - 1];
-                var column2Value = data[table_columns.length - 2];
-                if (column1Value !== column2Value) {
+                var prediction = data[table_columns.length - 1];
+                var y = data[table_columns.length - 2];
+                if (prediction !== y) {
                     $(row).css('background-color', '#97233F');
                     $(row).css('color', 'white');
                 }
@@ -504,6 +515,27 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     }
 
     ui.init_upload_button(handleFileSelect)
+    setTimeout(function () {
+        const content = document.createElement('span')
+        content.textContent = '\\(x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}\\)'
+
+        const done = document.createElement('span')
+        done.textContent = '   done!'
+
+        const syncTypeset = document.querySelector('#syncTypeset')
+        syncTypeset.appendChild(content.cloneNode(true))
+        setTimeout(function () {
+            MathJax.typeset()
+            syncTypeset.appendChild(done.cloneNode(true))
+        }, 3000)
+
+        const asyncTypeset = document.querySelector('#asyncTypeset')
+        asyncTypeset.appendChild(content.cloneNode(true))
+        setTimeout(async function () {
+            await MathJax.typesetPromise()
+            asyncTypeset.appendChild(done.cloneNode(true))
+        }, 3000)
+    }, 0)
     // const webR = new WebR();
     // await webR.init();
     // let result = await webR.evalR(`
