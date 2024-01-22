@@ -150,6 +150,7 @@ export default class UI {
                 var model = Settings.classification[model_name];
                 var options_modal_content = document.getElementById("settings");
                 if (window.getComputedStyle(options_modal_content).display !== "none") {
+                    options_modal_content.innerHTML = ""
                     options_modal_content.style.display = "none"
                     return
                 }
@@ -157,8 +158,8 @@ export default class UI {
                 for (const key in model.options) {
                     options_modal_content.style.display = "block"
                     if (Object.hasOwnProperty.call(model.options, key)) {
-                        const element = model.options[key]["type"]
-                        if (element === "number") {
+                        const option_type = model.options[key]["type"]
+                        if (option_type === "number" || option_type === "text") {
                             $('#settings').append(`
                             <div class="column is-12">
                                 <div class="field is-horizontal">
@@ -167,14 +168,14 @@ export default class UI {
                                     </div>
                                     <div class="field-body">
                                     <div class="control">
-                                        <input id="${key + "_" + model_name}" class="input is-small" type="number">
+                                        <input id="${key + "_" + model_name}" class="input is-small" type="${option_type}">
                                     </div>
                                     </div>
                                 </div>
                             </div>
                             `)
                             document.getElementById(key + "_" + model_name).value = model.options[key]["default"]
-                        } else if (element === "select") {
+                        } else if (option_type === "select") {
                             let result = ""
                             let options = model.options[key]["values"]
                             result = `
@@ -281,9 +282,7 @@ export default class UI {
 
         // $('#kde_select').append(this.createFeaturesDropdown(rowMetadata))
     }
-    get_settings() {
 
-    }
     createAlgorithmsSelect(category) {
         let result = '<div id="algorithm" class="column is-10"><div class="select mb-1"> <select id="model_name" class="select">'
         const label = category == 1 ? "regression" : "classification"
