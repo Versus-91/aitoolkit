@@ -1,6 +1,7 @@
 import { asyncRun } from "./py-worker";
 export default class DiscriminantAnalysis {
-    constructor() {
+    constructor(options) {
+        this.options = options
         this.context = {
             X_train: [0.8, 0.4, 1.2, 3.7, 2.6, 5.8],
             y_train: [0.8, 0.4, 1.2, 3.7, 2.6, 5.8],
@@ -9,7 +10,7 @@ export default class DiscriminantAnalysis {
     }
     async train(x, y, x_test) {
         this.context = {
-            lda_type: 0,
+            lda_type: this.options.type,
             X_train: x,
             y_train: y,
             X_test: x_test,

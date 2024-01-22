@@ -19,13 +19,12 @@ export var ModelFactory = function () {
             model = new KNNModel(options)
         } else if (modelName === Settings.classification.random_forest) {
             model = new RandomForest(options)
-
         } else if (modelName === Settings.classification.support_vectore_machine) {
             model = new SupportVectorMachine(options)
         } else if (modelName === Settings.classification.boosting) {
             model = new Boosting(options)
         } else if (modelName === Settings.classification.discriminant_analysis) {
-            model = new DiscriminantAnalysis();
+            model = new DiscriminantAnalysis(options);
         } else if (modelName === Settings.regression.linear_regression) {
             model = new LinearRegression()
         } else if (modelName === Settings.classification.naive_bayes) {

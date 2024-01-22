@@ -311,7 +311,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break
                     }
                     case Settings.classification.discriminant_analysis.label: {
-                        let model = model_factory.createModel(Settings.classification.discriminant_analysis, chart_controller, {})
+                        let model = model_factory.createModel(Settings.classification.discriminant_analysis, { type: model_settings.type === "linear" ? 0 : 1 })
                         let encoder = new LabelEncoder()
                         encoder.fit(y_train.values)
                         let y = encoder.transform(y_train.values)
@@ -517,7 +517,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     ui.init_upload_button(handleFileSelect)
     setTimeout(function () {
         const content = document.createElement('span')
-        content.textContent = '\\(x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}\\)'
+        content.textContent = 'hello s \\(x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}\\)'
 
         const done = document.createElement('span')
         done.textContent = '   done!'
@@ -529,12 +529,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             syncTypeset.appendChild(done.cloneNode(true))
         }, 3000)
 
-        const asyncTypeset = document.querySelector('#asyncTypeset')
-        asyncTypeset.appendChild(content.cloneNode(true))
-        setTimeout(async function () {
-            await MathJax.typesetPromise()
-            asyncTypeset.appendChild(done.cloneNode(true))
-        }, 3000)
     }, 0)
     // const webR = new WebR();
     // await webR.init();

@@ -19,7 +19,19 @@ export const Settings = {
         },
         "discriminant_analysis": {
             "label": "Discriminant Analysis",
-            "value": 2
+            "value": 2,
+            "options": {
+                "type": {
+                    "label": "type",
+                    "type": "select",
+                    default: "linear",
+                    "values": ["linear", "quadratic"]
+                },
+                "priors": {
+                    type: "text",
+                    default: 3
+                },
+            }
         },
         "k_nearest_neighbour": {
             "label": "k nearest neighbour",
