@@ -155,6 +155,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
             let model_factory = new ModelFactory();
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
+                let uniqueLabels = [...new Set(y_train.values)];
                 let model_settings = ui.get_model_settings();
                 switch (model_name) {
                     case Settings.classification.k_nearest_neighbour.label: {
@@ -189,7 +190,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             data: knn_accuracies,
                             bDestroy: true,
                         });
-                        chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes)
+                        chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(predictions), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                         metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         predictions_table(x_test, y_test, encoder, best_result.predictions)
@@ -211,7 +212,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         model.train(x_train.values, encoded_y_train)
                         let y_preds = model.predict(x_test.values)
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                        chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
+                        chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
                         predictions_table(x_test, y_test, encoder, y_preds)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                         metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
@@ -227,7 +228,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         model.train(x_train.values, encoded_y_train)
                         let y_preds = Array.from(model.predict(x_test.values))
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                        chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
+                        chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                         metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         predictions_table(x_test, y_test, encoder, y_preds)
@@ -253,7 +254,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         await model.train(x_train.values, encoded_y_train)
                         let y_preds = await model.predict(x_test.values)
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                        chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes)
+                        chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                         predictions_table(x_test, y_test, encoder, y_preds)
                         metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
@@ -277,7 +278,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         }));
                         // preds = encoder.transform(preds);
                         let evaluation_result = evaluate_classification(preds, y_t)
-                        chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes)
+                        chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(y_t), classes)
                         metrics_table(classes, matrix)
@@ -313,7 +314,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let preds = await model.train(x_train.values, y, x_test.values)
                         preds = Array.from(preds)
                         let evaluation_result = evaluate_classification(preds, y_t)
-                        chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes)
+                        chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(y_t), classes)
                         metrics_table(classes, matrix)
@@ -343,10 +344,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
                         const evaluation_result = evaluate_classification(preds, encoded_y_test)
                         const classes = encoder_rf.inverseTransform(Object.values(encoder_rf.$labels))
-                        chart_controller.draw_classification_pca(x_test.values, encoded_y_test, evaluation_result.indexes)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), classes)
                         metrics_table(classes, matrix)
-                        chart_controller.draw_classification_pca(x_test.values, encoded_y_test, evaluation_result.indexes)
+                        chart_controller.draw_classification_pca(x_test.values, encoded_y_test, evaluation_result.indexes, uniqueLabels)
 
                         predictions_table(x_test, y_test, encoder_rf, preds);
 

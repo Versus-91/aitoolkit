@@ -146,18 +146,11 @@ export default class ChartController {
         }
 
         var layout = {
-            legend: {
-                y: 0.5,
-                yref: 'paper',
-                font: {
-                    family: 'Arial, sans-serif',
-                    size: 20,
-                    color: 'grey',
-                }
-            },
+            showlegend: true,
+            legend: { "orientation": "h" },
             title: 't-SNE plot'
         };
-        Plotly.newPlot('tsne', traces, layout,{ responsive: true });
+        Plotly.newPlot('tsne', traces, layout, { responsive: true });
     }
     trueNegatives(yTrue, yPred) {
         return tf.tidy(() => {
@@ -298,10 +291,9 @@ export default class ChartController {
         };
         Plotly.newPlot(container_id, traces, layout, config);
     }
-    draw_classification_pca(dataset, labels, missclassifications, size = 4, color_scale = "Jet") {
+    draw_classification_pca(dataset, labels, missclassifications, uniqueLabels, size = 4, color_scale = "Jet") {
         const pca = new PCA(dataset, { center: true, scale: true });
-        var uniqueLabels = [...new Set(labels)];
-        var colorIndices = labels.map(label => uniqueLabels.indexOf(label));
+        var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
         const pca_data = pca.predict(dataset, { nComponents: 2 })
         let x = []
         let y = []
@@ -347,7 +339,14 @@ export default class ChartController {
         };
         var data = [trace1, trace2];
         Plotly.newPlot('pca-results', data, {
+            showlegend: true,
+            legend: {
+                x: 1,
+                xanchor: 'right',
+                y: 1
+            },
             xaxis: {
+
                 title: 'PCA component 1'
             },
             yaxis: {
@@ -421,6 +420,8 @@ export default class ChartController {
             },
         };
         Plotly.newPlot('pca-1', [trace1], {
+            showlegend: true,
+            legend: { "orientation": "h" },
             xaxis: {
                 title: 'PCA component 1'
             },
@@ -429,6 +430,8 @@ export default class ChartController {
             }
         }, { responsive: true });
         Plotly.newPlot('pca-2', [trace2], {
+            showlegend: true,
+            legend: { "orientation": "h" },
             xaxis: {
                 title: 'PCA component 1'
             },
@@ -437,6 +440,8 @@ export default class ChartController {
             }
         }, { responsive: true });
         Plotly.newPlot('pca-3', [trace3], {
+            showlegend: true,
+            legend: { "orientation": "h" },
             xaxis: {
                 title: 'PCA component 2'
             },
