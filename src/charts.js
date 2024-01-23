@@ -157,7 +157,7 @@ export default class ChartController {
             },
             title: 't-SNE plot'
         };
-        Plotly.newPlot('tsne', traces, layout);
+        Plotly.newPlot('tsne', traces, layout,{ responsive: true });
     }
     trueNegatives(yTrue, yPred) {
         return tf.tidy(() => {
@@ -212,9 +212,9 @@ export default class ChartController {
         return 1.06 * s * Math.pow(x.length, -0.2);
     }
     redraw_kde(dataset, column, bandwidth, container_id) {
-
+        var config = { responsive: true }
         Plotly.purge(container_id);
-
+        console.log("purged");
         let traces = [];
 
         let items = dataset.column(column).values;
@@ -238,9 +238,10 @@ export default class ChartController {
             showlegend: false,
             height: 400,
         };
-        Plotly.newPlot(container_id, traces, layout);
+        Plotly.newPlot(container_id, traces, layout, config);
     }
     draw_kde(dataset, column, bandwidth = "nrd") {
+        var config = { responsive: true }
         let current_class = this;
         let traces = [];
         let items = dataset.column(column).values;
@@ -295,7 +296,7 @@ export default class ChartController {
             title: column,
             plot_bgcolor: "#E5ECF6"
         };
-        Plotly.newPlot(container_id, traces, layout);
+        Plotly.newPlot(container_id, traces, layout, config);
     }
     draw_classification_pca(dataset, labels, missclassifications, size = 4, color_scale = "Jet") {
         const pca = new PCA(dataset, { center: true, scale: true });
@@ -352,7 +353,7 @@ export default class ChartController {
             yaxis: {
                 title: 'PCA component 2'
             }
-        });
+        }, { responsive: true });
 
     }
     draw_pca(dataset, labels, size = 4, color_scale = "Jet") {
@@ -426,7 +427,7 @@ export default class ChartController {
             yaxis: {
                 title: 'PCA component 2'
             }
-        });
+        }, { responsive: true });
         Plotly.newPlot('pca-2', [trace2], {
             xaxis: {
                 title: 'PCA component 1'
@@ -434,7 +435,7 @@ export default class ChartController {
             yaxis: {
                 title: 'PCA component 3'
             }
-        });
+        }, { responsive: true });
         Plotly.newPlot('pca-3', [trace3], {
             xaxis: {
                 title: 'PCA component 2'
@@ -442,7 +443,7 @@ export default class ChartController {
             yaxis: {
                 title: 'PCA component 3'
             }
-        });
+        }, { responsive: true });
     }
     drawStackedHorizontalChart(categories, lable) {
         var trace1 = {
