@@ -211,8 +211,7 @@ export default class ChartController {
         }
         return 1.06 * s * Math.pow(x.length, -0.2);
     }
-    redraw_kde(dataset, column, bandwidth) {
-        document.getElementById(container_id).innerHTML = "";
+    redraw_kde(dataset, column, bandwidth, container_id) {
 
         Plotly.purge(container_id);
 
@@ -221,8 +220,6 @@ export default class ChartController {
         let items = dataset.column(column).values;
 
         var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
-        let default_bandwidth = this.nrd(items).toFixed(2);
-
         var breaks = ss.equalIntervalBreaks(items, 100);
 
         let ys = breaks.map((item) => kde(item, bandwidth));
@@ -242,14 +239,6 @@ export default class ChartController {
             height: 400,
         };
         Plotly.newPlot(container_id, traces, layout);
-
-        // Append input and button elements to the container if they exist
-        if (inputElement) {
-            document.getElementById(container_id).appendChild(inputElement);
-        }
-        if (buttonElement) {
-            document.getElementById(container_id).appendChild(buttonElement);
-        }
     }
     draw_kde(dataset, column, bandwidth = "nrd") {
         let current_class = this;
@@ -259,26 +248,31 @@ export default class ChartController {
         let default_bandwidth = this.nrd(items).toFixed(2);
 
         document.getElementById("kde_panel").style.display = "block";
+
         var newColumn = document.createElement("div");
         newColumn.className = "column is-4";
         newColumn.setAttribute("id", column + '-kde-clomun');
-        var container = document.getElementById("container");
-        container.appendChild(newColumn);
-        let container_id = column + '-kde-clomun';
-        // Create an input element
-        var inputElement = document.createElement("input");
-        inputElement.setAttribute("class", "input is-small is-2");
-        inputElement.setAttribute("placeholder", "bandwidth");
-        inputElement.setAttribute("id", column + '-kde');
-        inputElement.setAttribute("type", "number");
-        inputElement.value = default_bandwidth
-        var buttonElement = document.createElement("button");
-        buttonElement.setAttribute("class", "button is-primary is-small");
-        buttonElement.textContent = "Apply";
 
-        buttonElement.addEventListener("click", function () {
+        $("#container").append(
+            `<div class="column is-4 " id="${column + '-kde-clomun'}">
+                <div class="field has-addons mt-1">
+                    <div class="control">
+                        <input class="input is-small" type="number"  id="${column + '-kde'}" value="${default_bandwidth}">
+                        </div>
+                        <div class="control">
+                        <a class="button is-success is-small" id="${column + '-kde-button'}">
+                            Apply
+                        </a>
+                    </div>
+                </div>
+            </div>`
+        );
+
+        let container_id = column + '-kde-clomun';
+
+        document.getElementById(column + '-kde-button').addEventListener("click", function () {
             var newBandwidth = document.getElementById(column + '-kde').value;
-            current_class.redraw_kde(dataset, column, parseFloat(newBandwidth));
+            current_class.redraw_kde(dataset, column, parseFloat(newBandwidth), container_id);
         });
 
 
@@ -302,8 +296,6 @@ export default class ChartController {
             plot_bgcolor: "#E5ECF6"
         };
         Plotly.newPlot(container_id, traces, layout);
-        document.getElementById(container_id).appendChild(inputElement);
-        document.getElementById(container_id).appendChild(buttonElement);
     }
     draw_classification_pca(dataset, labels, missclassifications, size = 4, color_scale = "Jet") {
         const pca = new PCA(dataset, { center: true, scale: true });
