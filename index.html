@@ -9,8 +9,9 @@
         integrity="sha512-q3eWabyZPc1XTCmF+8/LuE1ozpg5xxn7iO89yfSOd5/oKvyqLngoNGsx8jq92Y8eXJ/IRxQbEC+FGSYxtk2oiw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link href="https://cdn.datatables.net/v/bm/dt-1.13.8/r-2.5.0/sc-2.3.0/sp-2.2.0/datatables.min.css"
-        rel="stylesheet">
+    <link href="https://cdn.datatables.net/v/bm/dt-1.13.8/r-2.5.0/sb-1.6.0/datatables.min.css" rel="stylesheet">
+
+
     <style>
         .tabs-content li.tabs-li {
             display: none;
@@ -20,11 +21,25 @@
         .tabs-content li.is-active {
             display: block;
         }
+
+        #tooltip {
+            display: none;
+            width: max-content;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #222;
+            color: white;
+            font-weight: bold;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 90%;
+        }
     </style>
 </head>
 
 <body>
-    <div class="container is-fluid" style="display: absoulte;">
+    <div class="container is-fluid" style="position: absolute;">
         <div id="syncTypeset"></div>
         <div class="columns is-multiline">
             <div class="column is-12">
@@ -57,7 +72,7 @@
                                 </ul>
                             </div>
 
-                            <div class="tabs-content">
+                            <div class="tabs-content" style="display: absolute;">
                                 <ul>
                                     <li class="is-active tabs-li">
                                         <div class="column is-12" id="stats" style="display: none;">
@@ -71,10 +86,10 @@
                                                         </div>
                                                         <div class="column is-6" id="categorical_features">
                                                         </div>
-                                                        <div class="column is-6">
+                                                        <div class="column is-4">
                                                             <div id="y_pie_chart"></div>
                                                         </div>
-                                                        <div class="column is-12">
+                                                        <div class="column is-8">
                                                             <table style="width:100%" class="table nowrap"
                                                                 id="sample_data_table">
                                                             </table>
@@ -113,19 +128,31 @@
                                             <article class="message is-info">
                                                 <div class="message-body">
                                                     <div class="columns is-multiline">
+                                                        <div class="column is-12">
+                                                            <p class="title is-3">t-SNE</p>
+                                                        </div>
                                                         <div class="column is-6">
                                                             <div id="tsne">
                                                             </div>
                                                         </div>
-                                                        <div class="column is-6">
-                                                            <div id="pca-1"></div>
+                                                        <div class="column is-12">
+                                                            <p class="title is-3">Priciple Component Analysis with 3
+                                                                components</p>
                                                         </div>
-                                                        <div class="column is-6">
-                                                            <div id="pca-2"></div>
+                                                        <div class="column is-12">
+                                                            <div class="columns is-multiline">
+                                                                <div class="column is-4">
+                                                                    <div id="pca-1"></div>
+                                                                </div>
+                                                                <div class="column is-4">
+                                                                    <div id="pca-2"></div>
+                                                                </div>
+                                                                <div class="column is-4">
+                                                                    <div id="pca-3"></div>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <div class="column is-6">
-                                                            <div id="pca-3"></div>
-                                                        </div>
+
                                                     </div>
                                                 </div>
                                             </article>
@@ -146,17 +173,16 @@
                                             <div id="acc-cont"></div>
                                         </div>
                                         <div class="column is-12">
-                                            <div class="column is-6">
+                                            <div class="column is-4">
                                                 <div id="confusion-matrix"></div>
                                             </div>
                                             <article class="message is-info">
                                                 <div class="message-body">
                                                     <div class="columns is-multiline">
-                                                        <div class="column is-6">
+                                                        <div class="column is-4">
                                                             <div id="roc"></div>
                                                         </div>
-
-                                                        <div class="column is-6">
+                                                        <div class="column is-4">
                                                             <div id="pca-results"></div>
                                                         </div>
                                                     </div>
@@ -337,7 +363,7 @@
     <script type="text/javascript" src="/tsne.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.datatables.net/v/bm/dt-1.13.8/r-2.5.0/datatables.min.js"></script>
+    <script src="https://cdn.datatables.net/v/bm/dt-1.13.8/r-2.5.0/sb-1.6.0/datatables.min.js"></script>
     <script type="module" src="index.js"></script>
 </body>
 

@@ -20,7 +20,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     sk.setBackend(tensorflow)
     let data_frame;
     window.tf = tensorflow
-    let $
     let data_parser = new DataLoader();
     let trainer = new Trainter();
     let chart_controller = new ChartController(data_parser);

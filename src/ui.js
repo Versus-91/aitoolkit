@@ -7,19 +7,7 @@ export default class UI {
         this.data_parser = parser
         this.chart_controller = chart_controller
     }
-    drawTargetPieChart(values, labels, containerId) {
-        var data = [{
-            values: values,
-            labels: labels,
-            type: 'pie'
-        }];
-        var layout = {
-            height: 400,
-            width: 500
-        };
 
-        Plotly.newPlot(containerId, data, layout);
-    }
     get_model_settings() {
         let model_settings = {};
         let model_name = document.getElementById('model_name').value;
@@ -121,6 +109,96 @@ export default class UI {
 
             $('#props').append(this.createTargetDropdown(items))
 
+
+
+            // $(document).on('change', '#' + default_target, function (e) {
+            //     $("#algorithm").empty();
+            //     $("#algorithm").append(myClass.updateAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
+            // });
+            $("#model_options").empty();
+            $('#algorithm').on('change', function () {
+                $("#model_options").empty();
+            });
+            $('#props').append(`
+            <div class="column is-12">
+                <div class="label">Imputation
+                    <span id="imputation_help" class="icon has-text-success">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </div>
+                <div class="select mb-1">
+                    <select id="imputation">
+                        <option value="1">Delete rows</option>
+                        <option value="2">Mean and Mode</option>
+                        <option value="3">Linear regression</option>
+                        <option value="4">random forest</option>
+                    </select>
+                </div>
+            </div>
+            `)
+            $('#props').append(`
+            <div class="column is-12">
+                <div class="label">Data Transformation
+                <span id="normalization_help" class="icon has-text-success">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+                </div>
+                <div class="select mb-1">
+                    <select id="normalization">
+                        <option value="1">No</option>
+                        <option value="2">Scale</option>
+                        <option value="3">Normal</option>
+                    </select>
+                </div>
+            </div>
+            `)
+            $('#props').append(`
+            <div class="column is-12">
+                <div class="label">Cross Validation
+                <span id="cv_help" class="icon has-text-success">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+                </div>
+                <div class="select mb-1">
+                    <select id="cross_validation">
+                        <option value="1">70 % training - 30 % test</option>
+                        <option value="2">No</option>
+                        <option value="3">K-fold</option>
+                    </select>
+                </div>
+            </div>
+            `)
+            $('#target').val(default_target)
+
+
+            $('#target').on('change', function (e) {
+                const type = document.getElementById(e.target.value).value
+                $('#algorithm').empty()
+                if (type === 'Numerical') {
+                    $('#algorithm').append(myClass.updateAlgorithmsSelect(1));
+                } else {
+                    $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
+                }
+            });
+
+            $("#model_name").on("change", () => {
+                console.log("change");
+                document.getElementById("settings").innerHTML = ""
+                document.getElementById("settings").style.display = "none";
+
+            })
+
+
+            //modle options
+            $('#algorithm').on('change', function (e) {
+                const model_type = items.column(default_target).dtype !== 'string' ? 1 : 2;
+                const label = model_type == 1 ? "regression" : "classification"
+                for (const key in Settings[label]) {
+                    if (Settings.hasOwnProperty.call(Settings[label], key)) {
+                        const item = Settings[label][key];
+                    }
+                }
+            });
             if (items.column(default_target).dtype !== 'string') {
                 $('#props').append(this.createAlgorithmsSelect(1));
             } else {
@@ -136,14 +214,6 @@ export default class UI {
             </div>
             <div class="column is-12" id="settings" style="display:none">
             </div>`)
-            // $(document).on('change', '#' + default_target, function (e) {
-            //     $("#algorithm").empty();
-            //     $("#algorithm").append(myClass.updateAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
-            // });
-            $("#model_options").empty();
-            $('#algorithm').on('change', function () {
-                $("#model_options").empty();
-            });
             document.querySelector('#config_modal_button').addEventListener('click', function (e) {
                 let model_name = document.getElementById('model_name').value;
                 model_name = model_name.replace(/\s+/g, '_').toLowerCase();
@@ -198,83 +268,8 @@ export default class UI {
                     }
                 }
             });
-            $('#props').append(`
-            <div class="column is-12">
-                <div class="label">Imputation
-                    <span id="imputation_help" class="icon has-text-success">
-                        <i class="fas fa-info-circle"></i>
-                    </span>
-                </div>
-                <div class="select mb-1">
-                    <select id="imputation">
-                        <option value="1">Delete rows</option>
-                        <option value="2">Mean and Mode</option>
-                        <option value="3">Linear regression</option>
-                        <option value="4">random forest</option>
-                    </select>
-                </div>
-            </div>
-            `)
-            $('#props').append(`
-            <div class="column is-12">
-                <div class="label">Data Transformation
-                <span id="normalization_help" class="icon has-text-success">
-                    <i class="fas fa-info-circle"></i>
-                </span>
-                </div>
-                <div class="select mb-1">
-                    <select id="normalization">
-                        <option value="1">No</option>
-                        <option value="2">Scale</option>
-                        <option value="3">Normal</option>
-                    </select>
-                </div>
-            </div>
-            `)
-            $('#props').append(`
-            <div class="column is-12">
-                <div class="label">Cross Validation
-                <span id="cv_help" class="icon has-text-success">
-                    <i class="fas fa-info-circle"></i>
-                </span>
-                </div>
-                <div class="select mb-1">
-                    <select id="cross_validation">
-                        <option value="1">70 % training - 30 % test</option>
-                        <option value="2">No</option>
-                        <option value="3">K-fold</option>
-                    </select>
-                </div>
-            </div>
-            `)
-            $('#target').val(default_target)
             $('#props').append(`<div class="column is-6"><button class="button is-info mt-2" id="train-button">train</button></div>`);
 
-            //modle options
-            $('#algorithm').on('change', function (e) {
-                const model_type = items.column(default_target).dtype !== 'string' ? 1 : 2;
-                const label = model_type == 1 ? "regression" : "classification"
-                for (const key in Settings[label]) {
-                    if (Settings.hasOwnProperty.call(Settings[label], key)) {
-                        const item = Settings[label][key];
-                    }
-                }
-            });
-            $('#target').on('change', function (e) {
-                const type = document.getElementById(e.target.value).value
-                $('#algorithm').empty()
-                if (type === 'Numerical') {
-                    $('#algorithm').append(myClass.updateAlgorithmsSelect(1));
-                } else {
-                    $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
-                }
-            });
-            $("#model_name").on("change", () => {
-                console.log("change");
-                document.getElementById("settings").innerHTML = ""
-                document.getElementById("settings").style.display = "none";
-
-            })
 
         } catch (error) {
             throw error

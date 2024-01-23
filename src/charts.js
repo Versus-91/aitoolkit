@@ -14,6 +14,8 @@ export default class ChartController {
     }
 
     classification_target_chart(values, labels, name, container, title = "") {
+        var uniqueLabels = [...new Set(labels)];
+        var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
         var trace2 = {
             y: values,
             x: labels,
@@ -22,9 +24,9 @@ export default class ChartController {
             xaxis: 'x2',
             yaxis: 'y2',
             marker: {
-                color: 'rgb(158,202,225)',
+                color: colorIndices,
                 line: {
-                    color: 'rgb(8,48,107)',
+                    color: colorIndices,
                     width: 1.5
                 }
             }
@@ -235,7 +237,7 @@ export default class ChartController {
             name: column
         });
         var layout = {
-            title: column + "<br> default bandwidth : " + default_bandwidth,
+            title: column,
             showlegend: false,
             height: 400,
         };
@@ -250,6 +252,12 @@ export default class ChartController {
         }
     }
     draw_kde(dataset, column, bandwidth = "nrd") {
+        let current_class = this;
+        let traces = [];
+        let items = dataset.column(column).values;
+        var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
+        let default_bandwidth = this.nrd(items).toFixed(2);
+
         document.getElementById("kde_panel").style.display = "block";
         var newColumn = document.createElement("div");
         newColumn.className = "column is-4";
@@ -259,23 +267,21 @@ export default class ChartController {
         let container_id = column + '-kde-clomun';
         // Create an input element
         var inputElement = document.createElement("input");
-        inputElement.setAttribute("class", "input is-small");
+        inputElement.setAttribute("class", "input is-small is-2");
         inputElement.setAttribute("placeholder", "bandwidth");
         inputElement.setAttribute("id", column + '-kde');
         inputElement.setAttribute("type", "number");
+        inputElement.value = default_bandwidth
         var buttonElement = document.createElement("button");
         buttonElement.setAttribute("class", "button is-primary is-small");
         buttonElement.textContent = "Apply";
-        let current_class = this;
-        let traces = [];
-        let items = dataset.column(column).values;
+
         buttonElement.addEventListener("click", function () {
             var newBandwidth = document.getElementById(column + '-kde').value;
             current_class.redraw_kde(dataset, column, parseFloat(newBandwidth));
         });
 
-        var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
-        let default_bandwidth = this.nrd(items).toFixed(2);
+
         var breaks = ss.equalIntervalBreaks(items, 100);
         let ys = [];
 
@@ -292,7 +298,7 @@ export default class ChartController {
         });
         var layout = {
             showlegend: false, height: 400,
-            title: column + "<br> default bandwidth : " + default_bandwidth,
+            title: column,
             plot_bgcolor: "#E5ECF6"
         };
         Plotly.newPlot(container_id, traces, layout);
