@@ -69,6 +69,9 @@
                                     <li>
                                         <a>Predictions</a>
                                     </li>
+                                    <li>
+                                        <a>details</a>
+                                    </li>
                                 </ul>
                             </div>
 
@@ -191,98 +194,6 @@
                                     </li>
                                     <li class="tabs-li">
                                         <div class="columns is-multiline">
-                                            <div class="column is-12">
-                                                <div class="columns">
-                                                    <div class="column is-9">
-                                                        <div class="content">
-                                                            <h1>Logistic Regression</h1>
-                                                            <p> <strong>Logistic Regression: </strong>We assume here
-                                                                that
-                                                                \(y∣x;θ∼Bernoulli(ϕ)\). We have the following form:
-                                                            </p>
-                                                            <p>$$p(x) = {1 \over 1 + \exp^{ -\theta^{T} * x}}$$</p>
-                                                            <strong>Goal : </strong> directly estimating outputs <br>
-                                                            <strong>What is learned</strong> Decission boundary
-                                                            <h2>
-                                                                Tree-based and ensemble methods
-                                                            </h2>
-                                                            <p>
-                                                                These methods can be used for both regression and
-                                                                classification problems.
-                                                            </p>
-
-                                                            <strong>Classification and Regression Trees (CART)</strong>
-                                                            ,commonly known
-                                                            as decision trees, can be represented as
-                                                            binary
-                                                            trees. They have the advantage to be very
-                                                            interpretable.
-                                                            <br>
-                                                            <strong>Random forest</strong> is a tree-based technique
-                                                            that uses
-                                                            a
-                                                            high number of decision trees built out of randomly
-                                                            selected sets of features. Contrary to the simple
-                                                            decision tree, it is highly uninterpretable but its
-                                                            generally good performance makes it a popular
-                                                            algorithm.
-
-                                                            Remark: random forests are a type of ensemble
-                                                            methods.
-                                                            <br>
-                                                            <strong>Boosting </strong>The idea of boosting methods is to
-                                                            combine
-                                                            several weak learners to form a stronger one. The
-                                                            main
-                                                            ones are summed up in the table below:
-
-                                                            <br>
-                                                            <table class="table is-bordered my-4">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Adaptive boosting</th>
-                                                                        <th>Gradient boosting</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>
-                                                                            High weights are put on errors to improve at
-                                                                            the next boosting step <br>
-                                                                            Known as Adaboost
-                                                                        </td>
-                                                                        <td>
-                                                                            Weak learners are trained on residuals<br>
-                                                                            Examples include XGBoost
-                                                                        </td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                            <h3>K Nearest Neighbor(non-parametric model)</h3>
-                                                            <p>
-                                                                The k-nearest neighbors algorithm, commonly known as
-                                                                k-NN, is a non-parametric approach where the response of
-                                                                a data point is determined by the nature of its
-                                                                k neighbors from the training set. It can be used in
-                                                                both classification and regression settings.<br>
-                                                                Remark: the higher the parameter
-                                                                k, the higher the bias, and the lower the parameter
-                                                                k, the higher the variance.
-                                                            </p>
-                                                            <figure class="image is-256x256">
-                                                                <img src="https://stanford.edu/~shervine/teaching/cs-229/illustrations/k-nearest-neighbors.png?02f80a524bb11e2b7a70b58c9ed3b0f4"
-                                                                    alt="" srcset="">
-                                                            </figure>
-                                                        </div>
-                                                    </div>
-                                                    <div class="column is-3">
-                                                        <figure class="image is-256x256">
-                                                            <img src="https://stanford.edu/~shervine/teaching/cs-229/illustrations/discriminative-model.png?767b34c21d43a4fd8b59683578e132f9"
-                                                                alt="" srcset="">
-                                                        </figure>
-                                                    </div>
-                                                </div>
-                                            </div>
                                             <div class="column is-6" style="display: none;">
                                                 <div id="lasso_plot"></div>
                                             </div>
@@ -306,12 +217,106 @@
                                             <div class="column is-12" id="formulas" style="display: none;">
 
                                             </div>
-                                            <div class="column is-12" id="regression_y_yhat"
-                                                style="height: 450px;width: 80%;">
-                                            </div>
                                             <div class="column is-12">
                                                 <table id="predictions_table" class="table is-bordered display"
                                                     width="100%"></table>
+                                            </div>
+                                            <div class="column is-12" id="regression_y_yhat"
+                                                style="height: 450px;width: 80%;">
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="tabs-li">
+                                        <div class="column is-12">
+                                            <div class="columns">
+                                                <div class="column is-9">
+                                                    <div class="content">
+                                                        <h1>Logistic Regression</h1>
+                                                        <p> <strong>Logistic Regression: </strong>We assume here
+                                                            that
+                                                            \(y∣x;θ∼Bernoulli(ϕ)\). We have the following form:
+                                                        </p>
+                                                        <p>$$p(x) = {1 \over 1 + \exp^{ -\theta^{T} * x}}$$</p>
+                                                        <strong>Goal : </strong> directly estimating outputs <br>
+                                                        <strong>What is learned</strong> Decission boundary
+                                                        <h2>
+                                                            Tree-based and ensemble methods
+                                                        </h2>
+                                                        <p>
+                                                            These methods can be used for both regression and
+                                                            classification problems.
+                                                        </p>
+
+                                                        <strong>Classification and Regression Trees (CART)</strong>
+                                                        ,commonly known
+                                                        as decision trees, can be represented as
+                                                        binary
+                                                        trees. They have the advantage to be very
+                                                        interpretable.
+                                                        <br>
+                                                        <strong>Random forest</strong> is a tree-based technique
+                                                        that uses
+                                                        a
+                                                        high number of decision trees built out of randomly
+                                                        selected sets of features. Contrary to the simple
+                                                        decision tree, it is highly uninterpretable but its
+                                                        generally good performance makes it a popular
+                                                        algorithm.
+
+                                                        Remark: random forests are a type of ensemble
+                                                        methods.
+                                                        <br>
+                                                        <strong>Boosting </strong>The idea of boosting methods is to
+                                                        combine
+                                                        several weak learners to form a stronger one. The
+                                                        main
+                                                        ones are summed up in the table below:
+
+                                                        <br>
+                                                        <table class="table is-bordered my-4">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Adaptive boosting</th>
+                                                                    <th>Gradient boosting</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>
+                                                                        High weights are put on errors to improve at
+                                                                        the next boosting step <br>
+                                                                        Known as Adaboost
+                                                                    </td>
+                                                                    <td>
+                                                                        Weak learners are trained on residuals<br>
+                                                                        Examples include XGBoost
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <h3>K Nearest Neighbor(non-parametric model)</h3>
+                                                        <p>
+                                                            The k-nearest neighbors algorithm, commonly known as
+                                                            k-NN, is a non-parametric approach where the response of
+                                                            a data point is determined by the nature of its
+                                                            k neighbors from the training set. It can be used in
+                                                            both classification and regression settings.<br>
+                                                            Remark: the higher the parameter
+                                                            k, the higher the bias, and the lower the parameter
+                                                            k, the higher the variance.
+                                                        </p>
+                                                        <figure class="image is-256x256">
+                                                            <img src="https://stanford.edu/~shervine/teaching/cs-229/illustrations/k-nearest-neighbors.png?02f80a524bb11e2b7a70b58c9ed3b0f4"
+                                                                alt="" srcset="">
+                                                        </figure>
+                                                    </div>
+                                                </div>
+                                                <div class="column is-3">
+                                                    <figure class="image is-256x256">
+                                                        <img src="https://stanford.edu/~shervine/teaching/cs-229/illustrations/discriminative-model.png?767b34c21d43a4fd8b59683578e132f9"
+                                                            alt="" srcset="">
+                                                    </figure>
+                                                </div>
                                             </div>
                                         </div>
                                     </li>
