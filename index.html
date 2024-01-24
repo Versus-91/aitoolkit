@@ -39,18 +39,16 @@
 </head>
 
 <body>
-    <div class="container mt-3 is-fluid" style="position: absolute;">
+    <div class="container is-widescreen mt-3 is-gapless">
         <div class="columns is-multiline">
             <div class="column is-12">
-                <div class="columns is-multiline">
+                <div class="columns is-gapless is-multiline">
                     <div class="column is-2">
-                        <article class="message is-dark">
-                            <div class="message-body">
-                                <div class="column is-12" id="upload"></div>
-                                <div class="columns is-multiline" id="props">
-                                </div>
-                            </div>
-                        </article>
+                        <aside class="menu">
+                            <div class="column is-12" id="upload"></div>
+                            <ul class="menu-list" id="props">
+                            </ul>
+                        </aside>
                     </div>
                     <div class="column is-10">
                         <div class="tabs-wrapper">
@@ -126,39 +124,34 @@
                                         </button>
                                         <div class="column is-12" id="dimensionality_reduction_panel"
                                             style="display: none;">
-                                            <article class="message is-info">
-                                                <div class="message-body">
-                                                    <div class="columns is-multiline">
-                                                        <div class="column is-12">
-                                                            <p class="title is-3">t-distributed stochastic neighbor
-                                                                embedding
-                                                            </p>
-                                                        </div>
-                                                        <div class="column is-6">
-                                                            <div id="tsne">
-                                                            </div>
-                                                        </div>
-                                                        <div class="column is-12">
-                                                            <p class="title is-3">Priciple Component Analysis with 3
-                                                                components</p>
-                                                        </div>
-                                                        <div class="column is-12">
-                                                            <div class="columns is-multiline">
-                                                                <div class="column is-4">
-                                                                    <div id="pca-1"></div>
-                                                                </div>
-                                                                <div class="column is-4">
-                                                                    <div id="pca-2"></div>
-                                                                </div>
-                                                                <div class="column is-4">
-                                                                    <div id="pca-3"></div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
+                                            <div class="columns is-multiline">
+                                                <div class="column is-12">
+                                                    <p class="subtitle is-4">t-distributed stochastic neighbor
+                                                        embedding
+                                                    </p>
+                                                </div>
+                                                <div class="column is-6">
+                                                    <div id="tsne">
                                                     </div>
                                                 </div>
-                                            </article>
+                                                <div class="column is-12">
+                                                    <p class="subtitle is-4">Priciple Component Analysis with 3
+                                                        components</p>
+                                                </div>
+                                                <div class="column is-12">
+                                                    <div class="columns is-gapless is-multiline">
+                                                        <div class="column is-4">
+                                                            <div id="pca-1"></div>
+                                                        </div>
+                                                        <div class="column is-4">
+                                                            <div id="pca-2"></div>
+                                                        </div>
+                                                        <div class="column is-4">
+                                                            <div id="pca-3"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </li>
                                     <li class="tabs-li">
@@ -176,7 +169,7 @@
                                             <div id="acc-cont"></div>
                                         </div>
                                         <div class="column is-12">
-                                            <div class="column is-4">
+                                            <div class="column is-6">
                                                 <div id="confusion-matrix"></div>
                                             </div>
                                             <article class="message is-info">
@@ -185,7 +178,7 @@
                                                         <div class="column is-4">
                                                             <div id="roc"></div>
                                                         </div>
-                                                        <div class="column is-4">
+                                                        <div class="column is-6">
                                                             <div id="pca-results"></div>
                                                         </div>
                                                     </div>

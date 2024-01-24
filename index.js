@@ -26,8 +26,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     let ui = new UI(data_parser, chart_controller);
     let X
     let y
-    const divs = ["lasso_plot", "formulas", "regression_y_yhat", "probs_violin_plot", "probs_box_plot"]
-    const tbls = ["lasso_plot", "predictions_table", "results", "knn_table", "metrics_table", "stats_table", "sample_data_table"]
+    const html_content_ids = ["lasso_plot", "formulas", "regression_y_yhat", "probs_violin_plot", "probs_box_plot"]
+    const table_ids = ["lasso_plot", "predictions_table", "results", "knn_table", "metrics_table", "stats_table", "sample_data_table"]
+    const plots = ["tsne", "pca-1", "pca-2", "pca-3"]
 
     function handleFileSelect(evt) {
         var target = evt.target || evt.srcElement;
@@ -35,7 +36,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             return;
         }
         var file = evt.target.files[0];
-        ui.reset(divs, tbls)
+        ui.reset(html_content_ids, table_ids, plots)
         try {
             Papa.parse(file, {
                 header: true,
@@ -73,7 +74,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         allowHTML: true,
                     });
                     document.getElementById("train-button").onclick = async () => {
-                        ui.reset(divs, tbls.filter(m => m !== "sample_data_table"))
+                        ui.reset(html_content_ids, table_ids.filter(m => m !== "sample_data_table"))
                         ui.start_loading()
                         await train(dataset, result.data.length)
                         ui.stop_loading()
