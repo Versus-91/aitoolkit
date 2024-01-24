@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     let X
     let y
     const divs = ["lasso_plot", "formulas", "regression_y_yhat", "probs_violin_plot", "probs_box_plot"]
-    const tbls = ["lasso_plot", "predictions_table", "results", "knn_table", "metrics_table", "stats_table"]
+    const tbls = ["lasso_plot", "predictions_table", "results", "knn_table", "metrics_table", "stats_table", "sample_data_table"]
 
     function handleFileSelect(evt) {
         var target = evt.target || evt.srcElement;
