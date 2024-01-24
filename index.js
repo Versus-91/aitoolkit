@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         allowHTML: true,
                     });
                     document.getElementById("train-button").onclick = async () => {
-                        ui.reset(divs, tbls)
+                        ui.reset(divs, tbls.filter(m => m !== "sample_data_table"))
                         ui.start_loading()
                         await train(dataset, result.data.length)
                         ui.stop_loading()
@@ -513,7 +513,11 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     document.querySelector('#dim_red_button').addEventListener('click', async function (e) {
         await dimension_reduction();
     });
-
+    document.querySelector('#close_modal').addEventListener('click', async function (e) {
+        await ui.visualize(data_frame);
+        var modalTwo = Bulma('#features_modal').modal();
+        modalTwo.close();
+    });
 });
 
 

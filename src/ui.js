@@ -63,12 +63,7 @@ export default class UI {
                 var modalTwo = Bulma('#features_modal').modal();
                 modalTwo.open();
             });
-            document.querySelector('#close_modal').addEventListener('click', async function (e) {
-                await myClass.visualize(items);
-                var modalTwo = Bulma('#features_modal').modal();
-                modalTwo.close();
 
-            });
             const default_target = items.columns[items.columns.length - 1]
             items.columns.forEach(column => {
                 let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
@@ -484,7 +479,7 @@ export default class UI {
     }
     async visualize(dataset, len, file_name) {
         try {
-
+            const myClass = this
             this.renderDatasetStats(dataset);
             let numericColumns = this.get_numeric_columns(dataset, false)
             const target = document.getElementById("target").value;
