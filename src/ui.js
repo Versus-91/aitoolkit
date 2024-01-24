@@ -382,9 +382,9 @@ export default class UI {
             header +
             "</thead><tbody>" +
             tbody +
-            "</tbody></table></div>" +
-            '<h2 class="subtitle "> Data shape : (' + data.shape[0] + ',' + data.shape[1] + ')</h2>'
+            "</tbody></table></div>"
             ;
+        document.getElementById("data_details_div").innerHTML = '<h2 class="subtitle "> Data shape : (' + data.shape[0] + ',' + data.shape[1] + ')</h2>'
         //build categorical feature table table
         var header_categorical = "";
         var tbody_categorical = "";

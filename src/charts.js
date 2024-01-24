@@ -249,7 +249,7 @@ export default class ChartController {
 
         $("#container").append(
             `<div class="column is-4 " id="${column + '-kde-clomun'}">
-                <div class="field has-addons mt-1">
+                <div class="field has-addons mt-1 mb-1">
                     <div class="control">
                         <input class="input is-small" type="number"  id="${column + '-kde'}" value="${default_bandwidth}">
                         </div>
@@ -281,6 +281,7 @@ export default class ChartController {
             y: ys,
             fill: 'tozeroy',
             type: 'scatter',
+            mode: 'none',
             xaxis: 'x',
             yaxis: 'y',
         });
