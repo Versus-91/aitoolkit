@@ -356,7 +356,7 @@ export default class UI {
         document.getElementById("stats").style.display = "block"
         var header = "";
         var tbody = "";
-        const fileds = ["#", "Min", "Max", "Median", "Mean", "Standard deviation", "missing values count"]
+        const fileds = ["#", "Min", "Max", "Median", "Mean", "std", "# missing values"]
         for (var p in fileds) {
             header += "<th>" + fileds[p] + "</th>";
         }
@@ -378,17 +378,17 @@ export default class UI {
             }
         });
         document.getElementById("output").innerHTML =
-            '<table class="table is-bordered is-striped is-narrow is-hoverable"><thead>' +
+            '<div class="table-container"><table class="table is-bordered is-striped is-narrow is-hoverable"><thead>' +
             header +
             "</thead><tbody>" +
             tbody +
-            "</tbody></table>" +
+            "</tbody></table></div>" +
             '<h2 class="subtitle "> Data shape : (' + data.shape[0] + ',' + data.shape[1] + ')</h2>'
             ;
         //build categorical feature table table
         var header_categorical = "";
         var tbody_categorical = "";
-        const fileds_categorical = ["#", "Shape", "Mode", "Percentage", "missing values count"]
+        const fileds_categorical = ["#", "Shape", "Mode", "Percentage", "# missing values"]
         for (var p in fileds_categorical) {
             header_categorical += "<th>" + fileds_categorical[p] + "</th>";
         }
@@ -410,11 +410,11 @@ export default class UI {
             }
         });
         document.getElementById("categorical_features").innerHTML =
-            '<table class="table is-bordered is-striped is-narrow is-hoverable"><thead>' +
+            '<div class="table-container"><table class="table is-bordered is-striped is-narrow is-hoverable"><thead>' +
             header_categorical +
             "</thead><tbody>" +
             tbody_categorical +
-            "</tbody></table>"
+            "</tbody></table></div>"
             ;
     }
     reset(ids, tables) {
