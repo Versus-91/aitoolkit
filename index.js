@@ -509,34 +509,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         return confusionMatrix
 
     }
-
     ui.init_upload_button(handleFileSelect)
-    setTimeout(function () {
-        const content = document.createElement('span')
-        content.textContent = 'hello s \\(x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}\\)'
-
-        const done = document.createElement('span')
-        done.textContent = '   done!'
-
-        const syncTypeset = document.querySelector('#syncTypeset')
-        syncTypeset.appendChild(content.cloneNode(true))
-        setTimeout(function () {
-            MathJax.typeset()
-            syncTypeset.appendChild(done.cloneNode(true))
-        }, 3000)
-
-    }, 0)
-    // const webR = new WebR();
-    // await webR.init();
-    // let result = await webR.evalR(`
-    // fit <- lm(mpg ~ am, data=mtcars)
-    // summary_data<-summary(fit)
-    // result <- list(
-    //     coefficients = as.data.frame(summary_data$coefficients)
-    //   )
-
-    // `)
-    // console.log((await result.toJs()).values);
     document.querySelector('#dim_red_button').addEventListener('click', async function (e) {
         await dimension_reduction();
     });
