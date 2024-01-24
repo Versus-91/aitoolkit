@@ -300,8 +300,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
                         // chart_controller.regularization_plot(alphas, coefs, x_test.columns)
                         predictions_table(x_test, y_test, encoder, preds, probs);
-                        chart_controller.probablities_boxplot(probs, classes)
-                        chart_controller.probablities_violin_plot(probs, classes)
+                        chart_controller.probablities_boxplot(probs, classes, uniqueLabels)
+                        chart_controller.probablities_violin_plot(probs, classes, uniqueLabels)
 
                         break
                     }

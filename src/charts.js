@@ -510,19 +510,24 @@ export default class ChartController {
         Plotly.newPlot('lasso_plot', traces, layout);
     }
 
-    probablities_boxplot(probs, classes) {
+    probablities_boxplot(probs, classes, labels) {
+        var colorIndices = labels.map((label, i) => this.indexToColor(i));
         const num_columns = probs[0].length
         let traces = []
         for (let i = 0; i < num_columns; i++) {
             traces.push({
                 type: 'box',
                 name: classes[i],
+                marker: {
+                    color: colorIndices[i]
+                },
                 y: probs.map(item => item[i])
             })
         }
         Plotly.newPlot("probs_box_plot", traces)
     }
-    probablities_violin_plot(probs, classes) {
+    probablities_violin_plot(probs, classes, labels) {
+        var colorIndices = labels.map((label, i) => this.indexToColor(i));
         const arrayColumn = (arr, n) => arr.map(x => x[n]);
         const num_columns = probs[0].length
         let traces = []
@@ -537,9 +542,9 @@ export default class ChartController {
                 },
                 boxpoints: false,
                 line: {
-                    color: 'black'
+                    color: colorIndices[i]
                 },
-                fillcolor: '#8dd3c7',
+                fillcolor: colorIndices[i],
                 opacity: 0.6,
                 meanline: {
                     visible: true
