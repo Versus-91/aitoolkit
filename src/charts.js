@@ -230,17 +230,51 @@ export default class ChartController {
             title: column,
             showlegend: false,
             height: 350,
+            margin: {
+                l: 30,
+                r: 30,
+                b: 30,
+                t: 50,
+                pad: 0
+            },
         };
         Plotly.newPlot(container_id, traces, layout, config);
     }
-    draw_kde(dataset, column, bandwidth = "nrd") {
+    hexToRgb(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+            a: 0.5
+        } : null;
+    }
+
+    draw_kde(dataset, column, labels, bandwidth = "nrd") {
+
         var config = { responsive: true }
         let current_class = this;
         let traces = [];
         let items = dataset.column(column).values;
         var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
         let default_bandwidth = this.nrd(items).toFixed(2);
+        let raw_values = dataset.loc({ columns: [column, labels] });
+        let uniqueLabels = [...new Set(raw_values.column(labels).values)];
+        let column_values = raw_values.values
+        let subsets = [];
+        var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
 
+        for (let i = 0; i < uniqueLabels.length; i++) {
+            const label = uniqueLabels[i];
+            let subset = [];
+            for (let i = 0; i < column_values.length; i++) {
+                const item = column_values[i];
+                if (item[1] === label) {
+                    subset.push(item[0])
+                }
+            }
+            subsets.push(subset);
+        }
         document.getElementById("kde_panel").style.display = "block";
 
         var newColumn = document.createElement("div");
@@ -270,23 +304,39 @@ export default class ChartController {
         });
 
 
-        var breaks = ss.equalIntervalBreaks(items, 100);
-        let ys = [];
+        for (let i = 0; i < subsets.length; i++) {
+            let ys = [];
+            const subbset = subsets[i];
+            var breaks = ss.equalIntervalBreaks(subbset, 100);
+            var kde = ss.kernelDensityEstimation(subbset, "gaussian", bandwidth);
+            breaks.forEach((item) => {
+                ys.push(kde(item, bandwidth));
+            });
+            traces.push({
+                x: breaks,
+                y: ys,
+                name: uniqueLabels[i],
+                type: 'scatter',
+                mode: 'lines',
+                fill: 'tozeroy',
+                xaxis: 'x',
+                yaxis: 'y',
+                fillcolor: this.hexToRgb(colorIndices[i]),
+                line: {
+                    color: this.hexToRgb(colorIndices[i])
+                },
+            });
+        }
 
-        breaks.forEach((item) => {
-            ys.push(kde(item, bandwidth));
-        });
-        traces.push({
-            x: breaks,
-            y: ys,
-            fill: 'tozeroy',
-            type: 'scatter',
-            mode: 'none',
-            xaxis: 'x',
-            yaxis: 'y',
-        });
         var layout = {
             showlegend: false, height: 350,
+            margin: {
+                l: 30,
+                r: 30,
+                b: 30,
+                t: 50,
+                pad: 0
+            },
             title: column,
             plot_bgcolor: "#E5ECF6"
         };

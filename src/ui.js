@@ -58,6 +58,7 @@ export default class UI {
             const myClass = this
             //feature selection
             $('#props').empty()
+            $('#features-selection').empty()
             $('#features').empty()
             $('#props').append(this.createTargetDropdown(items))
             $('#features-selection').append(`<div class="column is-6"><button id ="feature_selection_modal" class="button is-warning" >Select Features</button></div>`)
@@ -507,8 +508,8 @@ export default class UI {
             let numericColumns = this.get_numeric_columns(dataset, false)
             const target = document.getElementById("target").value;
             const index = numericColumns.findIndex(m => m === target)
-            if (index !== -1) {
-                delete numericColumns[index]
+            if (index === -1) {
+                numericColumns.push(target)
             }
             const filterd_dataset = dataset.loc({ columns: numericColumns })
             filterd_dataset.dropNa({ axis: 1, inplace: true })
@@ -517,7 +518,7 @@ export default class UI {
             if (numericColumns.length > 0) {
                 document.getElementById("container").innerHTML = "";
                 numericColumns.forEach(col => {
-                    this.chart_controller.draw_kde(filterd_dataset, col)
+                    this.chart_controller.draw_kde(filterd_dataset, col, target);
                 });
             }
             if (is_classification) {
