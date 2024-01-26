@@ -348,7 +348,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         const classes = encoder_rf.inverseTransform(Object.values(encoder_rf.$labels))
                         const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), classes)
                         metrics_table(classes, matrix)
-                        chart_controller.draw_classification_pca(x_test.values, encoded_y_test, evaluation_result.indexes, uniqueLabels)
+                        chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
 
                         predictions_table(x_test, y_test, encoder_rf, preds);
 
@@ -469,7 +469,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
         new DataTable('#metrics_table', {
             responsive: true,
-            columns: [{ title: "Class" }, { title: "Recall" }, { title: "Precision" }, { title: "f1 score" }],
+            columns: [{ title: "Class" }, { title: "Recall" }, { title: "Precision" }, { title: "f1" }],
             data: metrics,
             info: false,
             search: false,
