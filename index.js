@@ -342,8 +342,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let encoded_y = encoder_rf.transform(y_train.values)
                         let encoded_y_test = encoder_rf.transform(y_test.values)
 
-                        model.train(x_train.values, encoded_y)
-                        let preds = model.predict(x_test.values)
+                        let preds = await model.train_test(x_train.values, encoded_y, x_test.values)
 
                         const evaluation_result = evaluate_classification(preds, encoded_y_test)
                         const classes = encoder_rf.inverseTransform(Object.values(encoder_rf.$labels))

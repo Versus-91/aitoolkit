@@ -373,7 +373,7 @@ export default class UI {
             }
         });
         document.getElementById("output").innerHTML =
-            '<div class="table-container"><table class="table is-bordered is-striped is-narrow is-hoverable"><thead>' +
+            '<div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable"><thead>' +
             header +
             "</thead><tbody>" +
             tbody +
@@ -405,7 +405,7 @@ export default class UI {
             }
         });
         document.getElementById("categorical_features").innerHTML =
-            '<div class="table-container"><table class="table is-bordered is-striped is-narrow is-hoverable"><thead>' +
+            '<div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable"><thead>' +
             header_categorical +
             "</thead><tbody>" +
             tbody_categorical +

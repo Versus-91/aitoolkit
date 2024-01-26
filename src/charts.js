@@ -320,7 +320,6 @@ export default class ChartController {
             marker: {
                 size: size,
                 color: colorIndices,
-                colorscale: color_scale,
                 symbol: 'circle'
             },
         };
@@ -334,7 +333,6 @@ export default class ChartController {
             marker: {
                 size: 7,
                 color: colorIndices,
-                colorscale: color_scale,
                 symbol: 'cross'
             },
         };
