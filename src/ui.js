@@ -63,14 +63,22 @@ export default class UI {
             $('#features-selection').append(`<div class="column is-6"><button id ="feature_selection_modal" class="button is-warning" >Select Features</button></div>`)
             document.querySelector('#feature_selection_modal').addEventListener('click', function (e) {
                 var features_dropdown = document.getElementById("config_modal")
+                var props = document.getElementById("props")
+                var props_feature_selection_button = document.getElementById("feature_selection_modal")
+
                 if (window.getComputedStyle(features_dropdown).display !== "none") {
+                    props_feature_selection_button.innerText = "Select Features"
                     features_dropdown.style.display = "none"
+                    props.style.display = "block"
                     return
                 }
+                props_feature_selection_button.innerText = "Config model"
                 features_dropdown.style.display = "block"
+                props.style.display = "none"
+
             });
             $("#features-selection").append(`
-                <div id="config_modal" class="column is-12" style="display:none">
+                <div id="config_modal" class="column is-12" style="display:none;">
                         <div class="columns is-multiline" id="features">
                         </div>
                         <hr/>
