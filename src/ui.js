@@ -58,7 +58,7 @@ export default class UI {
             const myClass = this
             $('#props').empty()
             $('#features').empty()
-            $('#props').append(`<li><button id ="feature_selection_modal" class="button is-warning" >Select Features</button></li>`)
+            $('#props').append(`<div class="column is-6"><button id ="feature_selection_modal" class="button is-warning" >Select Features</button></div>`)
             document.querySelector('#feature_selection_modal').addEventListener('click', function (e) {
                 var modalTwo = Bulma('#features_modal').modal();
                 modalTwo.open();
@@ -68,7 +68,7 @@ export default class UI {
             items.columns.forEach(column => {
                 let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
                 $('#features').append(`
-                <div class="column is-6"> 
+                <div class="column is-6">
                     <h4>${column}  ${key === default_target ? "(default target)" : ""}</h4>
                     <div class="select mb-1">
                         <select id="${key}">
@@ -115,7 +115,7 @@ export default class UI {
                 $("#model_options").empty();
             });
             $('#props').append(`
-            <li>
+            <div class="column is-12">
                 <div class="label">Imputation
                     <span id="imputation_help" class="icon has-text-success">
                         <i class="fas fa-info-circle"></i>
@@ -129,10 +129,10 @@ export default class UI {
                         <option value="4">random forest</option>
                     </select>
                 </div>
-            </li>
+            </div>
             `)
             $('#props').append(`
-            <li>
+            <div class="column is-12">
                 <div class="label">Data Transformation
                 <span id="normalization_help" class="icon has-text-success">
                     <i class="fas fa-info-circle"></i>
@@ -145,10 +145,10 @@ export default class UI {
                         <option value="3">Normal</option>
                     </select>
                 </div>
-            </li>
+            </div>
             `)
             $('#props').append(`
-            <li>
+            <div class="column is-10">
                 <div class="label">Cross Validation
                 <span id="cv_help" class="icon has-text-success">
                     <i class="fas fa-info-circle"></i>
@@ -161,7 +161,7 @@ export default class UI {
                         <option value="3">K-fold</option>
                     </select>
                 </div>
-            </li>
+            </div>
             `)
             $('#target').val(default_target)
 
@@ -200,15 +200,15 @@ export default class UI {
                 $('#props').append(this.createAlgorithmsSelect(2));
             }
             $("#props").append(`
-            <li>
-            <button class="button is-success" id="config_modal_button">
+            <div class="column is-3">
+            <button class="button is-small mt-1 is-success" id="config_modal_button">
             <span class="icon is-small">
             <i class="fas fa-cog"></i>
             </span>
             </button>
-            </li>
-            <li  id="settings" style="display:none">
-            </li>`)
+            </div>
+            <div class="column is-12" id="settings" style="display:none">
+            </div>`)
             document.querySelector('#config_modal_button').addEventListener('click', function (e) {
                 let model_name = document.getElementById('model_name').value;
                 model_name = model_name.replace(/\s+/g, '_').toLowerCase();
@@ -252,7 +252,7 @@ export default class UI {
                                     <div class="field-body">
                                         <div class="select is-small">
                                             <select id="${key + "_" + model_name}">
-                            </div>
+                                    </div>
                             `
                             for (let i = 0; i < options.length; i++) {
                                 result += `<option>${options[i]}</option>`
@@ -263,7 +263,7 @@ export default class UI {
                     }
                 }
             });
-            $('#props').append(`<li><button class="button is-info mt-2" id="train-button">train</button></li>`);
+            $('#props').append(`<div class="column is-6"><button class="button is-info mt-2" id="train-button">train</button></div>`);
 
 
         } catch (error) {
@@ -274,7 +274,7 @@ export default class UI {
     }
 
     createAlgorithmsSelect(category) {
-        let result = '<li id="algorithm" ><div class="select mb-1"> <select id="model_name" class="select">'
+        let result = '<div id="algorithm" class="column is-9"><div class="select mb-1"> <select id="model_name" class="select">'
         const label = category == 1 ? "regression" : "classification"
         for (const key in Settings[label]) {
             if (Settings.hasOwnProperty.call(Settings[label], key)) {
@@ -282,7 +282,7 @@ export default class UI {
                 result += `<option value="${item.label}">${item.label}</option>`
             }
         }
-        result += '</select></div></li>'
+        result += '</select></div></div>'
 
         return result
     }
@@ -324,13 +324,13 @@ export default class UI {
         return column_types
     }
     createTargetDropdown(items) {
-        let result = '<li><div class="label">Target</div><div class="select mb-1"> <select class="select" id="target">'
+        let result = '<div  class="column is-12"><div class="label">Target</div><div class="select mb-1"> <select class="select" id="target">'
         items.columns.forEach(column => {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             result += `<option value="${key}">${key}</option>`
 
         });
-        result += '</select></div></li>'
+        result += '</select></div></div>'
         return result
     }
     createFeaturesDropdown(items) {
@@ -351,7 +351,7 @@ export default class UI {
         document.getElementById("stats").style.display = "block"
         var header = "";
         var tbody = "";
-        const fileds = ["#", "Min", "Max", "Median", "Mean", "std", "# missing values"]
+        const fileds = ["#", "Min", "Max", "Median", "Mean", "std", "# NAs"]
         for (var p in fileds) {
             header += "<th>" + fileds[p] + "</th>";
         }
@@ -383,7 +383,7 @@ export default class UI {
         //build categorical feature table table
         var header_categorical = "";
         var tbody_categorical = "";
-        const fileds_categorical = ["#", "Shape", "Mode", "Percentage", "# missing values"]
+        const fileds_categorical = ["#", "Shape", "Mode", "Percentage", "# NAs"]
         for (var p in fileds_categorical) {
             header_categorical += "<th>" + fileds_categorical[p] + "</th>";
         }
@@ -426,7 +426,7 @@ export default class UI {
         // plots.forEach((plot) => Plotly.purge(plot));
     }
     init_upload_button(upoad_handler) {
-        $('#upload').append(`<div class="column is-12">
+        $('#upload').append(`
         <div class="file">
             <label class="file-label">
                 <input class="file-input is-info" id="parseCVS" type="file" name="resume">
@@ -440,8 +440,7 @@ export default class UI {
                 </span>
             </label>
         </div>
-        <p class="help is-danger">CSV file is supported for now</p>
-    </div>`)
+        <p class="help is-danger">CSV file is supported for now</p>`)
         document.getElementById("parseCVS").addEventListener("change", upoad_handler)
     }
     start_loading() {

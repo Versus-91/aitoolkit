@@ -229,7 +229,7 @@ export default class ChartController {
         var layout = {
             title: column,
             showlegend: false,
-            height: 400,
+            height: 350,
         };
         Plotly.newPlot(container_id, traces, layout, config);
     }
@@ -245,10 +245,10 @@ export default class ChartController {
 
         var newColumn = document.createElement("div");
         newColumn.className = "column is-4";
-        newColumn.setAttribute("id", column + '-kde-clomun');
+        newColumn.setAttribute("id", column + '-kde-plot');
 
         $("#container").append(
-            `<div class="column is-4 " id="${column + '-kde-clomun'}">
+            `<div class="column is-4 " id="${column + '-kde-plot'}">
                 <div class="field has-addons mt-1 mb-1">
                     <div class="control">
                         <input class="input is-small" type="number"  id="${column + '-kde'}" value="${default_bandwidth}">
@@ -262,7 +262,7 @@ export default class ChartController {
             </div>`
         );
 
-        let container_id = column + '-kde-clomun';
+        let container_id = column + '-kde-plot';
 
         document.getElementById(column + '-kde-button').addEventListener("click", function () {
             var newBandwidth = document.getElementById(column + '-kde').value;
@@ -286,7 +286,7 @@ export default class ChartController {
             yaxis: 'y',
         });
         var layout = {
-            showlegend: false, height: 400,
+            showlegend: false, height: 350,
             title: column,
             plot_bgcolor: "#E5ECF6"
         };

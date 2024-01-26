@@ -190,6 +190,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             columns: knn_table_column_names,
                             data: knn_accuracies,
                             bDestroy: true,
+                            paging: false,
+                            searching: false,
                         });
                         chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(predictions), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
@@ -519,6 +521,22 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         var modalTwo = Bulma('#features_modal').modal();
         modalTwo.close();
     });
+    // $(".tabs").on("click", function (event) {
+    //     try {
+    //         let plots_to_resize = ["y_pie_chart"]
+    //         let dataset = data_frame;
+    //         let numericColumns = ui.get_numeric_columns(dataset, true)
+    //         numericColumns.forEach(column => {
+    //             plots_to_resize.push(column + '-kde-plot')
+    //         });
+    //         for (var i = 0; i < plots_to_resize.length; i++) {
+    //             console.log("resized");
+    //             Plotly.relayout(plots_to_resize[i], { autosize: true });
+    //         }
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // })
 });
 
 
