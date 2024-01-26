@@ -56,21 +56,35 @@ export default class UI {
     createDatasetPropsDropdown(items) {
         try {
             const myClass = this
+            //feature selection
             $('#props').empty()
             $('#features').empty()
-            $('#props').append(`<div class="column is-6"><button id ="feature_selection_modal" class="button is-warning" >Select Features</button></div>`)
+            $('#props').append(this.createTargetDropdown(items))
+            $('#features-selection').append(`<div class="column is-6"><button id ="feature_selection_modal" class="button is-warning" >Select Features</button></div>`)
             document.querySelector('#feature_selection_modal').addEventListener('click', function (e) {
-                var modalTwo = Bulma('#features_modal').modal();
-                modalTwo.open();
+                var features_dropdown = document.getElementById("config_modal")
+                if (window.getComputedStyle(features_dropdown).display !== "none") {
+                    features_dropdown.style.display = "none"
+                    return
+                }
+                features_dropdown.style.display = "block"
             });
+            $("#features-selection").append(`
+                <div id="config_modal" class="column is-12" style="display:none">
+                        <div class="columns is-multiline" id="features">
+                        </div>
+                        <hr/>
+                </div>
+            </div>
+            `)
 
             const default_target = items.columns[items.columns.length - 1]
             items.columns.forEach(column => {
                 let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
                 $('#features').append(`
-                <div class="column is-6">
+                <div class="column is-12">
                     <h4>${column}  ${key === default_target ? "(default target)" : ""}</h4>
-                    <div class="select mb-1">
+                    <div class="select is-small mb-1">
                         <select id="${key}">
                             <option value="${FeatureCategories.Numerical}">Numerical</option>
                             <option value="${FeatureCategories.Nominal}">Nominal</option>
@@ -102,7 +116,8 @@ export default class UI {
                 }
             });
 
-            $('#props').append(this.createTargetDropdown(items))
+
+
 
 
 

@@ -515,11 +515,11 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     document.querySelector('#dim_red_button').addEventListener('click', async function (e) {
         await dimension_reduction();
     });
-    document.querySelector('#close_modal').addEventListener('click', async function (e) {
-        await ui.visualize(data_frame);
-        var modalTwo = Bulma('#features_modal').modal();
-        modalTwo.close();
-    });
+    // document.querySelector('#close_modal').addEventListener('click', async function (e) {
+    //     await ui.visualize(data_frame);
+    //     var modalTwo = Bulma('#features_modal').modal();
+    //     modalTwo.close();
+    // });
     // $(".tabs").on("click", function (event) {
     //     try {
     //         let plots_to_resize = ["y_pie_chart"]
