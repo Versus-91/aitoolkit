@@ -204,28 +204,51 @@ export default class ChartController {
         }
         return 1.06 * s * Math.pow(x.length, -0.2);
     }
-    redraw_kde(dataset, column, bandwidth, container_id) {
+    redraw_kde(dataset, column, bandwidth, container_id, uniqueLabels, target_name) {
         var config = { responsive: true }
         Plotly.purge(container_id);
         console.log("purged");
         let traces = [];
 
-        let items = dataset.column(column).values;
+        let subsets = [];
+        var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
+        let raw_values = dataset.loc({ columns: [column, target_name] });
+        let column_values = raw_values.values
+        for (let i = 0; i < uniqueLabels.length; i++) {
+            const label = uniqueLabels[i];
+            let subset = [];
+            for (let i = 0; i < column_values.length; i++) {
+                const item = column_values[i];
+                if (item[1] === label) {
+                    subset.push(item[0])
+                }
+            }
+            subsets.push(subset);
+        }
 
-        var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
-        var breaks = ss.equalIntervalBreaks(items, 100);
-
-        let ys = breaks.map((item) => kde(item, bandwidth));
-
-        traces.push({
-            x: breaks,
-            y: ys,
-            fill: 'tozeroy',
-            type: 'scatter',
-            xaxis: 'x',
-            yaxis: 'y',
-            name: column
-        });
+        for (let i = 0; i < subsets.length; i++) {
+            let ys = [];
+            const subbset = subsets[i];
+            var breaks = ss.equalIntervalBreaks(subbset, 100);
+            var kde = ss.kernelDensityEstimation(subbset, "gaussian", bandwidth);
+            breaks.forEach((item) => {
+                ys.push(kde(item, bandwidth));
+            });
+            traces.push({
+                x: breaks,
+                y: ys,
+                name: uniqueLabels[i],
+                type: 'scatter',
+                mode: 'lines',
+                fill: 'tozeroy',
+                xaxis: 'x',
+                yaxis: 'y',
+                fillcolor: this.hexToRgb(colorIndices[i]),
+                line: {
+                    color: this.hexToRgb(colorIndices[i])
+                },
+            });
+        }
         var layout = {
             title: column,
             showlegend: false,
@@ -250,7 +273,7 @@ export default class ChartController {
         } : null;
     }
 
-    draw_kde(dataset, column, labels, bandwidth = "nrd") {
+    draw_kde(dataset, column, target_name, bandwidth = "nrd") {
 
         var config = { responsive: true }
         let current_class = this;
@@ -258,8 +281,8 @@ export default class ChartController {
         let items = dataset.column(column).values;
         var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
         let default_bandwidth = this.nrd(items).toFixed(2);
-        let raw_values = dataset.loc({ columns: [column, labels] });
-        let uniqueLabels = [...new Set(raw_values.column(labels).values)];
+        let raw_values = dataset.loc({ columns: [column, target_name] });
+        let uniqueLabels = [...new Set(raw_values.column(target_name).values)];
         let column_values = raw_values.values
         let subsets = [];
         var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
@@ -300,7 +323,7 @@ export default class ChartController {
 
         document.getElementById(column + '-kde-button').addEventListener("click", function () {
             var newBandwidth = document.getElementById(column + '-kde').value;
-            current_class.redraw_kde(dataset, column, parseFloat(newBandwidth), container_id);
+            current_class.redraw_kde(dataset, column, parseFloat(newBandwidth), container_id, uniqueLabels, target_name);
         });
 
 
@@ -331,9 +354,9 @@ export default class ChartController {
         var layout = {
             showlegend: false, height: 350,
             margin: {
-                l: 30,
-                r: 30,
-                b: 30,
+                l: 40,
+                r: 40,
+                b: 40,
                 t: 50,
                 pad: 0
             },
