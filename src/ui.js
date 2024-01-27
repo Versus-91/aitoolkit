@@ -71,6 +71,8 @@ export default class UI {
                     props_feature_selection_button.innerText = "Select Features"
                     features_dropdown.style.display = "none"
                     props.style.display = "block"
+                    const redraw_plots_data_analysis = new CustomEvent("update_graphs");
+                    props_feature_selection_button.dispatchEvent(redraw_plots_data_analysis)
                     return
                 }
                 props_feature_selection_button.innerText = "Config model"

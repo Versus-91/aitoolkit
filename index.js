@@ -73,6 +73,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         content: 'option 1 and 2 are working',
                         allowHTML: true,
                     });
+                    document.querySelector('#feature_selection_modal').addEventListener('update_graphs', async function (e) {
+                        await ui.visualize(data_frame);
+                    });
                     document.getElementById("train-button").onclick = async () => {
                         ui.reset(html_content_ids, table_ids.filter(m => m !== "sample_data_table"))
                         ui.start_loading()
@@ -515,11 +518,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     document.querySelector('#dim_red_button').addEventListener('click', async function (e) {
         await dimension_reduction();
     });
-    // document.querySelector('#close_modal').addEventListener('click', async function (e) {
-    //     await ui.visualize(data_frame);
-    //     var modalTwo = Bulma('#features_modal').modal();
-    //     modalTwo.close();
-    // });
+
     // $(".tabs").on("click", function (event) {
     //     try {
     //         let plots_to_resize = ["y_pie_chart"]
