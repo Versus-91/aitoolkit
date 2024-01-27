@@ -524,8 +524,13 @@ export default class UI {
                 });
             }
             if (is_classification) {
-                let counts = dataset.column(target).valueCounts()
-                this.chart_controller.classification_target_chart(counts.values, counts.$index, file_name, "y_pie_chart", target)
+                let labels = dataset.column(target).values;
+                let unique_labels = [...new Set(labels)];
+                let counts = [];
+                for (let i = 0; i < unique_labels.length; i++) {
+                    counts.push(labels.filter(m => m === unique_labels[i]).length);
+                }
+                this.chart_controller.classification_target_chart(counts, unique_labels, file_name, "y_pie_chart", target)
             }
         } catch (error) {
             throw error
