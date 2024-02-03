@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         var file = evt.target.files[0];
         ui.reset(html_content_ids, table_ids, plots);
         ui.toggle_loading_progress();
+        let count = 0;
         try {
             Papa.parse(file, {
                 worker: true,

@@ -524,7 +524,7 @@ export default class UI {
     async visualize(dataset, len, file_name) {
         try {
             const myClass = this
-            // this.renderDatasetStats(dataset);
+            this.renderDatasetStats(dataset);
             let numericColumns = this.get_numeric_columns(dataset, false)
             let categorical_columns = this.get_categorical_columns(dataset, false)
             const target = document.getElementById("target").value;
