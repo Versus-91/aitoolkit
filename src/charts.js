@@ -52,6 +52,30 @@ export default class ChartController {
 
         Plotly.newPlot(container, data, layout);
     }
+    draw_categorical_barplot(column_values, target, title) {
+        const key = title + "- barplot";
+        $("#categories_barplots").append(`<div class="column is-6" id="${key}"></div>`)
+        const countOccurrences = column_values.reduce((acc, val, i) => {
+            acc[val] = (acc[val] || 0) + 1;
+            return acc;
+        }, {});
+        const countArray = Object.entries(countOccurrences).map(([value, count]) => ({ value: value, count }));
+        countArray.sort((a, b) => b.count - a.count);
+        const top5 = countArray.slice(0, 5);
+        console.log(top5);
+        var top_categories_trace = {
+            x: top5.map(m => m.value),
+            y: top5.map(m => m.count),
+            width: 0.3,
+            name: 'SF Zoo',
+            type: 'bar'
+        };
+        var data = [top_categories_trace];
+        var layout = { barmode: 'stack', title: title, bargap: 0.05 };
+
+        Plotly.newPlot(key, data, layout);
+
+    }
     roc_chart(container, true_positive_rates, false_positive_rates) {
         var trace = {
             x: false_positive_rates,
@@ -306,7 +330,7 @@ export default class ChartController {
 
         $("#container").append(
             `<div class="column is-4 " id="${column + '-kde-plot'}">
-                <div class="field has-addons mt-1 mb-1">
+                <div class="field has-addons">
                     <div class="control">
                         <input class="input is-small" type="number"  id="${column + '-kde'}" value="${default_bandwidth}">
                         </div>

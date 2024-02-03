@@ -47,8 +47,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     return val
                 },
                 transformHeader: (val) => {
-
-                    return val.replace(/[^a-zA-Z ]/g, "").trim()
+                    return val.replace(/[^a-zA-Z0-9 ]/g, "").trim()
                 },
                 skipEmptyLines: true,
                 dynamicTyping: true,

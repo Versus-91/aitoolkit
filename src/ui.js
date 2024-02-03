@@ -503,24 +503,53 @@ export default class UI {
         });
         return numericColumns
     }
+    get_categorical_columns(dataset, filter) {
+        let selected_columns = this.find_selected_columns(dataset.columns, !filter)
+        let selected_columns_types = this.find_selected_columns_types(selected_columns);
+        selected_columns = selected_columns.filter(column => {
+            let i = selected_columns_types.findIndex(col => col.name === column)
+            if (selected_columns_types[i]?.type !== FeatureCategories.Numerical) {
+                return true;
+            }
+            return false;
+        })
+        let categorical_columns = []
+        dataset.columns.forEach(column => {
+            if (dataset.column(column).dtype === 'string' && column !== "Id" && selected_columns.includes(column)) {
+                categorical_columns.push(column)
+            }
+        });
+        return categorical_columns
+    }
     async visualize(dataset, len, file_name) {
         try {
             const myClass = this
             this.renderDatasetStats(dataset);
             let numericColumns = this.get_numeric_columns(dataset, false)
+            let categorical_columns = this.get_categorical_columns(dataset, false)
             const target = document.getElementById("target").value;
             const index = numericColumns.findIndex(m => m === target)
             if (index === -1) {
                 numericColumns.push(target)
             }
-            const filterd_dataset = dataset.loc({ columns: numericColumns })
+            let columns = [...new Set(numericColumns.concat(categorical_columns))];
+
+            const filterd_dataset = dataset.loc({ columns: columns })
             filterd_dataset.dropNa({ axis: 1, inplace: true })
             numericColumns = numericColumns.filter(m => m !== target)
             let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+            //draw kdes
             if (numericColumns.length > 0) {
                 document.getElementById("container").innerHTML = "";
                 numericColumns.forEach(col => {
                     this.chart_controller.draw_kde(filterd_dataset, col, target);
+                });
+            }
+            //draw categories barplot
+            if (categorical_columns.length > 0) {
+                document.getElementById("categories_barplots").innerHTML = "";
+                categorical_columns.forEach(col => {
+                    this.chart_controller.draw_categorical_barplot(filterd_dataset.loc({ columns: [col] }).values, target, col);
                 });
             }
             if (is_classification) {
@@ -536,6 +565,7 @@ export default class UI {
             throw error
         }
     }
+
     async createSampleDataTable(dataset) {
         try {
             let cols = []
