@@ -81,8 +81,8 @@ export default class UI {
 
             });
             $("#features-selection").append(`
-                <div id="config_modal" class="column is-12" style="display:none;">
-                        <div class="columns is-multiline" id="features">
+                <div id="config_modal" class="column is-12" style="display:none;overflow-y:scroll;max-height: 400px;">
+                        <div class="columns is-multiline is-gapless" id="features">
                         </div>
                         <hr/>
                 </div>
@@ -94,7 +94,10 @@ export default class UI {
                 let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
                 $('#features').append(`
                 <div class="column is-12">
-                    <h4>${column}  ${key === default_target ? "(default target)" : ""}</h4>
+                    <label class="checkbox my-2">
+                    <input id="${key + "-checkbox"}" type="checkbox" checked>
+                    </label>
+                    ${column}
                     <div class="select is-small mb-1">
                         <select id="${key}">
                             <option value="${FeatureCategories.Numerical}">Numerical</option>
@@ -102,10 +105,6 @@ export default class UI {
                             <option value="${FeatureCategories.Ordinal}">Ordinal</option>
                         </select>
                     </div>
-                    <label class="checkbox my-2">
-                        <input id="${key + "-checkbox"}" type="checkbox" checked>
-                        Ignore
-                    </label>
                 </div>
                 `);
                 $('#' + key).on('change', function (e) {
@@ -524,7 +523,7 @@ export default class UI {
     async visualize(dataset, len, file_name) {
         try {
             const myClass = this
-            this.renderDatasetStats(dataset);
+            // this.renderDatasetStats(dataset);
             let numericColumns = this.get_numeric_columns(dataset, false)
             let categorical_columns = this.get_categorical_columns(dataset, false)
             const target = document.getElementById("target").value;
@@ -539,18 +538,22 @@ export default class UI {
             numericColumns = numericColumns.filter(m => m !== target)
             let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
             //draw kdes
-            if (numericColumns.length > 0) {
+            let limit = 20
+            if (numericColumns.length > 0 && limit < 10) {
                 document.getElementById("container").innerHTML = "";
                 numericColumns.forEach(col => {
                     this.chart_controller.draw_kde(filterd_dataset, col, target);
                 });
+                limit++;
             }
+            limit = 0
             //draw categories barplot
-            if (categorical_columns.length > 0) {
+            if (categorical_columns.length > 0 && limit < 10) {
                 document.getElementById("categories_barplots").innerHTML = "";
                 categorical_columns.forEach(col => {
                     this.chart_controller.draw_categorical_barplot(filterd_dataset.loc({ columns: [col] }).values, target, col);
                 });
+                limit++;
             }
             if (is_classification) {
                 let labels = dataset.column(target).values;
@@ -559,7 +562,7 @@ export default class UI {
                 for (let i = 0; i < unique_labels.length; i++) {
                     counts.push(labels.filter(m => m === unique_labels[i]).length);
                 }
-                this.chart_controller.classification_target_chart(counts, unique_labels, file_name, "y_pie_chart", target)
+                this.chart_controller.classification_target_chart(counts, unique_labels, file_name, "y_pie_chart", target);
             }
         } catch (error) {
             throw error

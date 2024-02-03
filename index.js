@@ -39,19 +39,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         ui.reset(html_content_ids, table_ids, plots)
         try {
             Papa.parse(file, {
+                worker: true,
                 header: true,
-                transform: (val) => {
-                    if (val === "?" || val === "NA") {
-                        return NaN
-                    }
-                    return val
-                },
-                transformHeader: (val) => {
-                    return val.replace(/[^a-zA-Z0-9 ]/g, "").trim()
-                },
                 skipEmptyLines: true,
                 dynamicTyping: true,
                 complete: async function (result) {
+                    if (result.data.length > 10000) {
+                        result.data = result.data.slice(0, 10000)
+                    }
                     let dataset = new DataFrame(result.data)
                     data_frame = new DataFrame(result.data)
                     ui.createDatasetPropsDropdown(dataset);
@@ -85,6 +80,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 }
             });
         } catch (error) {
+            console.log(error);
             ui.stop_loading()
             ui.show_error_message(error.message, "#7E191B")
         }
