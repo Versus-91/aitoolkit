@@ -36,7 +36,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             return;
         }
         var file = evt.target.files[0];
-        ui.reset(html_content_ids, table_ids, plots)
+        ui.reset(html_content_ids, table_ids, plots);
+        ui.toggle_loading_progress();
         try {
             Papa.parse(file, {
                 worker: true,
@@ -44,14 +45,15 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 skipEmptyLines: true,
                 dynamicTyping: true,
                 complete: async function (result) {
+                    ui.toggle_loading_progress(true);
                     if (result.data.length > 10000) {
                         result.data = result.data.slice(0, 10000)
                     }
-                    let dataset = new DataFrame(result.data)
-                    data_frame = new DataFrame(result.data)
+                    let dataset = new DataFrame(result.data);
+                    data_frame = new DataFrame(result.data);
                     ui.createDatasetPropsDropdown(dataset);
                     ui.createSampleDataTable(dataset);
-                    await ui.visualize(dataset, result.data.length, file.name)
+                    await ui.visualize(dataset, result.data.length, file.name);
                     tippy('#kde_help', {
                         content: 'Default bandwidth method :Silverman’s rule of thumb',
                     });
@@ -71,18 +73,19 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         await ui.visualize(data_frame);
                     });
                     document.getElementById("train-button").onclick = async () => {
-                        ui.reset(html_content_ids, table_ids.filter(m => m !== "sample_data_table"))
-                        ui.start_loading()
-                        await train(dataset, result.data.length)
-                        ui.stop_loading()
+                        ui.reset(html_content_ids, table_ids.filter(m => m !== "sample_data_table"));
+                        ui.start_loading();
+                        await train(dataset, result.data.length);
+                        ui.stop_loading();
                     }
 
                 }
             });
         } catch (error) {
             console.log(error);
-            ui.stop_loading()
-            ui.show_error_message(error.message, "#7E191B")
+            ui.toggle_loading_progress(true);
+            ui.stop_loading();
+            ui.show_error_message(error.message, "#7E191B");
         }
 
     }

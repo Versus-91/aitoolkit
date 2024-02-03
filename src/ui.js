@@ -465,6 +465,7 @@ export default class UI {
                 </span>
             </label>
         </div>
+        <progress class="progress is-small is-primary my-1" max="100" id="progress" style="display:none;">15%</progress>
         <p class="help is-danger">CSV file is supported for now</p>`)
         document.getElementById("parseCVS").addEventListener("change", upoad_handler)
     }
@@ -591,6 +592,15 @@ export default class UI {
         } catch (error) {
             throw error
         }
+    }
+    toggle_loading_progress(show = false) {
+        let element = document.getElementById("progress");
+        if (!show) {
+            element.style.display = "block";
+        } else {
+            element.style.display = "none";
+        }
+
     }
 
 }
