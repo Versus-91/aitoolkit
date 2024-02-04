@@ -539,17 +539,17 @@ export default class UI {
             numericColumns = numericColumns.filter(m => m !== target)
             let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
             //draw kdes
-            let limit = 20
-            if (numericColumns.length > 0 && limit < 10) {
+            let limit = 0
+            if (numericColumns.length > 0 && limit < 20) {
                 document.getElementById("container").innerHTML = "";
                 numericColumns.forEach(col => {
-                    this.chart_controller.draw_kde(filterd_dataset, col, target);
+                    this.chart_controller.draw_kde(filterd_dataset, col, target, "nrd", is_classification);
                 });
                 limit++;
             }
             limit = 0
             //draw categories barplot
-            if (categorical_columns.length > 0 && limit < 10) {
+            if (categorical_columns.length > 0 && limit < 20) {
                 document.getElementById("categories_barplots").innerHTML = "";
                 categorical_columns.forEach(col => {
                     this.chart_controller.draw_categorical_barplot(filterd_dataset.loc({ columns: [col] }).values, target, col);

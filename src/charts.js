@@ -54,7 +54,7 @@ export default class ChartController {
     }
     draw_categorical_barplot(column_values, target, title) {
         const key = title + "- barplot";
-        $("#categories_barplots").append(`<div class="column is-6" id="${key}"></div>`)
+        $("#categories_barplots").append(`<div class="column is-6"style="height:40vh;" id="${key}"></div>`)
         const countOccurrences = column_values.reduce((acc, val, i) => {
             acc[val] = (acc[val] || 0) + 1;
             return acc;
@@ -297,7 +297,7 @@ export default class ChartController {
         } : null;
     }
 
-    draw_kde(dataset, column, target_name, bandwidth = "nrd") {
+    draw_kde(dataset, column, target_name, bandwidth = "nrd", is_classification = false) {
 
         var config = { responsive: true }
         let current_class = this;
@@ -307,21 +307,25 @@ export default class ChartController {
         let default_bandwidth = this.nrd(items).toFixed(2);
         let raw_values = dataset.loc({ columns: [column, target_name] });
         let uniqueLabels = [...new Set(raw_values.column(target_name).values)];
-        let column_values = raw_values.values
+        let column_values = raw_values.values;
         let subsets = [];
         var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
-
-        for (let i = 0; i < uniqueLabels.length; i++) {
-            const label = uniqueLabels[i];
-            let subset = [];
-            for (let i = 0; i < column_values.length; i++) {
-                const item = column_values[i];
-                if (item[1] === label) {
-                    subset.push(item[0])
+        if (!is_classification) {
+            subsets.push(raw_values.column(column).values);
+        } else {
+            for (let i = 0; i < uniqueLabels.length; i++) {
+                const label = uniqueLabels[i];
+                let subset = [];
+                for (let i = 0; i < column_values.length; i++) {
+                    const item = column_values[i];
+                    if (item[1] === label) {
+                        subset.push(item[0])
+                    }
                 }
+                subsets.push(subset);
             }
-            subsets.push(subset);
         }
+
         document.getElementById("kde_panel").style.display = "block";
 
         var newColumn = document.createElement("div");
@@ -362,19 +366,19 @@ export default class ChartController {
             traces.push({
                 x: breaks,
                 y: ys,
-                name: uniqueLabels[i],
+                name: is_classification ? uniqueLabels[i] : column,
                 type: 'scatter',
                 mode: 'lines',
                 fill: 'tozeroy',
                 xaxis: 'x',
                 yaxis: 'y',
-                fillcolor: this.hexToRgb(colorIndices[i]),
+                fillcolor: is_classification ? this.hexToRgb(colorIndices[i]) : "black",
                 line: {
-                    color: this.hexToRgb(colorIndices[i])
+                    color: is_classification ? this.hexToRgb(colorIndices[i]) : "red"
                 },
             });
         }
-
+        console.log(traces);
         var layout = {
             showlegend: false, height: 350,
             margin: {
@@ -605,22 +609,48 @@ export default class ChartController {
         };
         Plotly.newPlot('lasso_plot', traces, layout);
     }
-
+    argmax(array) {
+        return array.reduce((maxIndex, currentValue, currentIndex, array) => {
+            return currentValue > array[maxIndex] ? currentIndex : maxIndex;
+        }, 0);
+    }
     probablities_boxplot(probs, classes, labels) {
+
         var colorIndices = labels.map((label, i) => this.indexToColor(i));
         const num_columns = probs[0].length
-        let traces = []
-        for (let i = 0; i < num_columns; i++) {
-            traces.push({
-                type: 'box',
-                name: classes[i],
-                marker: {
-                    color: colorIndices[i]
-                },
-                y: probs.map(item => item[i])
-            })
+        let traces = [];
+        let subsets = {};
+        if (labels.length > 1) {
+            probs.forEach((prob) => {
+                let index = this.argmax(prob);
+                if (!(index in subsets)) {
+                    subsets[index] = [];
+                    subsets[index].push(prob);
+                } else {
+                    subsets[index].push(prob);
+                }
+            });
         }
-        Plotly.newPlot("probs_box_plot", traces)
+        console.log(subsets);
+        for (let i = 0; i < num_columns; i++) {
+            let subset = subsets[i]
+            for (let j = 0; j < num_columns; j++) {
+                traces.push({
+                    type: 'box',
+                    name: classes[i],
+                    marker: {
+                        color: colorIndices[j]
+                    },
+                    y: subset.map(item => item[j])
+                })
+            }
+        }
+
+        Plotly.newPlot("probs_box_plot", traces, {
+            yaxis: {
+                zeroline: false
+            }, boxmode: 'group'
+        })
     }
     probablities_violin_plot(probs, classes, labels) {
         var colorIndices = labels.map((label, i) => this.indexToColor(i));
