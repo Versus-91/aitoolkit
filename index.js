@@ -157,9 +157,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             }
 
             let model_factory = new ModelFactory();
+            let model_settings = ui.get_model_settings();
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
                 let uniqueLabels = [...new Set(y_train.values)];
-                let model_settings = ui.get_model_settings();
                 switch (model_name) {
                     case Settings.classification.k_nearest_neighbour.label: {
                         let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour, model_settings)
@@ -362,13 +362,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 }
             } else {
                 switch (model_name) {
-                    case Settings.regression.linear_regression.label:
+                    case Settings.regression.linear_regression.label: {
                         let model = model_factory.createModel(Settings.regression.linear_regression, null, {});
                         let y_t = y_train.values.map((item) => [item])
                         let y_test_t = y_test.values.map((item) => [item])
                         model.train([x_train.values].flat(), [y_t].flat())
                         let preds = model.predict([x_test.values].flat(), [y_test_t].flat())
-                        const xs = Array.from(Array(x_test.$data.length).keys())
                         var trace1 = {
                             x: y_test.values,
                             y: preds.flat(),
@@ -406,7 +405,28 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
                         MathJax.typeset(["formulas"]);
                         Plotly.newPlot('regression_y_yhat', data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                    }
+                    case Settings.regression.k_nearest_neighbour.label: {
+                        model_settings = ui.get_model_settings();
+                        let model = model_factory.createModel(Settings.regression.k_nearest_neighbour, model_settings)
+                        // for (let k = model_settings.min; k <= model_settings.max; k++) {
+                        //     await model.train(x_train.values, encoded_y_train, k)
+                        //     let y_preds = model.predict(x_test.values)
+                        //     let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
+                        //     results.push({ k: k, predictions: y_preds, evaluation: evaluation_result })
+                        // }
+                        await model.train(x_train.values, y_train.values, 5)
+                        let y_preds = model.predict(x_test.values);
+                        var trace = {
+                            x: y_test.values,
+                            y: y_preds,
+                            type: 'scatter',
+                            name: "y",
+                            mode: 'markers',
+                        };
+                        Plotly.newPlot('regression_y_yhat', [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
 
+                    }
                 }
             }
 

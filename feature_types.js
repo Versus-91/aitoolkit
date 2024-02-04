@@ -136,5 +136,24 @@ export const Settings = {
             "feature_selection": ["no", "Lasso", "ridge"],
             "criteria": ["AIC", "BIC", "AR2",],
         },
+        "k_nearest_neighbour": {
+            "label": "k nearest neighbour",
+            "value": 3,
+            "options": {
+                "min": {
+                    type: "number",
+                    default: 3
+                },
+                "max": {
+                    type: "number",
+                    default: 9
+                },
+                "metric": {
+                    type: "select",
+                    default: "euclidean",
+                    values: ["euclidean", "minkowski", "manhattan"]
+                },
+            },
+        },
     },
 };
