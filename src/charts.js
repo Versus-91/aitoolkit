@@ -631,18 +631,19 @@ export default class ChartController {
                 }
             });
         }
-        console.log(subsets);
         for (let i = 0; i < num_columns; i++) {
             let subset = subsets[i]
             for (let j = 0; j < num_columns; j++) {
-                traces.push({
-                    type: 'box',
-                    name: classes[i],
-                    marker: {
-                        color: colorIndices[j]
-                    },
-                    y: subset.map(item => item[j])
-                })
+                if (!!subset) {
+                    traces.push({
+                        type: 'box',
+                        name: classes[i],
+                        marker: {
+                            color: colorIndices[j]
+                        },
+                        y: subset.map(item => item[j])
+                    })
+                }
             }
         }
 
