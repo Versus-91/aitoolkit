@@ -335,7 +335,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             nEstimators: model_settings.estimators,
                             treeOptions: {
                                 maxDepth: model_settings.depth
-                            }
+                            },
+                            criteria: model_settings.criteria
                         });
                         let encoder_rf = new LabelEncoder()
                         encoder_rf.fit(y_train.values)
