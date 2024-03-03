@@ -7,6 +7,8 @@ import { binarize } from './utils'
 import * as tfvis from '@tensorflow/tfjs-vis';
 import * as ss from "simple-statistics"
 import { schemeAccent, schemeCategory10 } from 'd3-scale-chromatic';
+import { scaleLinear, } from 'd3-scale';
+
 export default class ChartController {
     constructor(data_processor) {
         this.data_processor = data_processor
@@ -259,7 +261,9 @@ export default class ChartController {
                 ys.push(kde(item, bandwidth));
             });
             traces.push({
-                x: breaks,
+                x: scaleLinear()
+                    .range([0, 1000])
+                    .domain([Math.min(...breaks), Math.max(...breaks)]),
                 y: ys,
                 name: uniqueLabels[i],
                 type: 'scatter',
@@ -353,13 +357,16 @@ export default class ChartController {
             var newBandwidth = document.getElementById(column + '-kde').value;
             current_class.redraw_kde(dataset, column, parseFloat(newBandwidth), container_id, uniqueLabels, target_name);
         });
-
+        let items_range = raw_values.column(column).values
+        let minValue = Math.min(...items_range);
+        let maxValue = Math.max(...items_range);
+        items_range.push(minValue - parseFloat(default_bandwidth))
+        items_range.push(maxValue + parseFloat(default_bandwidth))
+        var breaks = ss.equalIntervalBreaks(items_range, 100);
 
         for (let i = 0; i < subsets.length; i++) {
             let ys = [];
-            const subbset = subsets[i];
-            var breaks = ss.equalIntervalBreaks(subbset, 100);
-            var kde = ss.kernelDensityEstimation(subbset, "gaussian", bandwidth);
+            var kde = ss.kernelDensityEstimation(subsets[i], "gaussian", bandwidth);
             breaks.forEach((item) => {
                 ys.push(kde(item, bandwidth));
             });

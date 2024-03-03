@@ -208,12 +208,7 @@ export default class UI {
                 }
             });
 
-            $("#model_name").on("change", () => {
-                console.log("change");
-                document.getElementById("settings").innerHTML = ""
-                document.getElementById("settings").style.display = "none";
 
-            })
 
 
             //modle options
@@ -241,6 +236,12 @@ export default class UI {
             </div>
             <div class="column is-12" id="settings" style="display:none">
             </div>`)
+            $("#model_name").on("change", () => {
+                console.log("change");
+                document.getElementById("settings").innerHTML = ""
+                document.getElementById("settings").style.display = "none";
+
+            })
             document.querySelector('#config_modal_button').addEventListener('click', function (e) {
                 let model_name = document.getElementById('model_name').value;
                 model_name = model_name.replace(/\s+/g, '_').toLowerCase();
