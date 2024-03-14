@@ -88,10 +88,19 @@ export default class UI {
 
             });
             $("#features-selection").append(`
+
                 <div id="config_modal" class="column is-12" style="display:none;overflow-y:scroll;max-height: 400px;">
-                        <div class="columns is-multiline is-gapless" id="features">
-                        </div>
-                        <hr/>
+                    <table class="table is-narrow" id="features">
+                    <thead>
+                    <tr>
+                      <th>Choose</th>
+                      <th>Name</th>
+                      <th>Scale</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                    </table>
                 </div>
             </div>
             `)
@@ -100,11 +109,16 @@ export default class UI {
             items.columns.forEach(column => {
                 let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
                 $('#features').append(`
-                <div class="column is-12">
+                <tr>
+                    <th>
                     <label class="checkbox my-2">
                     <input id="${key + "-checkbox"}" type="checkbox" checked>
                     </label>
+                    </th>
+                    <th>
                     ${column}
+                    </th>
+                    <th>
                     <div class="select is-small mb-1">
                         <select id="${key}">
                             <option value="${FeatureCategories.Numerical}">Numerical</option>
@@ -112,7 +126,8 @@ export default class UI {
                             <option value="${FeatureCategories.Ordinal}">Ordinal</option>
                         </select>
                     </div>
-                </div>
+                    </th>
+                </tr>
                 `);
                 $('#' + key).on('change', function (e) {
                     const type = e.target.value
@@ -380,6 +395,7 @@ export default class UI {
         return string;
     }
     renderDatasetStats(data) {
+        let limit = 10;
         //build numerical feature table table
         document.getElementById("stats").style.display = "block"
         var header = "";
@@ -388,23 +404,26 @@ export default class UI {
         for (var p in fileds) {
             header += "<th>" + fileds[p] + "</th>";
         }
-
-        data.columns.forEach(column => {
-            const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-            const type = document.getElementById(key).value
-            if (type === FeatureCategories.Numerical) {
-                let row = "";
-                row += "<td>" + column + "</td>";
-                row += "<td>" + data.column(column).min() + "</td>";
-                row += "<td>" + data.column(column).max() + "</td>";
-                row += "<td>" + data.column(column).median().toFixed(2) + "</td>";
-                row += "<td>" + data.column(column).mean().toFixed(2) + "</td>";
-                row += "<td>" + data.column(column).std().toFixed(2) + "</td>";
-                row += "<td>" + data.column(column).isNa().sum() + "</td>";
-                tbody += "<tr>" + row + "</tr>";
-
+        for (let i = 0; i < data.columns.length; i++) {
+            if (i < limit) {
+                const column = data.columns[i];
+                const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+                const type = document.getElementById(key).value
+                if (type === FeatureCategories.Numerical) {
+                    let row = "";
+                    row += "<td>" + column + "</td>";
+                    row += "<td>" + data.column(column).min() + "</td>";
+                    row += "<td>" + data.column(column).max() + "</td>";
+                    row += "<td>" + data.column(column).median().toFixed(2) + "</td>";
+                    row += "<td>" + data.column(column).mean().toFixed(2) + "</td>";
+                    row += "<td>" + data.column(column).std().toFixed(2) + "</td>";
+                    row += "<td>" + data.column(column).isNa().sum() + "</td>";
+                    tbody += "<tr>" + row + "</tr>";
+                }
             }
-        });
+
+        }
+
         document.getElementById("output").innerHTML =
             '<div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable"><thead>' +
             header +
@@ -412,38 +431,40 @@ export default class UI {
             tbody +
             "</tbody></table></div>"
             ;
-        document.getElementById("data_details_div").innerHTML = '<h2 class="subtitle "> Data shape : (' + data.shape[0] + ',' + data.shape[1] + ')</h2>'
-        //build categorical feature table table
-        var header_categorical = "";
-        var tbody_categorical = "";
-        const fileds_categorical = ["#", "Shape", "Mode", "Percentage", "# NAs"]
-        for (var p in fileds_categorical) {
-            header_categorical += "<th>" + fileds_categorical[p] + "</th>";
-        }
+        // document.getElementById("data_details_div").innerHTML = '<h2 class="subtitle "> Data shape : (' + data.shape[0] + ',' + data.shape[1] + ')</h2>'
+        // //build categorical feature table table
+        // var header_categorical = "";
+        // var tbody_categorical = "";
+        // const fileds_categorical = ["#", "Shape", "Mode", "Percentage", "# NAs"]
+        // for (var p in fileds_categorical) {
+        //     header_categorical += "<th>" + fileds_categorical[p] + "</th>";
+        // }
 
-        data.columns.forEach(column => {
-            const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-            const type = document.getElementById(key).value
-            if (type !== FeatureCategories.Numerical) {
-                const shape = [...new Set(data.column(key).values)];
-                const category_info = this.data_parser.getCategoricalMode(data.column(key).values)
-                let row = "";
-                row += "<td>" + column + "</td>";
-                row += "<td>" + shape.length + "</td>";
-                row += "<td>" + category_info['mode'] + "</td>";
-                row += "<td>" + ((category_info[category_info['mode']] / category_info['total'])).toFixed(2) + "</td>";
-                row += "<td>" + data.column(column).isNa().sum() + "</td>";
+        // data.columns.forEach((column) => {
 
-                tbody_categorical += "<tr>" + row + "</tr>";
-            }
-        });
-        document.getElementById("categorical_features").innerHTML =
-            '<div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable"><thead>' +
-            header_categorical +
-            "</thead><tbody>" +
-            tbody_categorical +
-            "</tbody></table></div>"
-            ;
+        //     const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+        //     const type = document.getElementById(key).value
+        //     if (type !== FeatureCategories.Numerical) {
+        //         const shape = [...new Set(data.column(key).values)];
+        //         const category_info = this.data_parser.getCategoricalMode(data.column(key).values)
+        //         let row = "";
+        //         row += "<td>" + column + "</td>";
+        //         row += "<td>" + shape.length + "</td>";
+        //         row += "<td>" + category_info['mode'] + "</td>";
+        //         row += "<td>" + ((category_info[category_info['mode']] / category_info['total'])).toFixed(2) + "</td>";
+        //         row += "<td>" + data.column(column).isNa().sum() + "</td>";
+
+        //         tbody_categorical += "<tr>" + row + "</tr>";
+        //     }
+
+        // });
+        // document.getElementById("categorical_features").innerHTML =
+        //     '<div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable"><thead>' +
+        //     header_categorical +
+        //     "</thead><tbody>" +
+        //     tbody_categorical +
+        //     "</tbody></table></div>"
+        //     ;
     }
     reset(ids, tables, plots) {
         tables.forEach(table => {
@@ -548,7 +569,7 @@ export default class UI {
             let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
             //draw kdes
             let limit = 0
-            if (numericColumns.length > 0 && limit < 20) {
+            if (numericColumns.length > 0 && limit < 10) {
                 document.getElementById("container").innerHTML = "";
                 numericColumns.forEach(col => {
                     this.chart_controller.draw_kde(filterd_dataset, col, target, "nrd", is_classification);
@@ -557,7 +578,7 @@ export default class UI {
             }
             limit = 0
             //draw categories barplot
-            if (categorical_columns.length > 0 && limit < 20) {
+            if (categorical_columns.length > 0 && limit < 10) {
                 document.getElementById("categories_barplots").innerHTML = "";
                 categorical_columns.forEach(col => {
                     this.chart_controller.draw_categorical_barplot(filterd_dataset.loc({ columns: [col] }).values, target, col);

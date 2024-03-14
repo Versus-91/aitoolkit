@@ -56,17 +56,33 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     ui.createSampleDataTable(dataset);
                     await ui.visualize(dataset, result.data.length, file.name);
                     tippy('#kde_help', {
+                        interactive: true,
+                        popperOptions: {
+                            positionFixed: true,
+                        },
                         content: 'Default bandwidth method :Silverman’s rule of thumb',
                     });
                     tippy('#normalization_help', {
+                        interactive: true,
+                        popperOptions: {
+                            positionFixed: true,
+                        },
                         content: '<p>not functional yet</p><p>standard scaler uses z = (x - u) / s</p><p>Transform features by scaling each feature to a given range</p>',
                         allowHTML: true,
                     });
                     tippy('#imputation_help', {
+                        interactive: true,
+                        popperOptions: {
+                            positionFixed: true,
+                        },
                         content: 'currently we are just deleting rows with missing values',
                         allowHTML: true,
                     });
                     tippy('#cv_help', {
+                        interactive: true,
+                        popperOptions: {
+                            positionFixed: true,
+                        },
                         content: 'option 1 and 2 are working',
                         allowHTML: true,
                     });
@@ -335,7 +351,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             nEstimators: model_settings.estimators,
                             treeOptions: {
                                 maxDepth: model_settings.depth
-                            }
+                            },
+                            criteria: model_settings.criteria
                         });
                         let encoder_rf = new LabelEncoder()
                         encoder_rf.fit(y_train.values)

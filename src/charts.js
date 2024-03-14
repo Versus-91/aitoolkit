@@ -8,6 +8,7 @@ import * as tfvis from '@tensorflow/tfjs-vis';
 import * as ss from "simple-statistics"
 import { schemeAccent, schemeCategory10 } from 'd3-scale-chromatic';
 import { scaleLinear, } from 'd3-scale';
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
 export default class ChartController {
     constructor(data_processor) {
@@ -303,7 +304,14 @@ export default class ChartController {
 
     draw_kde(dataset, column, target_name, bandwidth = "nrd", is_classification = false) {
 
-        var config = { responsive: true }
+        var config = {
+            responsive: true,
+            scrollZoom: true,
+            showLink: false,
+            odeBarButtonsToRemove: ['sendDataToCloud', 'autoScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian', 'lasso2d', 'select2d'], displaylogo: false, showTips: true,
+            displayLogo: false,
+            displayModeBar: true, //this one does work
+        }
         let current_class = this;
         let traces = [];
         let items = dataset.column(column).values;

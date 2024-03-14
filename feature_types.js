@@ -53,7 +53,7 @@ export const Settings = {
             },
         },
         "support_vector_machine": {
-            "label": "support vector machine",
+            "label": "Support vector machine",
             "value": 4,
             "options": {
                 "kernel": {
@@ -87,7 +87,7 @@ export const Settings = {
             },
         },
         "boosting": {
-            "label": "boosting",
+            "label": "Boosting",
             "value": 6,
             "options": {
                 "estimators": {
