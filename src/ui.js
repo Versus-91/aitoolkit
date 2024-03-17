@@ -68,7 +68,7 @@ export default class UI {
             $('#features-selection').empty()
             $('#features').empty()
             $('#props').append(this.createTargetDropdown(items))
-            $('#features-selection').append(`<div class="column is-6"><button id ="feature_selection_modal" class="button is-warning" >Select Features</button></div>`)
+            $('#features-selection').append(`<div class="column is-6"><button id ="feature_selection_modal" class="button is-warning is-small" >Select Features</button></div>`)
             document.querySelector('#feature_selection_modal').addEventListener('click', function (e) {
                 var features_dropdown = document.getElementById("config_modal")
                 var props = document.getElementById("props")
@@ -89,16 +89,16 @@ export default class UI {
             });
             $("#features-selection").append(`
 
-                <div id="config_modal" class="column is-12" style="display:none;overflow-y:scroll;max-height: 400px;">
-                    <table class="table is-narrow" id="features">
+                <div id="config_modal" style="display:none;overflow-y:scroll;max-height: 600px;">
+                    <table class="table is-narrow is-size-7" 
                     <thead>
                     <tr>
-                      <th></th>
+                      <th><input id="12" type="checkbox"></th>
                       <th>Name</th>
                       <th>Scale</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="features">
                   </tbody>
                     </table>
                 </div>
@@ -110,15 +110,15 @@ export default class UI {
                 let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
                 $('#features').append(`
                 <tr>
-                    <th>
+                    <td>
                     <label class="checkbox my-2">
                     <input id="${key + "-checkbox"}" type="checkbox" checked>
                     </label>
-                    </th>
-                    <th>
+                    </td>
+                    <td class="mt-1">
                     ${column}
-                    </th>
-                    <th>
+                    </td>
+                    <td>
                     <div class="select is-small mb-1">
                         <select id="${key}">
                             <option value="${FeatureCategories.Numerical}">Numerical</option>
@@ -126,7 +126,7 @@ export default class UI {
                             <option value="${FeatureCategories.Ordinal}">Ordinal</option>
                         </select>
                     </div>
-                    </th>
+                    </td>
                 </tr>
                 `);
                 $('#' + key).on('change', function (e) {
@@ -168,7 +168,7 @@ export default class UI {
                         <i class="fas fa-info-circle"></i>
                     </span>
                 </div>
-                <div class="select mb-1">
+                <div class="select is-small mb-1">
                     <select id="imputation">
                         <option value="1">Delete rows</option>
                         <option value="2">Mean and Mode</option>
@@ -185,7 +185,7 @@ export default class UI {
                     <i class="fas fa-info-circle"></i>
                 </span>
                 </div>
-                <div class="select mb-1">
+                <div class="select is-small mb-1">
                     <select id="normalization">
                         <option value="1">No</option>
                         <option value="2">Scale</option>
@@ -201,7 +201,7 @@ export default class UI {
                     <i class="fas fa-info-circle"></i>
                 </span>
                 </div>
-                <div class="select mb-1">
+                <div class="select is-small mb-1">
                     <select id="cross_validation">
                         <option value="1">70 % training - 30 % test</option>
                         <option value="2">No</option>
@@ -322,7 +322,7 @@ export default class UI {
     }
 
     createAlgorithmsSelect(category) {
-        let result = '<div id="algorithm" class="column is-9"><div class="select mb-1"> <select id="model_name" class="select">'
+        let result = '<div id="algorithm" class="column is-9"><div class="select is-small mb-1"> <select id="model_name" class="select">'
         const label = category == 1 ? "regression" : "classification"
         for (const key in Settings[label]) {
             if (Settings.hasOwnProperty.call(Settings[label], key)) {
@@ -335,7 +335,7 @@ export default class UI {
         return result
     }
     updateAlgorithmsSelect(category) {
-        let result = '<div class="select mb-1"> <select id="model_name" class="select">'
+        let result = '<div class="select is-small mb-1"> <select id="model_name" class="select">'
         const label = category == 1 ? "regression" : "classification"
         for (const key in Settings[label]) {
             if (Settings.hasOwnProperty.call(Settings[label], key)) {
@@ -372,7 +372,7 @@ export default class UI {
         return column_types
     }
     createTargetDropdown(items) {
-        let result = '<div  class="column is-12"><div class="label">Target</div><div class="select mb-1"> <select class="select" id="target">'
+        let result = '<div  class="column is-12"><div class="label">Target</div><div class="select mb-1"> <select class="select is-small" id="target">'
         items.columns.forEach(column => {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             result += `<option value="${key}">${key}</option>`
@@ -481,7 +481,7 @@ export default class UI {
     }
     init_upload_button(upoad_handler) {
         $('#upload').append(`
-        <div class="file">
+        <div class="file is-small">
             <label class="file-label">
                 <input class="file-input is-info" id="parseCVS" type="file" name="resume">
                 <span class="file-cta">
