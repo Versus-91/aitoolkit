@@ -18,41 +18,38 @@ export default class ChartController {
     classification_target_chart(values, labels, name, container, title = "") {
         var uniqueLabels = [...new Set(labels)];
         var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
-        var trace2 = {
-            y: values,
-            x: labels,
-            type: 'bar',
-            width: 0.3,
-            xaxis: 'x2',
-            yaxis: 'y2',
-            marker: {
-                color: colorIndices,
-                line: {
-                    color: colorIndices,
-                    width: 1.5
+        var data = [];
+        for (let i = 0; i < uniqueLabels.length; i++) {
+            data.push({
+                name: uniqueLabels[i],
+                data: [values[i]]
+            })
+        }
+        console.log(uniqueLabels);
+        Highcharts.chart(container, {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Corn vs wheat estimated production for 2020',
+                align: 'left'
+            },
+            xAxis: {
+                categories: uniqueLabels,
+                crosshair: true,
+            },
+            yAxis: {
+                min: 0,
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
                 }
-            }
-        };
-
-        var data = [trace2];
-
-        var layout = {
-            title: title,
-            font: {
-                family: 'Raleway, sans-serif'
             },
-            showlegend: false,
-            xaxis: {
-                tickangle: -45
-            },
-            yaxis: {
-                zeroline: false,
-                gridwidth: 1
-            },
-            bargap: 0.05
-        };
-
-        Plotly.newPlot(container, data, layout);
+            colors: colorIndices,
+            series: data
+        });
     }
     draw_categorical_barplot(column_values, target, title) {
         const key = title + "- barplot";
@@ -229,67 +226,6 @@ export default class ChartController {
             s = Math.min(s, iqr / 1.34);
         }
         return 1.06 * s * Math.pow(x.length, -0.2);
-    }
-    redraw_kde(dataset, column, bandwidth, container_id, uniqueLabels, target_name) {
-        var config = { responsive: true }
-        Plotly.purge(container_id);
-        console.log("purged");
-        let traces = [];
-
-        let subsets = [];
-        var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
-        let raw_values = dataset.loc({ columns: [column, target_name] });
-        let column_values = raw_values.values
-        for (let i = 0; i < uniqueLabels.length; i++) {
-            const label = uniqueLabels[i];
-            let subset = [];
-            for (let i = 0; i < column_values.length; i++) {
-                const item = column_values[i];
-                if (item[1] === label) {
-                    subset.push(item[0])
-                }
-            }
-            subsets.push(subset);
-        }
-
-        for (let i = 0; i < subsets.length; i++) {
-            let ys = [];
-            const subbset = subsets[i];
-            var breaks = ss.equalIntervalBreaks(subbset, 100);
-            var kde = ss.kernelDensityEstimation(subbset, "gaussian", bandwidth);
-            breaks.forEach((item) => {
-                ys.push(kde(item, bandwidth));
-            });
-            traces.push({
-                x: scaleLinear()
-                    .range([0, 1000])
-                    .domain([Math.min(...breaks), Math.max(...breaks)]),
-                y: ys,
-                name: uniqueLabels[i],
-                type: 'scatter',
-                mode: 'lines',
-                fill: 'tozeroy',
-                xaxis: 'x',
-                yaxis: 'y',
-                fillcolor: this.hexToRgb(colorIndices[i]),
-                line: {
-                    color: this.hexToRgb(colorIndices[i])
-                },
-            });
-        }
-        var layout = {
-            title: column,
-            showlegend: false,
-            height: 350,
-            margin: {
-                l: 30,
-                r: 30,
-                b: 30,
-                t: 50,
-                pad: 0
-            },
-        };
-        Plotly.newPlot(container_id, traces, layout, config);
     }
     hexToRgb(hex) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
