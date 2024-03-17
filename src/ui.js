@@ -93,7 +93,7 @@ export default class UI {
                     <table class="table is-narrow" id="features">
                     <thead>
                     <tr>
-                      <th>Choose</th>
+                      <th></th>
                       <th>Name</th>
                       <th>Scale</th>
                     </tr>

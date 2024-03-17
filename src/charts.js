@@ -8,7 +8,6 @@ import * as tfvis from '@tensorflow/tfjs-vis';
 import * as ss from "simple-statistics"
 import { schemeAccent, schemeCategory10 } from 'd3-scale-chromatic';
 import { scaleLinear, } from 'd3-scale';
-import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
 export default class ChartController {
     constructor(data_processor) {
@@ -302,18 +301,7 @@ export default class ChartController {
         } : null;
     }
 
-    draw_kde(dataset, column, target_name, bandwidth = "nrd", is_classification = false) {
-
-        var config = {
-            responsive: true,
-            scrollZoom: true,
-            showLink: false,
-            odeBarButtonsToRemove: ['sendDataToCloud', 'autoScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian', 'lasso2d', 'select2d'], displaylogo: false, showTips: true,
-            displayLogo: false,
-            displayModeBar: true, //this one does work
-        }
-        let current_class = this;
-        let traces = [];
+    draw_kde(dataset, column, target_name, bandwidth = "nrd", is_classification = false, redrawing = false) {
         let items = dataset.column(column).values;
         var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
         let default_bandwidth = this.nrd(items).toFixed(2);
@@ -343,28 +331,30 @@ export default class ChartController {
         var newColumn = document.createElement("div");
         newColumn.className = "column is-4";
         newColumn.setAttribute("id", column + '-kde-plot');
-
-        $("#container").append(
-            `<div class="column is-4 " id="${column + '-kde-plot'}">
-                <div class="field has-addons">
-                    <div class="control">
-                        <input class="input is-small" type="number"  id="${column + '-kde'}" value="${default_bandwidth}">
-                        </div>
+        if (!redrawing) {
+            $("#container").append(
+                `<div class="column is-4 " >
+                    <div id="${column + '-kde-plot'}"> </div>
+                    <div class="field has-addons my-1">
                         <div class="control">
-                        <a class="button is-success is-small" id="${column + '-kde-button'}">
-                            Apply
-                        </a>
+                            <input class="input is-small" type="number"  min="0" id="${column + '-kde'}" value="${default_bandwidth}">
+                            </div>
+                            <div class="control">
+                            <a class="button is-success is-small" id="${column + '-kde-button'}">
+                                Apply
+                            </a>
+                        </div>
                     </div>
-                </div>
-            </div>`
-        );
+                </div>`
+            );
+        }
 
-        let container_id = column + '-kde-plot';
-
+        var current_class = this;
         document.getElementById(column + '-kde-button').addEventListener("click", function () {
             var newBandwidth = document.getElementById(column + '-kde').value;
-            current_class.redraw_kde(dataset, column, parseFloat(newBandwidth), container_id, uniqueLabels, target_name);
+            current_class.draw_kde(dataset, column, target_name, parseFloat(newBandwidth), is_classification = true, redrawing = true)
         });
+        let container_id = column + '-kde-plot';
         let items_range = raw_values.column(column).values
         let minValue = Math.min(...items_range);
         let maxValue = Math.max(...items_range);
@@ -372,42 +362,61 @@ export default class ChartController {
         items_range.push(maxValue + parseFloat(default_bandwidth))
         var breaks = ss.equalIntervalBreaks(items_range, 100);
 
+        let allData = [];
+
+        // Loop through subsets to generate data for all subsets
         for (let i = 0; i < subsets.length; i++) {
             let ys = [];
             var kde = ss.kernelDensityEstimation(subsets[i], "gaussian", bandwidth);
+            let data = [];
             breaks.forEach((item) => {
                 ys.push(kde(item, bandwidth));
+                data.push([item, ys[ys.length - 1]]);
             });
-            traces.push({
-                x: breaks,
-                y: ys,
-                name: is_classification ? uniqueLabels[i] : column,
-                type: 'scatter',
-                mode: 'lines',
-                fill: 'tozeroy',
-                xaxis: 'x',
-                yaxis: 'y',
-                fillcolor: is_classification ? this.hexToRgb(colorIndices[i]) : "black",
-                line: {
-                    color: is_classification ? this.hexToRgb(colorIndices[i]) : "red"
-                },
-            });
+            allData.push(data);
         }
-        console.log(traces);
-        var layout = {
-            showlegend: false, height: 350,
-            margin: {
-                l: 40,
-                r: 40,
-                b: 40,
-                t: 50,
-                pad: 0
+
+        let animationDuration = 4000;
+
+        Highcharts.chart(container_id, {
+            chart: {
+                type: "spline",
+                animation: true
             },
-            title: column,
-            plot_bgcolor: "#E5ECF6"
-        };
-        Plotly.newPlot(container_id, traces, layout, config);
+            title: {
+                text: column // Assuming `column` is defined elsewhere
+            },
+            yAxis: {
+                title: { text: null }
+            },
+            tooltip: {
+                valueDecimals: 3
+            },
+            plotOptions: {
+                series: {
+                    marker: {
+                        enabled: false
+                    },
+                    dashStyle: "shortdot",
+                    color: colorIndices,
+                    animation: {
+                        duration: animationDuration
+                    },
+                    area: true
+                }
+            },
+            series: allData.map((data, index) => ({
+                type: 'area',
+                name: uniqueLabels[index],
+                dashStyle: "solid",
+                lineWidth: 2,
+                color: colorIndices[index],
+                data: data
+            }))
+        });
+
     }
+
     draw_classification_pca(dataset, labels, missclassifications, uniqueLabels, size = 4, color_scale = "Jet") {
         const pca = new PCA(dataset, { center: true, scale: true });
         var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
@@ -462,10 +471,10 @@ export default class ChartController {
             },
             xaxis: {
 
-                title: 'PCA component 1'
+                title: 'PC1'
             },
             yaxis: {
-                title: 'PCA component 2'
+                title: 'PC2'
             }
         }, { responsive: true });
 
@@ -538,30 +547,30 @@ export default class ChartController {
             showlegend: true,
             legend: { "orientation": "h" },
             xaxis: {
-                title: 'PCA component 1'
+                title: 'PC1'
             },
             yaxis: {
-                title: 'PCA component 2'
+                title: 'PC2'
             }
         }, { responsive: true });
         Plotly.newPlot('pca-2', [trace2], {
             showlegend: true,
             legend: { "orientation": "h" },
             xaxis: {
-                title: 'PCA component 1'
+                title: 'PC1'
             },
             yaxis: {
-                title: 'PCA component 3'
+                title: 'PC3'
             }
         }, { responsive: true });
         Plotly.newPlot('pca-3', [trace3], {
             showlegend: true,
             legend: { "orientation": "h" },
             xaxis: {
-                title: 'PCA component 2'
+                title: 'PC2'
             },
             yaxis: {
-                title: 'PCA component 3'
+                title: 'PC3'
             }
         }, { responsive: true });
     }
