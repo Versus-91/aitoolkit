@@ -19,31 +19,24 @@ export default class ChartController {
         var uniqueLabels = [...new Set(labels)];
         var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
         var data = [];
-        for (let i = 0; i < uniqueLabels.length; i++) {
-            data.push({
-                name: uniqueLabels[i],
-                data: [values[i]]
-            })
-        }
-        console.log(uniqueLabels);
+        data.push({
+            name: "Count",
+            data: values.map((item, i) => ({ y: item, color: colorIndices[i] }))
+        })
+
         Highcharts.chart(container, {
             chart: {
                 type: 'column'
             },
-            title: {
-                text: 'Corn vs wheat estimated production for 2020',
-                align: 'left'
-            },
             xAxis: {
                 categories: uniqueLabels,
-                crosshair: true,
             },
             yAxis: {
                 min: 0,
             },
             plotOptions: {
                 column: {
-                    pointPadding: 0.2,
+                    pointPadding: 0.1,
                     borderWidth: 0
                 }
             },
@@ -315,6 +308,9 @@ export default class ChartController {
         let animationDuration = 4000;
 
         Highcharts.chart(container_id, {
+            credits: {
+                enabled: false
+            },
             chart: {
                 type: "spline",
                 animation: true
@@ -443,42 +439,49 @@ export default class ChartController {
             x2.push(element[1])
             y2.push(element[2])
         });
-        var trace1 = {
-            x: x,
-            y: y,
-            text: labels,
-            mode: 'markers',
-            type: 'scatter',
-            marker: {
-                size: size,
-                color: colorIndices,
-                // colorscale: color_scale,
-            },
-        };
-        var trace2 = {
-            x: x1,
-            y: y1,
-            text: labels,
-            mode: 'markers',
-            type: 'scatter',
-            marker: {
-                size: size,
-                color: colorIndices,
-                // colorscale: color_scale,
-            },
-        };
-        var trace3 = {
-            x: x2,
-            y: y2,
-            text: labels,
-            mode: 'markers',
-            type: 'scatter',
-            marker: {
-                size: size,
-                color: colorIndices,
-                colorscale: color_scale,
-            },
-        };
+
+        var trace1 = []
+        var trace2 = []
+        var trace2 = []
+
+        for (let i = 0; i < labels.length; i++) {
+            const label = labels[i];
+            trace1.push({
+                x: x,
+                y: y,
+                text: labels,
+                mode: 'markers',
+                type: 'scatter',
+                marker: {
+                    size: size,
+                    color: colorIndices,
+                },
+            });
+            trace2.push({
+                x: x1,
+                y: y1,
+                text: labels,
+                mode: 'markers',
+                type: 'scatter',
+                marker: {
+                    size: size,
+                    color: colorIndices,
+                },
+            });
+            trace3.push({
+                x: x2,
+                y: y2,
+                text: labels,
+                mode: 'markers',
+                type: 'scatter',
+                marker: {
+                    size: size,
+                    color: colorIndices,
+                    colorscale: color_scale,
+                },
+            });
+        }
+
         Plotly.newPlot('pca-1', [trace1], {
             showlegend: true,
             legend: { "orientation": "h" },

@@ -540,6 +540,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         let tabs = Bulma('.tabs-wrapper').data('tabs');
         tabs.setActive(2)
         const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
+        console.log(confusionMatrix);
         const container = document.getElementById("confusion-matrix");
         await tfvis.render.confusionMatrix(container, {
             values: confusionMatrix,
