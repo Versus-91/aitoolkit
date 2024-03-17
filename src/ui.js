@@ -163,7 +163,7 @@ export default class UI {
             });
             $('#props').append(`
             <div class="column is-12">
-                <div class="label">Imputation
+                <div class="label is-size-7">Imputation
                     <span id="imputation_help" class="icon has-text-success">
                         <i class="fas fa-info-circle"></i>
                     </span>
@@ -180,7 +180,7 @@ export default class UI {
             `)
             $('#props').append(`
             <div class="column is-12">
-                <div class="label">Data Transformation
+                <div class="label is-size-7">Data Transformation
                 <span id="normalization_help" class="icon has-text-success">
                     <i class="fas fa-info-circle"></i>
                 </span>
@@ -196,7 +196,7 @@ export default class UI {
             `)
             $('#props').append(`
             <div class="column is-10">
-                <div class="label">Cross Validation
+                <div class="label is-size-7">Cross Validation
                 <span id="cv_help" class="icon has-text-success">
                     <i class="fas fa-info-circle"></i>
                 </span>
@@ -277,7 +277,7 @@ export default class UI {
                             <div class="column is-12">
                                 <div class="field is-horizontal">
                                     <div class="field-label is-small">
-                                    <label class="label">${key}</label>
+                                    <label class="label is-size-7">${key}</label>
                                     </div>
                                     <div class="field-body">
                                     <div class="control">
@@ -295,7 +295,7 @@ export default class UI {
                             <div class="column is-12">
                                 <div class="field is-horizontal">
                                     <div class="field-label is-small">
-                                       <label class="label mr-1">${key}</label>
+                                       <label class="label is-size-7 mr-1">${key}</label>
                                     </div>
                                     <div class="field-body">
                                         <div class="select is-small">
@@ -372,7 +372,7 @@ export default class UI {
         return column_types
     }
     createTargetDropdown(items) {
-        let result = '<div  class="column is-12"><div class="label">Target</div><div class="select mb-1"> <select class="select is-small" id="target">'
+        let result = '<div  class="column is-12"><div class="label is-size-7">Target</div><div class="select mb-1"> <select class="select is-small" id="target">'
         items.columns.forEach(column => {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             result += `<option value="${key}">${key}</option>`

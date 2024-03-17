@@ -25,8 +25,11 @@ export default class ChartController {
         })
 
         Highcharts.chart(container, {
+            credits: {
+                enabled: false
+            },
             title: {
-                text: "Classes Frequencies"
+                text: ""
             },
             chart: {
                 type: 'column'
