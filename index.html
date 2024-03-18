@@ -62,10 +62,7 @@
                                 <a>Results analysis</a>
                             </li>
                             <li>
-                                <a>Predictions</a>
-                            </li>
-                            <li>
-                                <a>details</a>
+                                <a>Details</a>
                             </li>
                         </ul>
                     </div>
@@ -157,39 +154,16 @@
                                 </div>
                             </li>
                             <li class="tabs-li">
-                                <div class="column is-6">
-                                    <div id="desc"></div>
-                                    <div id="plot_div"></div>
-                                    <div id="results"></div>
-                                </div>
-                                <div class="column is-12">
-                                    <div id="pca"></div>
-                                </div>
-                                <div class="column is-6">
-                                    <div id="roc2"></div>
-                                    <div id="loss-cont"></div>
-                                    <div id="acc-cont"></div>
-                                </div>
-                                <div class="column is-12">
+                                <div class="columns is-multiline">
                                     <div class="column is-4">
                                         <div id="confusion-matrix"></div>
                                     </div>
-                                    <article class="message is-info">
-                                        <div class="message-body">
-                                            <div class="columns is-multiline">
-                                                <div class="column is-4">
-                                                    <div id="roc"></div>
-                                                </div>
-                                                <div class="column is-6">
-                                                    <div id="pca-results"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </article>
-                                </div>
-                            </li>
-                            <li class="tabs-li">
-                                <div class="columns is-multiline">
+                                    <div class="column is-4">
+                                        <div id="roc"></div>
+                                    </div>
+                                    <div class="column is-6">
+                                        <div id="pca-results"></div>
+                                    </div>
                                     <div class="column is-6" style="display: none;">
                                         <div id="lasso_plot"></div>
                                     </div>
@@ -202,15 +176,9 @@
                                             width="100%">
                                         </table>
                                     </div>
-                                    <div class="column is-12">
-                                        <table id="probs_box_plot"
-                                            class="table is-bordered is-hoverable is-narrow display" width="100%">
-                                        </table>
+                                    <div class="column is-6" id="probs_box_plot" style="height: 100px;">
                                     </div>
-                                    <div class="column is-12">
-                                        <table id="probs_violin_plot" class="table is-bordered is-narrow display"
-                                            width="100%">
-                                        </table>
+                                    <div class="column is-6" id="probs_violin_plot" style="height: 100px;">
                                     </div>
                                     <div class="column is-6">
                                         <table id="knn_table" class="table is-bordered is-hoverable is-narrow display"
@@ -229,6 +197,20 @@
                                     <div class="column is-12" id="regression_y_yhat" style="height: 450px;width: 80%;">
                                     </div>
                                 </div>
+                                <div class="column is-6">
+                                    <div id="desc"></div>
+                                    <div id="plot_div"></div>
+                                    <div id="results"></div>
+                                </div>
+                                <div class="column is-12">
+                                    <div id="pca"></div>
+                                </div>
+                                <div class="column is-6">
+                                    <div id="roc2"></div>
+                                    <div id="loss-cont"></div>
+                                    <div id="acc-cont"></div>
+                                </div>
+
                             </li>
                             <li class="tabs-li">
                                 <div class="column is-12">

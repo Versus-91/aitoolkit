@@ -326,7 +326,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break
                     }
                     case Settings.classification.discriminant_analysis.label: {
-                        let model = model_factory.createModel(Settings.classification.discriminant_analysis, { type: model_settings.type === "linear" ? 0 : 1 })
+                        console.log(model_settings);
+                        let model = model_factory.createModel(Settings.classification.discriminant_analysis, { type: model_settings.type === "linear" ? 0 : 1, priors: model_settings.priors })
                         let encoder = new LabelEncoder()
                         encoder.fit(y_train.values)
                         let y = encoder.transform(y_train.values)

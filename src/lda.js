@@ -11,6 +11,7 @@ export default class DiscriminantAnalysis {
     async train(x, y, x_test) {
         this.context = {
             lda_type: this.options.type,
+            lda_type: this.options.prior,
             X_train: x,
             y_train: y,
             X_test: x_test,

@@ -29,7 +29,7 @@ export const Settings = {
                 },
                 "priors": {
                     type: "text",
-                    default: 3
+                    placeholder: "comma separated priors"
                 },
             }
         },

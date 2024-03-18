@@ -33,8 +33,14 @@ export default class UI {
                 let option_value = document.getElementById(option + "_" + model_name)?.value;
                 model_settings[option] = option_value ?? model.options[option].default
             } else {
-                let option_value = document.getElementById(option + "_" + model_name);
-                model_settings[option] = !option_value ? model.options[option].default : parseInt(option_value.value)
+                if (model.options[option].type === "number") {
+                    let option_value = document.getElementById(option + "_" + model_name);
+                    model_settings[option] = !option_value ? model.options[option].default : parseInt(option_value.value)
+                } else {
+                    let option_value = document.getElementById(option + "_" + model_name);
+                    model_settings[option] = option_value.value
+                }
+
             }
         }
 
@@ -93,7 +99,7 @@ export default class UI {
                     <table class="table is-narrow is-size-7" 
                     <thead>
                     <tr>
-                      <th><input id="12" type="checkbox"></th>
+                      <th><input id="select_all" value="1" name="selectall" type="checkbox" checked="checked" /></th>
                       <th>Name</th>
                       <th>Scale</th>
                     </tr>
@@ -104,7 +110,13 @@ export default class UI {
                 </div>
             </div>
             `)
-
+            document.querySelector('#select_all').addEventListener('click', function (e) {
+                if ($("#select_all").prop('checked')) {
+                    $('.features-filter').prop('checked', true);
+                } else {
+                    $('.features-filter').prop('checked', false);
+                }
+            });
             const default_target = items.columns[items.columns.length - 1]
             items.columns.forEach(column => {
                 let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
@@ -112,7 +124,7 @@ export default class UI {
                 <tr>
                     <td>
                     <label class="checkbox my-2">
-                    <input id="${key + "-checkbox"}" type="checkbox" checked>
+                    <input id="${key + "-checkbox"}" type="checkbox" value="1" class="features-filter" checked="checked">
                     </label>
                     </td>
                     <td class="mt-1">
@@ -252,7 +264,6 @@ export default class UI {
             <div class="column is-12" id="settings" style="display:none">
             </div>`)
             $("#model_name").on("change", () => {
-                console.log("change");
                 document.getElementById("settings").innerHTML = ""
                 document.getElementById("settings").style.display = "none";
 
@@ -272,6 +283,7 @@ export default class UI {
                     options_modal_content.style.display = "block"
                     if (Object.hasOwnProperty.call(model.options, key)) {
                         const option_type = model.options[key]["type"]
+                        const placeholder = model.options[key]["placeholder"]
                         if (option_type === "number" || option_type === "text") {
                             $('#settings').append(`
                             <div class="column is-12">
@@ -281,13 +293,15 @@ export default class UI {
                                     </div>
                                     <div class="field-body">
                                     <div class="control">
-                                        <input id="${key + "_" + model_name}" class="input is-small" type="${option_type}">
+                                        <input id="${key + "_" + model_name}" class="input is-small" type="${option_type}" placeholder="${placeholder ?? ""}">
                                     </div>
                                     </div>
                                 </div>
                             </div>
                             `)
-                            document.getElementById(key + "_" + model_name).value = model.options[key]["default"]
+                            if (!!model.options[key]["default"]) {
+                                document.getElementById(key + "_" + model_name).value = model.options[key]["default"]
+                            }
                         } else if (option_type === "select") {
                             let result = ""
                             let options = model.options[key]["values"]
