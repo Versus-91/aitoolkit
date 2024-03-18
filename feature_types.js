@@ -48,7 +48,7 @@ export const Settings = {
                 "metric": {
                     type: "select",
                     default: "euclidean",
-                    values: ["euclidean", "minkowski", "manhattan"]
+                    values: ["euclidean", "manhattan"]
                 },
             },
         },
