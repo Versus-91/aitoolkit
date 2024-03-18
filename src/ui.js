@@ -366,10 +366,11 @@ export default class UI {
         const selected_columns_types = [];
         columns.forEach(column => {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-            if (!document.getElementById(key + '-checkbox').checked || get_all) {
+            if (document.getElementById(key + '-checkbox').checked || get_all) {
                 selected_columns.push(column);
             }
         });
+        console.log(selected_columns);
         return selected_columns;
     }
     find_selected_columns_types(columns) {

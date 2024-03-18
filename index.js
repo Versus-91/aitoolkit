@@ -564,13 +564,13 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         let row = "";
         row += "<td>Preceission</td>";
         for (let j = 0; j < len; j++) {
-            row += `<td>${calculatePrecision(j, confusionMatrix).toFixed(4)} </td>`;
+            row += `<td>${calculatePrecision(j, confusionMatrix).toFixed(2)} </td>`;
         }
         tbody += "<tr>" + row + "</tr>";
         row = "";
         row += "<td>Recall</td>";
         for (let j = 0; j < len; j++) {
-            row += `<td>${calculateRecall(j, confusionMatrix).toFixed(4)} </td>`;
+            row += `<td>${calculateRecall(j, confusionMatrix).toFixed(2)} </td>`;
         }
         tbody += "<tr>" + row + "</tr>";
 
