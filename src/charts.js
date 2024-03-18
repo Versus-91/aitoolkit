@@ -60,7 +60,6 @@ export default class ChartController {
         const countArray = Object.entries(countOccurrences).map(([value, count]) => ({ value: value, count }));
         countArray.sort((a, b) => b.count - a.count);
         const top5 = countArray.slice(0, 5);
-        console.log(top5);
         var top_categories_trace = {
             x: top5.map(m => m.value),
             y: top5.map(m => m.count),

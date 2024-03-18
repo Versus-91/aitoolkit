@@ -73,7 +73,7 @@ export const Settings = {
                 },
                 "features": {
                     type: "number",
-                    default: "square-p"
+                    default: "sqrt"
                 },
                 "depth": {
                     type: "number",
@@ -82,7 +82,7 @@ export const Settings = {
                 "criteria": {
                     type: "select",
                     default: "gini",
-                    "values": ["gini", "class_error", "entropy"]
+                    "values": ["gini", "log_loss", "entropy"]
                 }
             },
         },

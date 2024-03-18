@@ -25,14 +25,17 @@ export default class RandomForest {
                 X_train: x_train,
                 y_train: y_train,
                 X_test: x_test,
-                rf_type: this.options.criteria
+                rf_type: this.options.criteria,
+                max_features: this.options.features,
+                num_estimators: this.options.nEstimators <= 0 || !this.options.nEstimators ? 100 : this.options.nEstimators,
+                max_depth: this.options.treeOptions.maxDepth <= 0 ? 5 : this.options.treeOptions.maxDepth
             };
             const script = `
             from sklearn.model_selection import train_test_split
             from sklearn.ensemble import RandomForestClassifier
             from sklearn.metrics import accuracy_score
-            from js import X_train,y_train,X_test,rf_type
-            clf = RandomForestClassifier(criterion=rf_type, random_state=42)
+            from js import X_train,y_train,X_test,rf_type,max_features,num_estimators,max_depth
+            clf = RandomForestClassifier(criterion=rf_type,max_features = max_features,n_estimators=num_estimators,max_depth = max_depth, random_state=42)
             clf.fit(X_train, y_train)
             y_pred = clf.predict(X_test)
             y_pred
@@ -40,7 +43,6 @@ export default class RandomForest {
             try {
                 const { results, error } = await asyncRun(script, this.context);
                 if (results) {
-                    console.log("pyodideWorker return results: ", results);
                     return Array.from(results);
                 } else if (error) {
                     console.log("pyodideWorker error: ", error);

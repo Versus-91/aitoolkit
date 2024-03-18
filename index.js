@@ -99,7 +99,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 }
             });
         } catch (error) {
-            console.log(error);
             ui.toggle_loading_progress(true);
             ui.stop_loading();
             ui.show_error_message(error.message, "#7E191B");
