@@ -445,47 +445,42 @@ export default class ChartController {
             y2.push(element[2])
         });
 
-        var trace1 = []
-        var trace2 = []
-        var trace2 = []
 
-        for (let i = 0; i < labels.length; i++) {
-            const label = labels[i];
-            trace1.push({
-                x: x,
-                y: y,
-                text: labels,
-                mode: 'markers',
-                type: 'scatter',
-                marker: {
-                    size: size,
-                    color: colorIndices,
-                },
-            });
-            trace2.push({
-                x: x1,
-                y: y1,
-                text: labels,
-                mode: 'markers',
-                type: 'scatter',
-                marker: {
-                    size: size,
-                    color: colorIndices,
-                },
-            });
-            trace3.push({
-                x: x2,
-                y: y2,
-                text: labels,
-                mode: 'markers',
-                type: 'scatter',
-                marker: {
-                    size: size,
-                    color: colorIndices,
-                    colorscale: color_scale,
-                },
-            });
-        }
+        var trace1 = {
+            x: x,
+            y: y,
+            text: labels,
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: size,
+                color: colorIndices,
+            },
+        };
+        let trace2 = {
+            x: x1,
+            y: y1,
+            text: labels,
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: size,
+                color: colorIndices,
+            },
+        };
+        let trace3 = {
+            x: x2,
+            y: y2,
+            text: labels,
+            mode: 'markers',
+            type: 'scatter',
+            marker: {
+                size: size,
+                color: colorIndices,
+                colorscale: color_scale,
+            },
+        };
+
 
         Plotly.newPlot('pca-1', [trace1], {
             showlegend: true,

@@ -467,6 +467,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             table_columns.push({ title: element });
         });
         new DataTable('#predictions_table', {
+            pageLength: 25,
             responsive: true,
             paging: true,
             "bPaginate": true,
