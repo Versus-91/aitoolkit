@@ -445,40 +445,40 @@ export default class UI {
             tbody +
             "</tbody></table></div>"
             ;
-        // document.getElementById("data_details_div").innerHTML = '<h2 class="subtitle "> Data shape : (' + data.shape[0] + ',' + data.shape[1] + ')</h2>'
-        // //build categorical feature table table
-        // var header_categorical = "";
-        // var tbody_categorical = "";
-        // const fileds_categorical = ["#", "Shape", "Mode", "Percentage", "# NAs"]
-        // for (var p in fileds_categorical) {
-        //     header_categorical += "<th>" + fileds_categorical[p] + "</th>";
-        // }
+        document.getElementById("data_details_div").innerHTML = '<h2 class="subtitle "> Data shape : (' + data.shape[0] + ',' + data.shape[1] + ')</h2>'
+        //build categorical feature table table
+        var header_categorical = "";
+        var tbody_categorical = "";
+        const fileds_categorical = ["#", "Shape", "Mode", "Percentage", "# NAs"]
+        for (var p in fileds_categorical) {
+            header_categorical += "<th>" + fileds_categorical[p] + "</th>";
+        }
 
-        // data.columns.forEach((column) => {
+        data.columns.forEach((column) => {
 
-        //     const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-        //     const type = document.getElementById(key).value
-        //     if (type !== FeatureCategories.Numerical) {
-        //         const shape = [...new Set(data.column(key).values)];
-        //         const category_info = this.data_parser.getCategoricalMode(data.column(key).values)
-        //         let row = "";
-        //         row += "<td>" + column + "</td>";
-        //         row += "<td>" + shape.length + "</td>";
-        //         row += "<td>" + category_info['mode'] + "</td>";
-        //         row += "<td>" + ((category_info[category_info['mode']] / category_info['total'])).toFixed(2) + "</td>";
-        //         row += "<td>" + data.column(column).isNa().sum() + "</td>";
+            const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            const type = document.getElementById(key).value
+            if (type !== FeatureCategories.Numerical) {
+                const shape = [...new Set(data.column(key).values)];
+                const category_info = this.data_parser.getCategoricalMode(data.column(key).values)
+                let row = "";
+                row += "<td>" + column + "</td>";
+                row += "<td>" + shape.length + "</td>";
+                row += "<td>" + category_info['mode'] + "</td>";
+                row += "<td>" + ((category_info[category_info['mode']] / category_info['total'])).toFixed(2) + "</td>";
+                row += "<td>" + data.column(column).isNa().sum() + "</td>";
 
-        //         tbody_categorical += "<tr>" + row + "</tr>";
-        //     }
+                tbody_categorical += "<tr>" + row + "</tr>";
+            }
 
-        // });
-        // document.getElementById("categorical_features").innerHTML =
-        //     '<div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable"><thead>' +
-        //     header_categorical +
-        //     "</thead><tbody>" +
-        //     tbody_categorical +
-        //     "</tbody></table></div>"
-        //     ;
+        });
+        document.getElementById("categorical_features").innerHTML =
+            '<div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable"><thead>' +
+            header_categorical +
+            "</thead><tbody>" +
+            tbody_categorical +
+            "</tbody></table></div>"
+            ;
     }
     reset(ids, tables, plots) {
         tables.forEach(table => {

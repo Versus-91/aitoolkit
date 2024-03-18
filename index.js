@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
                         chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(predictions), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
-                        metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
+                        //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         predictions_table(x_test, y_test, encoder, best_result.predictions)
                         break;
                     }
@@ -235,7 +235,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
                         predictions_table(x_test, y_test, encoder, y_preds)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
-                        metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
+                        //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
                     }
                     case Settings.classification.naive_bayes.label: {
@@ -250,7 +250,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
                         chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
-                        metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
+                        //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         predictions_table(x_test, y_test, encoder, y_preds)
                         break;
                     }
@@ -277,7 +277,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                         predictions_table(x_test, y_test, encoder, y_preds)
-                        metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
+                        //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
                     }
                     case Settings.classification.logistic_regression.label: {
@@ -366,7 +366,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         const evaluation_result = evaluate_classification(preds, encoded_y_test)
                         const classes = encoder_rf.inverseTransform(Object.values(encoder_rf.$labels))
                         const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), classes)
-                        metrics_table(classes, matrix)
+                        //metrics_table(classes, matrix)
                         chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
 
                         predictions_table(x_test, y_test, encoder_rf, preds);
@@ -542,10 +542,45 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
         console.log(confusionMatrix);
         const container = document.getElementById("confusion-matrix");
-        await tfvis.render.confusionMatrix(container, {
-            values: confusionMatrix,
-            tickLabels: labels
-        });
+        const cm_table = document.getElementById("confusion-matrix-table");
+        var header = "";
+        header += "<th></th>";
+        var tbody = "";
+        for (let i = 0; i < labels.length; i++) {
+            header += "<th>" + labels[i] + "</th>";
+        }
+
+        let len = confusionMatrix[0].length
+        for (let i = 0; i < len; i++) {
+            let matrix_row = confusionMatrix[i]
+            let row = "";
+            row += "<td>" + labels[i] + "</td>";
+            for (let j = 0; j < len; j++) {
+                row += `<td style="color:${i == j ? 'green' : 'red'}">${matrix_row[j]} </td>`;
+            }
+            tbody += "<tr>" + row + "</tr>";
+        }
+
+        let row = "";
+        row += "<td>Preceission</td>";
+        for (let j = 0; j < len; j++) {
+            row += `<td>${calculatePrecision(j, confusionMatrix).toFixed(4)} </td>`;
+        }
+        tbody += "<tr>" + row + "</tr>";
+        row = "";
+        row += "<td>Recall</td>";
+        for (let j = 0; j < len; j++) {
+            row += `<td>${calculateRecall(j, confusionMatrix).toFixed(4)} </td>`;
+        }
+        tbody += "<tr>" + row + "</tr>";
+
+        cm_table.innerHTML =
+            '<div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable is-size-7"><thead>' +
+            header +
+            "</thead><tbody>" +
+            tbody +
+            "</tbody></table></div>"
+            ;
         window.tf.dispose(y)
         window.tf.dispose(predictedLabels)
         return confusionMatrix
