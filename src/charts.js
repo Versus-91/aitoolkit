@@ -646,7 +646,7 @@ export default class ChartController {
                 title: 'PC1'
             },
             yaxis: {
-                title: 'PC3'
+                title: 'PC2'
             }
         }, { responsive: true });
         Plotly.newPlot('pca-2', traces2, {

@@ -387,7 +387,7 @@ export default class UI {
         return column_types
     }
     createTargetDropdown(items) {
-        let result = '<div  class="column is-12"><div class="label is-size-7">Target</div><div class="select mb-1"> <select class="select is-small" id="target">'
+        let result = '<div  class="column is-12"><div class="label is-size-7">Target</div><div class="select is-small mb-1"> <select id="target">'
         items.columns.forEach(column => {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             result += `<option value="${key}">${key}</option>`

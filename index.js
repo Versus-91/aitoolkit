@@ -493,8 +493,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 var prediction = data[table_columns.length - 1];
                 var y = data[table_columns.length - 2];
                 if (prediction !== y) {
-                    $(row).css('border-bottom', '2px solid red');
-                    $(row).css('color', 'red');
+                    $(row).addClass('is-danger');
                 }
             }
         });
