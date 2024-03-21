@@ -102,6 +102,14 @@ export const Settings = {
             "label": "Boosting",
             "value": 6,
             "options": {
+                "eta": {
+                    type: "number",
+                    default: 0.3
+                },
+                "iterations": {
+                    type: "number",
+                    default: 200
+                },
                 "estimators": {
                     type: "number",
                     default: 10
@@ -113,7 +121,12 @@ export const Settings = {
                 "depth": {
                     type: "number",
                     default: 5
-                }
+                },
+                "booster": {
+                    type: "select",
+                    default: "gbtree",
+                    values: ["gbtree", "gblinear", "dart"]
+                },
             },
         },
         "naive_bayes": {

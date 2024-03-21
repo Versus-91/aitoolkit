@@ -234,10 +234,29 @@ export default class ChartController {
             a: 0.5
         } : null;
     }
+    kernelFunctions = {
+        gaussian: function (u) {
+            return Math.exp(-0.5 * u * u) / Math.sqrt(2 * Math.PI);
+        },
+        uniform: function (x) {
+            return Math.abs(x) <= 1 ? 0.5 : 0;
+        },
+        triangular: function (x) {
+            return Math.abs(x) <= 1 ? 1 - Math.abs(x) : 0;
+        },
+        biweight: function (x) {
+            return Math.abs(x) <= 1 ? 15 / 16 * Math.pow(1 - x * x, 2) : 0;
+        },
+        triweight: function (x) {
+            return Math.abs(x) <= 1 ? 35 / 32 * Math.pow(1 - x * x, 3) : 0;
+        },
+        Epanechnikov: function (x) {
+            return Math.abs(x) <= 1 ? 0.75 * (1 - x * x) : 0;
+        }
+    };
 
     draw_kde(dataset, column, target_name, bandwidth = "nrd", is_classification = false, redrawing = false) {
         let items = dataset.column(column).values;
-        var kde = ss.kernelDensityEstimation(items, "gaussian", bandwidth);
         let default_bandwidth = this.nrd(items).toFixed(2);
         let raw_values = dataset.loc({ columns: [column, target_name] });
         let uniqueLabels = [...new Set(raw_values.column(target_name).values)];
@@ -269,24 +288,35 @@ export default class ChartController {
             $("#container").append(
                 `<div class="column is-4 " >
                     <div id="${column + '-kde-plot'}"> </div>
-                    <div class="field has-addons my-1">
-                        <div class="control">
+                    <div class="field has-addons has-addons-centered my-1">
+                    <p class="control">
+                    <span class="select is-small">
+                      <select id="${column + '-kernel_type'}">
+                      <option value="gaussian">gaussian</option>
+                        <option value="uniform">uniform</option>
+                        <option value="triangular">triangular</option>
+                        <option value="biweight">biweight</option>
+                        <option value="triweight">triweight</option>
+                        <option value="Epanechnikov">Epanechnikov</option>
+                      </select>
+                    </span>
+                  </p>
+                        <p class="control">
                             <input class="input is-small" type="number"  min="0" id="${column + '-kde'}" value="${default_bandwidth}">
-                            </div>
-                            <div class="control">
+                        </p>
+                        <p class="control">
                             <a class="button is-success is-small" id="${column + '-kde-button'}">
                                 Apply
                             </a>
-                        </div>
+                        </p>
                     </div>
                 </div>`
             );
         }
-
         var current_class = this;
         document.getElementById(column + '-kde-button').addEventListener("click", function () {
             var newBandwidth = document.getElementById(column + '-kde').value;
-            current_class.draw_kde(dataset, column, target_name, parseFloat(newBandwidth), is_classification = true, redrawing = true)
+            current_class.redraw_kde(dataset, column, target_name, parseFloat(newBandwidth), is_classification = true, redrawing = true)
         });
         let container_id = column + '-kde-plot';
         let items_range = raw_values.column(column).values
@@ -297,11 +327,12 @@ export default class ChartController {
         var breaks = ss.equalIntervalBreaks(items_range, 100);
 
         let allData = [];
-
+        let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
+        console.log(kernel_type);
         // Loop through subsets to generate data for all subsets
         for (let i = 0; i < subsets.length; i++) {
             let ys = [];
-            var kde = ss.kernelDensityEstimation(subsets[i], "gaussian", bandwidth);
+            var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
             let data = [];
             breaks.forEach((item) => {
                 ys.push(kde(item, bandwidth));
@@ -353,7 +384,102 @@ export default class ChartController {
         });
 
     }
+    redraw_kde(dataset, column, target_name, bandwidth = "nrd", is_classification = false, redrawing = false) {
+        let items = dataset.column(column).values;
+        let default_bandwidth = this.nrd(items).toFixed(2);
+        let raw_values = dataset.loc({ columns: [column, target_name] });
+        let uniqueLabels = [...new Set(raw_values.column(target_name).values)];
+        let column_values = raw_values.values;
+        let subsets = [];
+        var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
+        if (!is_classification) {
+            subsets.push(raw_values.column(column).values);
+        } else {
+            for (let i = 0; i < uniqueLabels.length; i++) {
+                const label = uniqueLabels[i];
+                let subset = [];
+                for (let i = 0; i < column_values.length; i++) {
+                    const item = column_values[i];
+                    if (item[1] === label) {
+                        subset.push(item[0])
+                    }
+                }
+                subsets.push(subset);
+            }
+        }
 
+        document.getElementById("kde_panel").style.display = "block";
+
+        var newColumn = document.createElement("div");
+        newColumn.className = "column is-4";
+        newColumn.setAttribute("id", column + '-kde-plot');
+        var current_class = this;
+        let container_id = column + '-kde-plot';
+        let items_range = raw_values.column(column).values
+        let minValue = Math.min(...items_range);
+        let maxValue = Math.max(...items_range);
+        items_range.push(minValue - parseFloat(default_bandwidth))
+        items_range.push(maxValue + parseFloat(default_bandwidth))
+        var breaks = ss.equalIntervalBreaks(items_range, 100);
+
+        let allData = [];
+        let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
+        console.log(kernel_type);
+        // Loop through subsets to generate data for all subsets
+        for (let i = 0; i < subsets.length; i++) {
+            let ys = [];
+            var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+            let data = [];
+            breaks.forEach((item) => {
+                ys.push(kde(item, bandwidth));
+                data.push([item, ys[ys.length - 1]]);
+            });
+            allData.push(data);
+        }
+
+        let animationDuration = 4000;
+
+        Highcharts.chart(container_id, {
+            credits: {
+                enabled: false
+            },
+            chart: {
+                type: "spline",
+                animation: true
+            },
+            title: {
+                text: column // Assuming `column` is defined elsewhere
+            },
+            yAxis: {
+                title: { text: null }
+            },
+            tooltip: {
+                valueDecimals: 3
+            },
+            plotOptions: {
+                series: {
+                    marker: {
+                        enabled: false
+                    },
+                    dashStyle: "shortdot",
+                    color: colorIndices,
+                    animation: {
+                        duration: animationDuration
+                    },
+                    area: true
+                }
+            },
+            series: allData.map((data, index) => ({
+                type: 'area',
+                name: uniqueLabels[index],
+                dashStyle: "solid",
+                lineWidth: 2,
+                color: colorIndices[index],
+                data: data
+            }))
+        });
+
+    }
     draw_classification_pca(dataset, labels, missclassifications, uniqueLabels, size = 4, color_scale = "Jet") {
         const pca = new PCA(dataset, { center: true, scale: true });
         var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
