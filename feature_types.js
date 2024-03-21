@@ -61,6 +61,18 @@ export const Settings = {
                     default: "RBF",
                     values: ["RBF", "Linear", "Polynomial", "Sigmoid"]
                 },
+                "gamma": {
+                    type: "number",
+                    default: 1
+                },
+                "bias": {
+                    type: "number",
+                    default: 0
+                },
+                "degree": {
+                    type: "number",
+                    default: 3
+                },
             },
         },
         "random_forest": {

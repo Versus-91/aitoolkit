@@ -435,8 +435,26 @@ export default class ChartController {
         let y1 = []
         let x2 = []
         let y2 = []
+        let pc1 = []
+        let pc2 = []
+        let pc3 = []
 
-        pca_data.data.forEach(element => {
+        pca_data.data.forEach((element, i) => {
+            pc1.push({
+                x: element[0],
+                y: element[1],
+                label: labels[i]
+            })
+            pc2.push({
+                x: element[0],
+                y: element[2],
+                label: labels[i]
+            })
+            pc3.push({
+                x: element[1],
+                y: element[2],
+                label: labels[i]
+            })
             x.push(element[0])
             y.push(element[1])
             x1.push(element[0])
@@ -444,57 +462,60 @@ export default class ChartController {
             x2.push(element[1])
             y2.push(element[2])
         });
+        let traces1 = []
+        uniqueLabels.forEach((label, i) => {
+            var items_for_label = pc1.filter(m => m.label === label)
+            traces1.push({
+                x: items_for_label.map(m => m.x),
+                y: items_for_label.map(m => m.y),
+                mode: 'markers',
+                type: 'scatter',
+                name: label,
+                marker: {
+                    size: 4,
+                    color: this.indexToColor(i),
+                }
+            })
+        })
+        let traces2 = []
+        uniqueLabels.forEach((label, i) => {
+            var items_for_label = pc2.filter(m => m.label === label)
+            traces2.push({
+                x: items_for_label.map(m => m.x),
+                y: items_for_label.map(m => m.y),
+                mode: 'markers',
+                type: 'scatter',
+                name: label,
+                marker: {
+                    size: 4,
+                    color: this.indexToColor(i),
+                }
+            })
+        })
+        let traces3 = []
+        uniqueLabels.forEach((label, i) => {
+            var items_for_label = pc3.filter(m => m.label === label)
+            traces3.push({
+                x: items_for_label.map(m => m.x),
+                y: items_for_label.map(m => m.y),
+                mode: 'markers',
+                type: 'scatter',
+                name: label,
+                marker: {
+                    size: 4,
+                    color: this.indexToColor(i),
+                }
+            })
+        })
 
-
-        var trace1 = {
-            x: x,
-            y: y,
-            text: labels,
-            mode: 'markers',
-            type: 'scatter',
-            marker: {
-                size: size,
-                color: colorIndices,
-            },
-        };
-        let trace2 = {
-            x: x1,
-            y: y1,
-            text: labels,
-            mode: 'markers',
-            type: 'scatter',
-            marker: {
-                size: size,
-                color: colorIndices,
-            },
-        };
-        let trace3 = {
-            x: x2,
-            y: y2,
-            text: labels,
-            mode: 'markers',
-            type: 'scatter',
-            marker: {
-                size: size,
-                color: colorIndices,
-                colorscale: color_scale,
-            },
-        };
-
-
-        Plotly.newPlot('pca-1', [trace1], {
+        Plotly.newPlot('pca-1', traces1, {
+            autosize: true,
             showlegend: true,
-            legend: { "orientation": "h" },
-            xaxis: {
-                title: 'PC1'
+            legend: {
+                x: 1,
+                xanchor: 'right',
+                y: 1
             },
-            yaxis: {
-                title: 'PC2'
-            }
-        }, { responsive: true });
-        Plotly.newPlot('pca-2', [trace2], {
-            showlegend: true,
-            legend: { "orientation": "h" },
             xaxis: {
                 title: 'PC1'
             },
@@ -502,9 +523,26 @@ export default class ChartController {
                 title: 'PC3'
             }
         }, { responsive: true });
-        Plotly.newPlot('pca-3', [trace3], {
+        Plotly.newPlot('pca-2', traces2, {
             showlegend: true,
-            legend: { "orientation": "h" },
+            legend: {
+                x: 1,
+                xanchor: 'right',
+                y: 1
+            }, xaxis: {
+                title: 'PC1'
+            },
+            yaxis: {
+                title: 'PC3'
+            }
+        }, { responsive: true });
+        Plotly.newPlot('pca-3', traces3, {
+            showlegend: true,
+            legend: {
+                x: 1,
+                xanchor: 'right',
+                y: 1
+            },
             xaxis: {
                 title: 'PC2'
             },
@@ -577,10 +615,9 @@ export default class ChartController {
             return currentValue > array[maxIndex] ? currentIndex : maxIndex;
         }, 0);
     }
-    probablities_boxplot(probs, classes, labels) {
-
+    probabilities_boxplot(probs, labels, y_test) {
         var colorIndices = labels.map((label, i) => this.indexToColor(i));
-        const num_columns = probs[0].length
+        const num_columns = probs[0].length;
         let traces = [];
         let subsets = {};
         if (labels.length > 1) {
@@ -595,26 +632,45 @@ export default class ChartController {
             });
         }
         for (let i = 0; i < num_columns; i++) {
-            let subset = subsets[i]
-            for (let j = 0; j < num_columns; j++) {
-                if (!!subset) {
+            let subset = subsets[i];
+            if (!!subset) {
+                for (let j = 0; j < num_columns; j++) {
+                    let data = subset.map(item => item[j]);
                     traces.push({
                         type: 'box',
-                        name: classes[i],
+                        name: labels[i],
                         marker: {
                             color: colorIndices[j]
                         },
-                        y: subset.map(item => item[j])
-                    })
+                        y: data
+                    });
                 }
             }
         }
 
-        Plotly.newPlot("probs_box_plot", traces, {
-            yaxis: {
-                zeroline: false
-            }, boxmode: 'group'
-        })
+        Highcharts.chart('probs_box_plot', {
+            chart: {
+                type: 'boxplot'
+            },
+            title: {
+                text: 'Box Plot Example'
+            },
+            legend: {
+                enabled: true
+            },
+            xAxis: {
+                categories: labels,
+                title: {
+                    text: 'Classes'
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Probability'
+                }
+            },
+            series: traces
+        });
     }
     probablities_violin_plot(probs, classes, labels) {
         var colorIndices = labels.map((label, i) => this.indexToColor(i));

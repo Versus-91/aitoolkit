@@ -217,11 +217,15 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                     }
                     case Settings.classification.support_vector_machine.label: {
+                        console.log(model_settings);
+                        console.log(SVM.KERNEL_TYPES[model_settings.kernel.toUpperCase()]);
+
                         let model = model_factory.createModel(Settings.classification.support_vectore_machine, {
-                            kernel: SVM.KERNEL_TYPES.RBF,
+                            kernel: SVM.KERNEL_TYPES[model_settings.kernel.toUpperCase()],
                             type: SVM.SVM_TYPES.C_SVC,
-                            gamma: 0.25,
-                            cost: 1,
+                            coef0: model_settings.bias,
+                            gamma: model_settings.gamma,
+                            degree: model_settings.degree,
                             quiet: true
                         })
                         let results = []
@@ -289,8 +293,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         encoder.fit(y_train.values)
                         let y = encoder.transform(y_train.values)
                         let y_t = encoder.transform(y_test.values)
-                        let probs, stats, test;
-                        [stats, probs, test] = await logistic_regression.train(x_train.values, y_train.values, x_test.values, x_train.columns)
+                        let probs, stats, test, coefs, alphas;
+                        [stats, probs, test, coefs, alphas] = await logistic_regression.train(x_train.values, y_train.values, x_test.values, x_train.columns)
                         let preds = []
                         probs.forEach((item => {
                             let key = Object.keys(encoder.$labels)[item.indexOf(Math.max(...item))]
@@ -320,9 +324,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
                         // chart_controller.regularization_plot(alphas, coefs, x_test.columns)
                         predictions_table(x_test, y_test, encoder, preds, probs);
-                        chart_controller.probablities_boxplot(probs, classes, uniqueLabels)
+                        chart_controller.probabilities_boxplot(probs, uniqueLabels, y_t)
                         chart_controller.probablities_violin_plot(probs, classes, uniqueLabels)
-
+                        console.log(coefs, alphas);
                         break
                     }
                     case Settings.classification.discriminant_analysis.label: {

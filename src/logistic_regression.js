@@ -32,8 +32,21 @@ export default class LogisticRegression {
         summary = mdl_fit.summary()
         summary_table = summary.tables[1].data[0:]
         probabilities = np.array(mdl_fit.predict(x_test))
-        
-        (summary_table,probabilities,x_test.values)
+        alphas = np.logspace(-3, 3, 100)
+        # Initialize a list to store coefficients for each lambda value
+        coefs = []
+
+        # Fit logistic regression model for each lambda value
+        for a in alphas:
+            # Fit logistic regression model with Lasso regularization
+            logit_model = st.MNLogit(y, x)
+            result = logit_model.fit_regularized(method='l1', alpha=a)
+            coefs.append(result.params)
+
+        # Convert list of coefficients to numpy array
+        coefs = np.array(coefs)
+        n = np.log(alphas)
+        (summary_table,probabilities,x_test.values,coefs,n)
     `;
         try {
             const { results, error } = await asyncRun(script, this.context);
