@@ -331,14 +331,18 @@ export default class ChartController {
         console.log(kernel_type);
         // Loop through subsets to generate data for all subsets
         for (let i = 0; i < subsets.length; i++) {
-            let ys = [];
-            var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
-            let data = [];
-            breaks.forEach((item) => {
-                ys.push(kde(item, bandwidth));
-                data.push([item, ys[ys.length - 1]]);
-            });
-            allData.push(data);
+            if (subsets[i].length > 2) {
+                let ys = [];
+                var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+                let data = [];
+                breaks.forEach((item) => {
+                    ys.push(kde(item, bandwidth));
+                    data.push([item, ys[ys.length - 1]]);
+                });
+                allData.push(data);
+            } else {
+                allData.push([]);
+            }
         }
 
         let animationDuration = 4000;
@@ -427,14 +431,19 @@ export default class ChartController {
         console.log(kernel_type);
         // Loop through subsets to generate data for all subsets
         for (let i = 0; i < subsets.length; i++) {
-            let ys = [];
-            var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
-            let data = [];
-            breaks.forEach((item) => {
-                ys.push(kde(item, bandwidth));
-                data.push([item, ys[ys.length - 1]]);
-            });
-            allData.push(data);
+            if (subsets[i].length > 2) {
+
+                let ys = [];
+                var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+                let data = [];
+                breaks.forEach((item) => {
+                    ys.push(kde(item, bandwidth));
+                    data.push([item, ys[ys.length - 1]]);
+                });
+                allData.push(data);
+            } else {
+                allData.push([]);
+            }
         }
 
         let animationDuration = 4000;

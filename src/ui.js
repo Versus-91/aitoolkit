@@ -38,7 +38,7 @@ export default class UI {
                     model_settings[option] = !option_value ? model.options[option].default : parseInt(option_value.value)
                 } else {
                     let option_value = document.getElementById(option + "_" + model_name);
-                    model_settings[option] = option_value.value
+                    model_settings[option] = option_value ?? model.options[option].default
                 }
 
             }
