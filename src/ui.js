@@ -34,8 +34,8 @@ export default class UI {
                 model_settings[option] = option_value ?? model.options[option].default
             } else {
                 if (model.options[option].type === "number") {
-                    let option_value = document.getElementById(option + "_" + model_name);
-                    model_settings[option] = !option_value ? model.options[option].default : parseInt(option_value.value)
+                    let option_value = document.getElementById(option + "_" + model_name)?.value;
+                    model_settings[option] = !option_value ? model.options[option].default : parseFloat(option_value)
                 } else {
                     let option_value = document.getElementById(option + "_" + model_name);
                     model_settings[option] = option_value ?? model.options[option].default
@@ -317,7 +317,7 @@ export default class UI {
                                     </div>
                             `
                             for (let i = 0; i < options.length; i++) {
-                                result += `<option>${options[i]}</option>`
+                                result += `<option value="${options[i]?.value}">${options[i].label}</option>`
                             }
                             result += "</select></div></div></div>"
                             $('#settings').append(result)
@@ -456,8 +456,9 @@ export default class UI {
         }
 
         data.columns.forEach((column) => {
-
+            console.log(column);
             const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            console.log(key);
             const type = document.getElementById(key).value
             if (type !== FeatureCategories.Numerical) {
                 const shape = [...new Set(data.column(key).values)];

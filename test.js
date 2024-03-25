@@ -1,49 +1,53 @@
+// Import TensorFlow.js library
+const tf = require('@tensorflow/tfjs');
 
-let rf = require('ml-random-forest');
-const dataset = [
-    [73, 80, 75, 152],
-    [93, 88, 93, 185],
-    [89, 91, 90, 180],
-    [96, 98, 100, 196],
-    [73, 66, 70, 142],
-    [53, 46, 55, 101],
-    [69, 74, 77, 149],
-    [47, 56, 60, 115],
-    [87, 79, 90, 175],
-    [79, 70, 88, 164],
-    [69, 70, 73, 141],
-    [70, 65, 74, 141],
-    [93, 95, 91, 184],
-    [79, 80, 73, 152],
-    [70, 73, 78, 148],
-    [93, 89, 96, 192],
-    [78, 75, 68, 147],
-    [81, 90, 93, 183],
-    [88, 92, 86, 177],
-    [78, 83, 77, 159],
-    [82, 86, 90, 177],
-    [86, 82, 89, 175],
-    [78, 83, 85, 175],
-    [76, 83, 71, 149],
-    [96, 93, 95, 192]
-];
+async function pca(data, numComponents) {
+    // Normalize the data
+    const mean = tf.mean(data, 0);
+    const centeredData = tf.sub(data, mean);
+    const std = tf.sqrt(tf.mean(tf.square(centeredData), 0));
+    const normalizedData = tf.div(centeredData, std);
 
-const trainingSet = new Array(dataset.length);
-const predictions = new Array(dataset.length);
+    // Compute covariance matrix
+    const covarianceMatrix = tf.matMul(normalizedData.transpose(), normalizedData).div(normalizedData.shape[0]);
 
-for (let i = 0; i < dataset.length; ++i) {
-    trainingSet[i] = dataset[i].slice(0, 3);
-    predictions[i] = dataset[i][3];
+    // Compute eigenvectors and eigenvalues
+    const { values: eigenvalues, vectors: eigenvectors } = tf.linalg.eig(covarianceMatrix);
+    
+    // Sort eigenvalues and eigenvectors
+    const sortedIndices = tf.argsort(eigenvalues, 'descend').squeeze();
+    const sortedEigenvalues = tf.gather(eigenvalues, sortedIndices);
+    const sortedEigenvectors = tf.gather(eigenvectors, sortedIndices, 1);
+
+    // Select top k eigenvectors
+    const principalComponents = sortedEigenvectors.slice([0, 0], [sortedEigenvectors.shape[0], numComponents]);
+
+    // Project data onto new feature space
+    const projectedData = tf.matMul(normalizedData, principalComponents);
+
+    return { projectedData, principalComponents };
 }
 
-const options = {
-    seed: 3,
-    maxFeatures: 2,
-    replacement: false,
-    nEstimators: 200
-};
+// Example usage
+async function runPCA() {
+    // Example data (replace this with your own data)
+    const data = tf.tensor2d([
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9]
+    ]);
 
-const regression = new rf.RandomForestRegression(options);
-regression.train(trainingSet, predictions);
-const result = regression.predict(trainingSet);
-console.log(result);
+    // Number of principal components to keep
+    const numComponents = 2;
+
+    // Perform PCA
+    const { projectedData, principalComponents } = await pca(data, numComponents);
+    
+    console.log('Projected Data:');
+    projectedData.print();
+    console.log('Principal Components:');
+    principalComponents.print();
+}
+
+// Run the PCA function
+runPCA();

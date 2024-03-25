@@ -6,7 +6,7 @@ export const FeatureCategories = {
 export const Settings = {
     "classification": {
         "logistic_regression": {
-            "label": "logistic regression",
+            "label": "Logistic Regression",
             "value": 1,
             "options": {
                 "regularization": {
@@ -47,8 +47,8 @@ export const Settings = {
                 },
                 "metric": {
                     type: "select",
-                    default: "euclidean",
-                    values: ["euclidean", "manhattan"]
+                    default: "manhattan",
+                    values: [{ label: "euclidean", value: "euclidean" }, { label: "manhattan", value: "manhattan" }]
                 },
             },
         },
@@ -59,7 +59,8 @@ export const Settings = {
                 "kernel": {
                     type: "select",
                     default: "RBF",
-                    values: ["RBF", "Linear", "Polynomial", "Sigmoid"]
+                    values: [{ label: "RBF", value: "RBF" }, { label: "Linear", value: "Linear" }, { label: "Polynomial", value: "Polynomial" }
+                        , { label: "Sigmoid", value: "Sigmoid" }]
                 },
                 "gamma": {
                     type: "number",
@@ -94,7 +95,8 @@ export const Settings = {
                 "criteria": {
                     type: "select",
                     default: "gini",
-                    "values": ["gini", "log_loss", "entropy"]
+                    "values": [{ label: "gini", value: "gini" }, { label: "log loss", value: "log_loss" },
+                    { label: "entropy", value: "entropy" }]
                 }
             },
         },
@@ -102,6 +104,16 @@ export const Settings = {
             "label": "Boosting",
             "value": 6,
             "options": {
+                "objective": {
+                    type: "select",
+                    default: "softmax",
+                    values: [{ label: "binary", value: "binary:logistic" }, { label: "softmax", value: "multi:softmax" }]
+                },
+                "booster": {
+                    type: "select",
+                    default: "gbtree",
+                    values: [{ label: "gbtree", value: "gbtree" }, { label: "gblinear", value: "gblinear" }, { label: "dart", value: "dart" }]
+                },
                 "eta": {
                     type: "number",
                     default: 0.3
@@ -110,23 +122,11 @@ export const Settings = {
                     type: "number",
                     default: 200
                 },
-                "estimators": {
-                    type: "number",
-                    default: 10
-                },
-                "features": {
-                    type: "number",
-                    default: "square-p"
-                },
                 "depth": {
                     type: "number",
                     default: 5
                 },
-                "booster": {
-                    type: "select",
-                    default: "gbtree",
-                    values: ["gbtree", "gblinear", "dart"]
-                },
+
             },
         },
         "naive_bayes": {

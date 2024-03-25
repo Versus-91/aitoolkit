@@ -41,8 +41,17 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         let count = 0;
         try {
             Papa.parse(file, {
-                worker: true,
+                worker: false,
                 header: true,
+                transform: (val) => {
+                    if (val === "?" || val === "NA") {
+                        return NaN
+                    }
+                    return val
+                },
+                transformHeader: (val) => {
+                    return val.replace(/[^a-zA-Z0-9 ]/g, "").trim()
+                },
                 skipEmptyLines: true,
                 dynamicTyping: true,
                 complete: async function (result) {
@@ -259,16 +268,17 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                     }
                     case Settings.classification.boosting.label: {
+                        console.log(model_settings);
                         let model = model_factory.createModel(Settings.classification.boosting, {
-                            booster: 'gbtree',
-                            objective: 'multi:softmax',
-                            max_depth: 5,
-                            eta: 0.1,
+                            booster: model_settings.booster ?? "gbtree",
+                            objective: model_settings.objective,
+                            max_depth: model_settings.depth,
+                            eta: model_settings.eta,
                             min_child_weight: 1,
                             subsample: 0.5,
                             colsample_bytree: 1,
                             silent: 1,
-                            iterations: 200
+                            iterations: model_settings.iterations ?? 200
                         })
                         let results = []
                         let encoder = new LabelEncoder()
