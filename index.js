@@ -182,6 +182,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
             let model_factory = new ModelFactory();
             let model_settings = ui.get_model_settings();
+            console.log(model_settings);
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
                 let uniqueLabels = [...new Set(y_train.values)];
                 switch (model_name) {

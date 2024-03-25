@@ -25,7 +25,7 @@ export const Settings = {
                     "label": "type",
                     "type": "select",
                     default: "linear",
-                    "values": ["linear", "quadratic"]
+                    "values": [{ label: "linear", value: "linear" }, { label: "quadratic", value: "quadratic" }]
                 },
                 "priors": {
                     type: "text",
@@ -148,7 +148,7 @@ export const Settings = {
                 "type": {
                     type: "select",
                     default: "Gaussian",
-                    values: ["Gaussian", "Multinomial", "Bernoulli"]
+                    values: [{ label: "Gaussian", value: "Gaussian" }, { label: "Multinomial", value: "Multinomial" }, { label: "Bernoulli", value: "Bernoulli" }]
                 }
             }
 

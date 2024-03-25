@@ -37,7 +37,7 @@ export default class UI {
                     let option_value = document.getElementById(option + "_" + model_name)?.value;
                     model_settings[option] = !option_value ? model.options[option].default : parseFloat(option_value)
                 } else {
-                    let option_value = document.getElementById(option + "_" + model_name);
+                    let option_value = document.getElementById(option + "_" + model_name)?.value;
                     model_settings[option] = option_value ?? model.options[option].default
                 }
 
@@ -363,14 +363,12 @@ export default class UI {
 
     find_selected_columns(columns, get_all = false) {
         const selected_columns = [];
-        const selected_columns_types = [];
         columns.forEach(column => {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             if (document.getElementById(key + '-checkbox').checked || get_all) {
                 selected_columns.push(column);
             }
         });
-        console.log(selected_columns);
         return selected_columns;
     }
     find_selected_columns_types(columns) {
@@ -456,9 +454,7 @@ export default class UI {
         }
 
         data.columns.forEach((column) => {
-            console.log(column);
             const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-            console.log(key);
             const type = document.getElementById(key).value
             if (type !== FeatureCategories.Numerical) {
                 const shape = [...new Set(data.column(key).values)];
