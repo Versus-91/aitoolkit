@@ -106,7 +106,7 @@ export const Settings = {
             "options": {
                 "objective": {
                     type: "select",
-                    default: "softmax",
+                    default: "multi:softmax",
                     values: [{ label: "binary", value: "binary:logistic" }, { label: "softmax", value: "multi:softmax" }]
                 },
                 "booster": {
@@ -138,8 +138,8 @@ export const Settings = {
                     default: 0.05
                 },
                 "priors": {
-                    type: "number",
-                    default: 0.05
+                    type: "text",
+                    placeholder: "comma separated priors"
                 },
                 "laplace": {
                     type: "number",

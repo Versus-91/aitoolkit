@@ -289,7 +289,7 @@ export default class ChartController {
                 `<div class="column is-4 " >
                     <div id="${column + '-kde-plot'}"> </div>
                     <div class="field has-addons has-addons-centered my-1">
-                    <p class="control">
+                    <div class="control">
                     <span class="select is-small">
                       <select id="${column + '-kernel_type'}">
                       <option value="gaussian">gaussian</option>
@@ -300,15 +300,18 @@ export default class ChartController {
                         <option value="Epanechnikov">Epanechnikov</option>
                       </select>
                     </span>
-                  </p>
-                        <p class="control">
+                    <p class="help is-success">Kernel</p>
+
+                  </div>
+                        <div class="control">
                             <input class="input is-small" type="number"  min="0" id="${column + '-kde'}" value="${default_bandwidth}">
-                        </p>
+                            <p class="help is-success">Bandwidth</p>
+                        </div>
                         <p class="control">
                             <a class="button is-success is-small" id="${column + '-kde-button'}">
                                 Apply
                             </a>
-                        </p>
+                        </div>
                     </div>
                 </div>`
             );
