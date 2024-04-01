@@ -253,7 +253,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                     }
                     case Settings.classification.naive_bayes.label: {
-                        let model = model_factory.createModel(Settings.classification.naive_bayes)
+                        let model = model_factory.createModel(Settings.classification.naive_bayes, model_settings)
                         let results = []
                         let encoder = new LabelEncoder()
                         encoder.fit(targets)
