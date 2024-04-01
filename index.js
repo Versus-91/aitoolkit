@@ -272,7 +272,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         console.log(model_settings);
                         let model = model_factory.createModel(Settings.classification.boosting, {
                             booster: model_settings.booster ?? "gbtree",
-                            objective: model_settings.objective,
+                            objective: uniqueLabels.length > 1 ? "multi:softmax" : "binary:logistic",
                             max_depth: model_settings.depth,
                             eta: model_settings.eta,
                             min_child_weight: 1,

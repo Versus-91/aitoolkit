@@ -303,6 +303,8 @@ export default class UI {
                                 document.getElementById(key + "_" + model_name).value = model.options[key]["default"]
                             }
                         } else if (option_type === "select") {
+                            console.log(model.options[key]["for"]);
+
                             let result = ""
                             let options = model.options[key]["values"]
                             result = `
@@ -321,6 +323,7 @@ export default class UI {
                             }
                             result += "</select></div></div></div>"
                             $('#settings').append(result)
+
                         }
                     }
                 }

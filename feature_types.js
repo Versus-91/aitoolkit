@@ -13,7 +13,7 @@ export const Settings = {
                     "label": "regulrization",
                     "type": "select",
                     default: "no",
-                    "values": ["no", "lasso", "ridge"]
+                    "values": [{ label: "No", value: "No" }, { label: "lasso", value: "lasso" }, { label: "ridge", value: "ridge" }]
                 }
             }
         },
@@ -64,14 +64,17 @@ export const Settings = {
                 },
                 "gamma": {
                     type: "number",
+                    for: ["RBF", "Sigmoid", "Polynomial"],
                     default: 1
                 },
                 "bias": {
                     type: "number",
+                    for: ["Sigmoid", "Sigmoid"],
                     default: 0
                 },
                 "degree": {
                     type: "number",
+                    for: ["Polynomial"],
                     default: 3
                 },
             },
@@ -104,11 +107,6 @@ export const Settings = {
             "label": "Boosting",
             "value": 6,
             "options": {
-                "objective": {
-                    type: "select",
-                    default: "multi:softmax",
-                    values: [{ label: "binary", value: "binary:logistic" }, { label: "softmax", value: "multi:softmax" }]
-                },
                 "booster": {
                     type: "select",
                     default: "gbtree",
