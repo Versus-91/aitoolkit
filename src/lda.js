@@ -11,7 +11,7 @@ export default class DiscriminantAnalysis {
     async train(x, y, x_test) {
         this.context = {
             lda_type: this.options.type,
-            lda_type: this.options.prior,
+            priors: this.options.priors,
             X_train: x,
             y_train: y,
             X_test: x_test,
@@ -19,11 +19,16 @@ export default class DiscriminantAnalysis {
         const script = `
         from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
         from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-        from js import X_train,y_train,X_test,lda_type
-        if lda_type == 0:
-            da = LinearDiscriminantAnalysis()
+        from js import X_train,y_train,X_test,lda_type,priors
+        if priors is not None and priors.strip():
+            priors = [float(x) for x in priors.split(',')]
         else:
-            da = QuadraticDiscriminantAnalysis()
+            priors = None
+        print("priors",priors)
+        if lda_type == 0:
+            da = LinearDiscriminantAnalysis(priors=priors)
+        else:
+            da = QuadraticDiscriminantAnalysis(priors=priors)
         da.fit(X_train, y_train)
         y_pred = da.predict(X_test)
         y_pred
