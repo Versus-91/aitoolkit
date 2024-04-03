@@ -102,6 +102,7 @@ export default class UI {
                       <th><input id="select_all" value="1" name="selectall" type="checkbox" checked="checked" /></th>
                       <th>Name</th>
                       <th>Scale</th>
+                      <th>Transformation</th>
                     </tr>
                   </thead>
                   <tbody id="features">
@@ -190,22 +191,22 @@ export default class UI {
                 </div>
             </div>
             `)
-            $('#props').append(`
-            <div class="column is-12">
-                <div class="label is-size-7">Data Transformation
-                <span id="normalization_help" class="icon has-text-success">
-                    <i class="fas fa-info-circle"></i>
-                </span>
-                </div>
-                <div class="select is-small mb-1">
-                    <select id="normalization">
-                        <option value="1">No</option>
-                        <option value="2">Scale</option>
-                        <option value="3">Normal</option>
-                    </select>
-                </div>
-            </div>
-            `)
+            // $('#props').append(`
+            // <div class="column is-12">
+            //     <div class="label is-size-7">Data Transformation
+            //     <span id="normalization_help" class="icon has-text-success">
+            //         <i class="fas fa-info-circle"></i>
+            //     </span>
+            //     </div>
+            //     <div class="select is-small mb-1">
+            //         <select id="normalization">
+            //             <option value="1">No</option>
+            //             <option value="2">Scale</option>
+            //             <option value="3">Normal</option>
+            //         </select>
+            //     </div>
+            // </div>
+            // `)
             $('#props').append(`
             <div class="column is-10">
                 <div class="label is-size-7">Cross Validation

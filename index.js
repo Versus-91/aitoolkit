@@ -259,8 +259,13 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         encoder.fit(targets)
                         let encoded_y_train = encoder.transform(y_train.values)
                         let encoded_y_test = encoder.transform(y_test.values)
-                        model.train(x_train.values, encoded_y_train)
-                        let y_preds = Array.from(model.predict(x_test.values))
+                        let y_preds
+                        if (model_settings.type === 'Gaussian') {
+                            await model.train(x_train.values, encoded_y_train)
+                            y_preds = Array.from(model.predict(x_test.values))
+                        } else {
+                            y_preds = Array.from(await model.train(x_train.values, encoded_y_train, x_test.values))
+                        }
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
                         chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
