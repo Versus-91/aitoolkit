@@ -168,10 +168,20 @@ export default class ChartController {
 
         var layout = {
             showlegend: true,
-            legend: { "orientation": "h" },
-            title: 't-SNE plot'
+            margin: {
+                l: 20,
+                r: 20,
+                b: 20,
+                t: 20,
+                pad: 5
+            },
+            legend: {
+                x: 1,
+                xanchor: 'right',
+                y: 1
+            },
         };
-        Plotly.newPlot('tsne', traces, layout, { responsive: true });
+        Plotly.newPlot('tsne', traces, layout, { responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
     }
     trueNegatives(yTrue, yPred) {
         return tf.tidy(() => {
@@ -649,6 +659,13 @@ export default class ChartController {
         Plotly.newPlot('pca-1', traces1, {
             autosize: true,
             showlegend: true,
+            margin: {
+                l: 20,
+                r: 20,
+                b: 20,
+                t: 20,
+                pad: 5
+            },
             legend: {
                 x: 1,
                 xanchor: 'right',
@@ -662,6 +679,13 @@ export default class ChartController {
             }
         }, { responsive: true });
         Plotly.newPlot('pca-2', traces2, {
+            margin: {
+                l: 20,
+                r: 20,
+                b: 20,
+                t: 20,
+                pad: 5
+            },
             showlegend: true,
             legend: {
                 x: 1,
@@ -675,6 +699,13 @@ export default class ChartController {
             }
         }, { responsive: true });
         Plotly.newPlot('pca-3', traces3, {
+            margin: {
+                l: 20,
+                r: 20,
+                b: 20,
+                t: 20,
+                pad: 5
+            },
             showlegend: true,
             legend: {
                 x: 1,

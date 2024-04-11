@@ -102,7 +102,6 @@ export default class UI {
                       <th><input id="select_all" value="1" name="selectall" type="checkbox" checked="checked" /></th>
                       <th>Name</th>
                       <th>Scale</th>
-                      <th>Transformation</th>
                     </tr>
                   </thead>
                   <tbody id="features">
