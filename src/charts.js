@@ -282,11 +282,11 @@ export default class ChartController {
         document.getElementById("kde_panel").style.display = "block";
 
         var newColumn = document.createElement("div");
-        newColumn.className = "column is-4";
+        newColumn.className = "column is-3";
         newColumn.setAttribute("id", column + '-kde-plot');
         if (!redrawing) {
             $("#container").append(
-                `<div class="column is-4 " >
+                `<div class="column is-3" >
                     <div id="${column + '-kde-plot'}"> </div>
                     <div class="field has-addons has-addons-centered my-1">
                     <div class="control">

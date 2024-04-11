@@ -14,7 +14,7 @@ export default class NaiveBayes {
         } else {
             this.context = {
                 nb_type: this.options.type === "Multinomial" ? 0 : 1,
-                priors: priors,
+                priors: this.options.priors,
                 X_train: x_train,
                 y_train: y_train,
                 X_test: x_test,
