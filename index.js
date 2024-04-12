@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     }
 
 
-    async function dimension_reduction() {
+    async function dimension_reduction(is_pca = true) {
         try {
             let dataset = data_frame;
             ui.renderDatasetStats(dataset);
@@ -131,8 +131,15 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             numericColumns = numericColumns.filter(m => m !== target)
             let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
             if (numericColumns.length > 2) {
-                chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
-                chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                if (is_pca) {
+                    document.getElementById("dim_red_button_pca").classList.add("is-loading")
+                    chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                    document.getElementById("dim_red_button_pca").classList.remove("is-loading")
+                } else {
+                    document.getElementById("dim_red_button_tsne").classList.add("is-loading")
+                    chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                    document.getElementById("dim_red_button_tsne").classList.remove("is-loading")
+                }
             } else {
                 throw new Error("Most select at least 2 features.")
             }
@@ -607,10 +614,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
     }
     ui.init_upload_button(handleFileSelect)
-    document.querySelector('#dim_red_button').addEventListener('click', async function (e) {
+    document.querySelector('#dim_red_button_pca').addEventListener('click', async function (e) {
         await dimension_reduction();
     });
-
+    document.querySelector('#dim_red_button_tsne').addEventListener('click', async function (e) {
+        await dimension_reduction(false);
+    });
     // $(".tabs").on("click", function (event) {
     //     try {
     //         let plots_to_resize = ["y_pie_chart"]
