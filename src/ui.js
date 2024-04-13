@@ -596,7 +596,9 @@ export default class UI {
             if (categorical_columns.length > 0 && limit < 10) {
                 document.getElementById("categories_barplots").innerHTML = "";
                 categorical_columns.forEach(col => {
-                    this.chart_controller.draw_categorical_barplot(filterd_dataset.loc({ columns: [col] }).values, target, col);
+                    if (col !== target) {
+                        this.chart_controller.draw_categorical_barplot(filterd_dataset.loc({ columns: [col] }).values, target, col);
+                    }
                 });
                 limit++;
             }

@@ -363,7 +363,6 @@ export default class ChartController {
 
         let allData = [];
         let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
-        console.log(kernel_type);
         // Loop through subsets to generate data for all subsets
         for (let i = 0; i < subsets.length; i++) {
             if (subsets[i].length > 2) {
@@ -389,6 +388,15 @@ export default class ChartController {
             chart: {
                 type: "spline",
                 animation: true
+            },
+            legend: {
+                itemStyle: {
+                    font: '7pt Trebuchet MS, Verdana, sans-serif',
+                    color: '#A0A0A0'
+                },
+                layout: 'horizontal',
+                align: 'right',
+                verticalAlign: 'top'
             },
             title: {
                 text: column // Assuming `column` is defined elsewhere
