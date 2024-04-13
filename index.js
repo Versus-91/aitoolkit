@@ -405,6 +405,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                 }
             } else {
+                console.log(model_name);
                 switch (model_name) {
                     case Settings.regression.linear_regression.label: {
                         let model = model_factory.createModel(Settings.regression.linear_regression, null, {});
@@ -449,6 +450,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
                         MathJax.typeset(["formulas"]);
                         Plotly.newPlot('regression_y_yhat', data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        break;
                     }
                     case Settings.regression.k_nearest_neighbour.label: {
                         model_settings = ui.get_model_settings();
@@ -469,7 +471,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             mode: 'markers',
                         };
                         Plotly.newPlot('regression_y_yhat', [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
-
+                        break;
                     }
                 }
             }

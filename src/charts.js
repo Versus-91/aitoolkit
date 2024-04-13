@@ -52,7 +52,7 @@ export default class ChartController {
     }
     draw_categorical_barplot(column_values, target, title) {
         const key = title + "- barplot";
-        $("#categories_barplots").append(`<div class="column is-6"style="height:40vh;" id="${key}"></div>`)
+        $("#categories_barplots").append(`<div class="column is-4" style="height:40vh;" id="${key}"></div>`)
         const countOccurrences = column_values.reduce((acc, val, i) => {
             acc[val] = (acc[val] || 0) + 1;
             return acc;
@@ -60,17 +60,39 @@ export default class ChartController {
         const countArray = Object.entries(countOccurrences).map(([value, count]) => ({ value: value, count }));
         countArray.sort((a, b) => b.count - a.count);
         const top5 = countArray.slice(0, 5);
-        var top_categories_trace = {
-            x: top5.map(m => m.value),
-            y: top5.map(m => m.count),
-            width: 0.3,
-            name: 'SF Zoo',
-            type: 'bar'
-        };
-        var data = [top_categories_trace];
-        var layout = { barmode: 'stack', title: title, bargap: 0.05 };
-
-        Plotly.newPlot(key, data, layout);
+        new Highcharts.Chart({
+            chart: {
+                renderTo: key,
+                type: 'column'
+            },
+            xAxis: {
+                categories: top5.map(m => m.value),
+            },
+            title: {
+                text: title
+            },
+            yAxis: {
+                min: 0,
+                labels: {
+                    overflow: 'justify'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            plotOptions: {
+                bar: {
+                    dataLabels: {
+                        enabled: true
+                    }
+                }
+            },
+            series: [{
+                showInLegend: false,
+                name: title,
+                data: top5.map(m => m.count)
+            }]
+        });
 
     }
     roc_chart(container, true_positive_rates, false_positive_rates) {
@@ -329,7 +351,7 @@ export default class ChartController {
         var current_class = this;
         document.getElementById(column + '-kde-button').addEventListener("click", function () {
             var newBandwidth = document.getElementById(column + '-kde').value;
-            current_class.redraw_kde(dataset, column, target_name, parseFloat(newBandwidth), is_classification = true, redrawing = true)
+            current_class.redraw_kde(dataset, column, target_name, parseFloat(newBandwidth), is_classification = is_classification, redrawing = true)
         });
         let container_id = column + '-kde-plot';
         let items_range = raw_values.column(column).values

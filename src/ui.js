@@ -27,7 +27,7 @@ export default class UI {
             }
         }
         let model = Settings.classification[model_name];
-        for (const option in model.options) {
+        for (const option in model?.options) {
             let option_element = document.getElementById(option + "_" + model_name);
             if (model.options[option].type === "select") {
                 let option_value = document.getElementById(option + "_" + model_name)?.value;
