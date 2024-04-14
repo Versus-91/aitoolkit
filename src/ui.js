@@ -189,23 +189,28 @@ export default class UI {
                     </select>
                 </div>
             </div>
-            `)
-            // $('#props').append(`
-            // <div class="column is-12">
-            //     <div class="label is-size-7">Data Transformation
-            //     <span id="normalization_help" class="icon has-text-success">
-            //         <i class="fas fa-info-circle"></i>
-            //     </span>
-            //     </div>
-            //     <div class="select is-small mb-1">
-            //         <select id="normalization">
-            //             <option value="1">No</option>
-            //             <option value="2">Scale</option>
-            //             <option value="3">Normal</option>
-            //         </select>
-            //     </div>
-            // </div>
-            // `)
+            `);
+            items.columns.forEach(column => {
+                let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+                $('#normalizations').append(`
+                <div class="column is-3">
+                    <div class="field">
+                    <label class="label is-size-7">${key}</label>
+                        <div class="control">
+                            <div class="select is-small mb-1">
+                                <select id="normalization">
+                                    <option value="1">No</option>
+                                    <option value="2">Scale</option>
+                                    <option value="3">Normal</option>
+                                    <option value="3">x^2</option>
+                                    <option value="3">ln(x)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `);
+            });
             $('#props').append(`
             <div class="column is-10">
                 <div class="label is-size-7">Cross Validation
@@ -255,7 +260,7 @@ export default class UI {
             }
             $("#props").append(`
             <div class="column is-3">
-            <button class="button is-small mt-1 is-success" id="config_modal_button">
+            <button class="button is-small is-success" id="config_modal_button">
             <span class="icon is-small">
             <i class="fas fa-cog"></i>
             </span>
