@@ -595,6 +595,7 @@ export default class ChartController {
 
     }
     draw_pca(dataset, labels, size = 4, color_scale = "Jet") {
+        console.log("fit PCA");
         document.getElementById("dimensionality_reduction_panel").style.display = "block"
         document.getElementById("pca-1").innerHTML = ""
         document.getElementById("pca-2").innerHTML = ""
@@ -609,36 +610,17 @@ export default class ChartController {
 
         let x = []
         let y = []
-        let x1 = []
-        let y1 = []
-        let x2 = []
-        let y2 = []
         let pc1 = []
-        let pc2 = []
-        let pc3 = []
-
+        let x_axis = document.getElementById("pca_x").value;
+        let y_axis = document.getElementById("pca_y").value;
         pca_data.data.forEach((element, i) => {
             pc1.push({
-                x: element[0],
-                y: element[1],
+                x: element[x_axis - 1],
+                y: element[y_axis - 1],
                 label: labels[i]
             })
-            pc2.push({
-                x: element[0],
-                y: element[2],
-                label: labels[i]
-            })
-            pc3.push({
-                x: element[1],
-                y: element[2],
-                label: labels[i]
-            })
-            x.push(element[0])
-            y.push(element[1])
-            x1.push(element[0])
-            y1.push(element[2])
-            x2.push(element[1])
-            y2.push(element[2])
+            x.push(element[x_axis - 1])
+            y.push(element[y_axis - 1])
         });
         let traces1 = []
         uniqueLabels.forEach((label, i) => {
@@ -655,37 +637,6 @@ export default class ChartController {
                 }
             })
         })
-        let traces2 = []
-        uniqueLabels.forEach((label, i) => {
-            var items_for_label = pc2.filter(m => m.label === label)
-            traces2.push({
-                x: items_for_label.map(m => m.x),
-                y: items_for_label.map(m => m.y),
-                mode: 'markers',
-                type: 'scatter',
-                name: label,
-                marker: {
-                    size: 4,
-                    color: this.indexToColor(i),
-                }
-            })
-        })
-        let traces3 = []
-        uniqueLabels.forEach((label, i) => {
-            var items_for_label = pc3.filter(m => m.label === label)
-            traces3.push({
-                x: items_for_label.map(m => m.x),
-                y: items_for_label.map(m => m.y),
-                mode: 'markers',
-                type: 'scatter',
-                name: label,
-                marker: {
-                    size: 4,
-                    color: this.indexToColor(i),
-                }
-            })
-        })
-
         Plotly.newPlot('pca-1', traces1, {
             autosize: true,
             showlegend: true,
@@ -702,51 +653,10 @@ export default class ChartController {
                 y: 1
             },
             xaxis: {
-                title: 'PC1'
+                title: 'PC' + x_axis
             },
             yaxis: {
-                title: 'PC2'
-            }
-        }, { responsive: true });
-        Plotly.newPlot('pca-2', traces2, {
-            margin: {
-                l: 20,
-                r: 20,
-                b: 20,
-                t: 20,
-                pad: 5
-            },
-            showlegend: true,
-            legend: {
-                x: 1,
-                xanchor: 'right',
-                y: 1
-            }, xaxis: {
-                title: 'PC1'
-            },
-            yaxis: {
-                title: 'PC3'
-            }
-        }, { responsive: true });
-        Plotly.newPlot('pca-3', traces3, {
-            margin: {
-                l: 20,
-                r: 20,
-                b: 20,
-                t: 20,
-                pad: 5
-            },
-            showlegend: true,
-            legend: {
-                x: 1,
-                xanchor: 'right',
-                y: 1
-            },
-            xaxis: {
-                title: 'PC2'
-            },
-            yaxis: {
-                title: 'PC3'
+                title: 'PC' + y_axis
             }
         }, { responsive: true });
     }
