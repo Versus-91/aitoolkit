@@ -1,5 +1,6 @@
 import Plotly from 'plotly.js-dist';
 import Bulma from '@vizuaalog/bulmajs';
+import { MinMaxScaler, DataFrame } from 'danfojs/dist/danfojs-base';
 
 import { FeatureCategories, Settings } from "../feature_types.js";
 export default class UI {
@@ -66,6 +67,21 @@ export default class UI {
             title: config.title
         });
     };
+    scale_data(dataset, column, normalization_type) {
+        switch (normalization_type) {
+            case "1":
+                let scaler = new MinMaxScaler()
+                scaler.fit(dataset[column])
+                dataset.addColumn(column, scaler.transform(dataset[column]), { inplace: true })
+                break;
+            case "2":
+
+                break;
+            default:
+                break;
+        }
+
+    }
     createDatasetPropsDropdown(items) {
         try {
             const myClass = this
@@ -198,18 +214,27 @@ export default class UI {
                     <label class="label is-size-7">${key}</label>
                         <div class="control">
                             <div class="select is-small mb-1">
-                                <select id="normalization">
+                                <select id="${key + '--normal'}">
                                     <option value="1">No</option>
                                     <option value="2">Scale</option>
                                     <option value="3">Normal</option>
-                                    <option value="3">x^2</option>
-                                    <option value="3">ln(x)</option>
+                                    <option value="4">x^2</option>
+                                    <option value="5">ln(x)</option>
                                 </select>
                             </div>
                         </div>
                     </div>
                 </div>
                 `);
+                document.getElementById(key + '--normal').addEventListener('change', function () {
+                    const target = document.getElementById("target").value;
+                    let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+                    let data = items.loc({ columns: [key, target] });
+                    let normalization_type = document.getElementById(key + '--normal').value
+                    myClass.scale_data(data, key, normalization_type)
+                    data.dropNa({ axis: 1, inplace: true })
+                    myClass.chart_controller.redraw_kde(data, key, target, "nrd", is_classification, true);
+                });
             });
             $('#props').append(`
             <div class="column is-10">
