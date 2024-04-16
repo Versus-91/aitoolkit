@@ -75,7 +75,10 @@ export default class UI {
                 dataset.addColumn(column, scaler.transform(dataset[column]), { inplace: true })
                 break;
             case "2":
-
+                dataset.addColumn(column, dataset[column].apply((x) => x * x), { inplace: true })
+                break;
+            case "3":
+                dataset.addColumn(column, dataset[column].apply((x) => Math.log(x)), { inplace: true })
                 break;
             default:
                 break;
@@ -215,11 +218,10 @@ export default class UI {
                         <div class="control">
                             <div class="select is-small mb-1">
                                 <select id="${key + '--normal'}">
-                                    <option value="1">No</option>
-                                    <option value="2">Scale</option>
-                                    <option value="3">Normal</option>
-                                    <option value="4">x^2</option>
-                                    <option value="5">ln(x)</option>
+                                    <option value="0">No</option>
+                                    <option value="1">Normal</option>
+                                    <option value="2">x^2</option>
+                                    <option value="3">ln(x)</option>
                                 </select>
                             </div>
                         </div>

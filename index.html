@@ -124,23 +124,27 @@
                                 </div>
                             </li>
                             <li class="tabs-li">
-                                <div class="field has-addons has-addons">
-                                    <p class="control">
-                                        <input id="pca_x" class="input" required type="text" placeholder="X axis">
-                                    </p>
-                                    <p class="control">
-                                        <input id="pca_y" class="input" required type="text" placeholder="Y axis">
-                                    </p>
-                                    <p class="control">
-                                        <input id="num_components" class="input" required type="text"
-                                            placeholder="Number of Components">
-                                    </p>
-                                    <p class="control">
-                                        <button id="dim_red_button_pca" class="button is-primary">
-                                            fit PCA
-                                        </button>
-                                    </p>
-                                </div>
+                                <form>
+                                    <div class="field has-addons has-addons">
+                                        <p class="control">
+                                            <input id="pca_x" class="input" required min="0" type="number"
+                                                placeholder="X axis">
+                                        </p>
+                                        <p class="control">
+                                            <input id="pca_y" class="input" required min="0" type="number"
+                                                placeholder="Y axis">
+                                        </p>
+                                        <p class="control">
+                                            <input id="num_components" class="input" min="2" required type="number"
+                                                placeholder="Number of Components">
+                                        </p>
+                                        <p class="control">
+                                            <button id="dim_red_button_pca" class="button is-primary">
+                                                fit PCA
+                                            </button>
+                                        </p>
+                                    </div>
+                                </form>
                                 <button class="button is-info" id="dim_red_button_tsne">fit t-SNE</button>
                                 <div class="column is-12" id="dimensionality_reduction_panel" style="display: none;">
                                     <div class="columns is-multiline">
