@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     document.getElementById("dim_red_button_pca").classList.remove("is-loading")
                 } else {
                     document.getElementById("dim_red_button_tsne").classList.add("is-loading")
-                    chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                    await chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
                     document.getElementById("dim_red_button_tsne").classList.remove("is-loading")
                 }
             } else {

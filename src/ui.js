@@ -90,6 +90,7 @@ export default class UI {
             const myClass = this
             //feature selection
             $('#props').empty()
+            $('#normalizations').empty()
             $('#features-selection').empty()
             $('#features').empty()
             $('#props').append(this.createTargetDropdown(items))
@@ -114,7 +115,7 @@ export default class UI {
             });
             $("#features-selection").append(`
 
-                <div id="config_modal" style="display:none;overflow-y:scroll;max-height: 600px;">
+                <div id="config_modal" style="display:none;overflow-y:scroll;max-height: 600px;height:500px">
                     <table class="table is-narrow is-size-7" 
                     <thead>
                     <tr>
@@ -258,6 +259,9 @@ export default class UI {
 
 
             $('#target').on('change', function (e) {
+                const redraw_plots_data_analysis = new CustomEvent("update_graphs");
+                var props_feature_selection_button = document.getElementById("feature_selection_modal")
+                props_feature_selection_button.dispatchEvent(redraw_plots_data_analysis)
                 const type = document.getElementById(e.target.value).value
                 $('#algorithm').empty()
                 if (type === 'Numerical') {
@@ -591,7 +595,7 @@ export default class UI {
         })
         let categorical_columns = []
         dataset.columns.forEach(column => {
-            if (dataset.column(column).dtype === 'string' && column !== "Id" && selected_columns.includes(column)) {
+            if (column !== "Id" && selected_columns.includes(column)) {
                 categorical_columns.push(column)
             }
         });
@@ -642,6 +646,8 @@ export default class UI {
                     counts.push(labels.filter(m => m === unique_labels[i]).length);
                 }
                 this.chart_controller.classification_target_chart(counts, unique_labels, file_name, "y_pie_chart", target);
+            } else {
+                $("y_pie_chart").empty()
             }
         } catch (error) {
             throw error

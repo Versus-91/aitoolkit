@@ -8,6 +8,7 @@ import * as tfvis from '@tensorflow/tfjs-vis';
 import * as ss from "simple-statistics"
 import { schemeAccent, schemeCategory10 } from 'd3-scale-chromatic';
 import { scaleLinear, } from 'd3-scale';
+import TSNE from "./tsne";
 
 export default class ChartController {
     constructor(data_processor) {
@@ -131,20 +132,11 @@ export default class ChartController {
     indexToColor(index) {
         return this.color_scheme[index + 1 % this.color_scheme.length];
     }
-    plot_tsne(data, labels) {
-        document.getElementById("dimensionality_reduction_panel").style.display = "block"
+    async plot_tsne(data, labels) {
+        document.getElementById("dimensionality_reduction_panel_tsne").style.display = "block"
         console.assert(Array.isArray(data));
-
-        var opt = {}
-        opt.epsilon = 10;
-        opt.perplexity = 30;
-        opt.dim = 2;
-        var tsne = new window.tsnejs.tSNE(opt);
-        tsne.initDataRaw(data);
-        for (var k = 0; k < 500; k++) {
-            tsne.step(); // 
-        }
-        var Y = tsne.getSolution();
+        let model = new TSNE();
+        var Y = await model.train(data)
         let traces = []
         if (labels.length > 0) {
             labels = labels.flat()
@@ -596,10 +588,8 @@ export default class ChartController {
     }
     draw_pca(dataset, labels, size = 4, color_scale = "Jet") {
         console.log("fit PCA");
-        document.getElementById("dimensionality_reduction_panel").style.display = "block"
+        document.getElementById("dimensionality_reduction_panel_pca").style.display = "block"
         document.getElementById("pca-1").innerHTML = ""
-        document.getElementById("pca-2").innerHTML = ""
-        document.getElementById("pca-3").innerHTML = ""
         const pca = new PCA(dataset, { center: true, scale: true });
 
         labels = labels.flat()

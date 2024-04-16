@@ -124,52 +124,41 @@
                                 </div>
                             </li>
                             <li class="tabs-li">
-                                <form>
-                                    <div class="field has-addons has-addons">
-                                        <p class="control">
-                                            <input id="pca_x" class="input" required min="0" type="number"
-                                                placeholder="X axis">
-                                        </p>
-                                        <p class="control">
-                                            <input id="pca_y" class="input" required min="0" type="number"
-                                                placeholder="Y axis">
-                                        </p>
-                                        <p class="control">
-                                            <input id="num_components" class="input" min="2" required type="number"
-                                                placeholder="Number of Components">
-                                        </p>
-                                        <p class="control">
-                                            <button id="dim_red_button_pca" class="button is-primary">
-                                                fit PCA
-                                            </button>
-                                        </p>
-                                    </div>
-                                </form>
-                                <button class="button is-info" id="dim_red_button_tsne">fit t-SNE</button>
-                                <div class="column is-12" id="dimensionality_reduction_panel" style="display: none;">
+                                <div class="column is-12">
                                     <div class="columns is-multiline">
-                                        <div class="column is-12">
+                                        <div class="column is-6" id="dimensionality_reduction_panel_tsne">
                                             <p class="subtitle is-4">t-distributed stochastic neighbor
                                                 embedding
                                             </p>
-                                        </div>
-                                        <div class="column is-6">
+                                            <button class="button is-info" id="dim_red_button_tsne">fit t-SNE</button>
+
                                             <div id="tsne">
                                             </div>
                                         </div>
-                                        <div class="column is-12">
-                                            <p class="subtitle is-4">Principle Component Analysis</p>
-                                        </div>
-                                        <div class="column is-12">
+                                        <div class="column is-6" id="dimensionality_reduction_panel_pca">
                                             <div class="columns is-gapless is-multiline">
-                                                <div class="column is-6">
+                                                <div class="column is-12">
+                                                    <p class="subtitle is-4">Principle Component Analysis</p>
+                                                    <div class="field has-addons has-addons">
+                                                        <p class="control">
+                                                            <input id="pca_x" class="input" required min="0"
+                                                                type="number" placeholder="X axis">
+                                                        </p>
+                                                        <p class="control">
+                                                            <input id="pca_y" class="input" required min="0"
+                                                                type="number" placeholder="Y axis">
+                                                        </p>
+                                                        <p class="control">
+                                                            <input id="num_components" class="input" min="2" required
+                                                                type="number" placeholder="Number of Components">
+                                                        </p>
+                                                        <p class="control">
+                                                            <button id="dim_red_button_pca" class="button is-primary">
+                                                                fit PCA
+                                                            </button>
+                                                        </p>
+                                                    </div>
                                                     <div id="pca-1"></div>
-                                                </div>
-                                                <div class="column is-6">
-                                                    <div id="pca-2"></div>
-                                                </div>
-                                                <div class="column is-6">
-                                                    <div id="pca-3"></div>
                                                 </div>
                                             </div>
                                         </div>

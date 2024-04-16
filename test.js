@@ -1,53 +1,61 @@
-// Import TensorFlow.js library
-const tf = require('@tensorflow/tfjs');
-
-async function pca(data, numComponents) {
-    // Normalize the data
-    const mean = tf.mean(data, 0);
-    const centeredData = tf.sub(data, mean);
-    const std = tf.sqrt(tf.mean(tf.square(centeredData), 0));
-    const normalizedData = tf.div(centeredData, std);
-
-    // Compute covariance matrix
-    const covarianceMatrix = tf.matMul(normalizedData.transpose(), normalizedData).div(normalizedData.shape[0]);
-
-    // Compute eigenvectors and eigenvalues
-    const { values: eigenvalues, vectors: eigenvectors } = tf.linalg.eig(covarianceMatrix);
-    
-    // Sort eigenvalues and eigenvectors
-    const sortedIndices = tf.argsort(eigenvalues, 'descend').squeeze();
-    const sortedEigenvalues = tf.gather(eigenvalues, sortedIndices);
-    const sortedEigenvectors = tf.gather(eigenvectors, sortedIndices, 1);
-
-    // Select top k eigenvectors
-    const principalComponents = sortedEigenvectors.slice([0, 0], [sortedEigenvectors.shape[0], numComponents]);
-
-    // Project data onto new feature space
-    const projectedData = tf.matMul(normalizedData, principalComponents);
-
-    return { projectedData, principalComponents };
-}
-
-// Example usage
-async function runPCA() {
-    // Example data (replace this with your own data)
-    const data = tf.tensor2d([
-        [1, 2, 3],
-        [4, 5, 6],
-        [7, 8, 9]
-    ]);
-
-    // Number of principal components to keep
-    const numComponents = 2;
-
-    // Perform PCA
-    const { projectedData, principalComponents } = await pca(data, numComponents);
-    
-    console.log('Projected Data:');
-    projectedData.print();
-    console.log('Principal Components:');
-    principalComponents.print();
-}
-
-// Run the PCA function
-runPCA();
+function calculateMetrics(confusionMatrix) {
+    // Input validation (optional):
+    if (!Array.isArray(confusionMatrix) || !confusionMatrix.every(row => Array.isArray(row))) {
+      throw new Error("Invalid confusion matrix format. It should be a 2D array.");
+    }
+  
+    const numClasses = confusionMatrix.length;
+    const metrics = {};
+    let totalTruePositives = 0;
+    let totalPredictedPositives = 0;
+    let totalActualPositives = 0;
+  
+    // Calculate accuracy and metrics for each class
+    for (let classIdx = 0; classIdx < numClasses; classIdx++) {
+      const truePositives = confusionMatrix[classIdx][classIdx];
+      const falsePositives = confusionMatrix[classIdx].reduce((sum, val, idx) => sum + (idx !== classIdx ? val : 0), 0);
+      const falseNegatives = confusionMatrix.reduce((sum, row) => sum + (row[classIdx] !== classIdx ? row[classIdx] : 0), 0);
+  
+      // Handle division by zero (optional):
+      const precision = truePositives / (truePositives + falsePositives) || 0;
+      const recall = truePositives / (truePositives + falseNegatives) || 0;
+  
+      // F1-score (harmonic mean of precision and recall)
+      const f1 = (2 * precision * recall) / (precision + recall) || 0;
+  
+      metrics[classIdx] = {
+        precision,
+        recall,
+        f1
+      };
+  
+      totalTruePositives += truePositives;
+      totalPredictedPositives += confusionMatrix[classIdx].reduce((sum, val) => sum + val, 0);
+      totalActualPositives += confusionMatrix.reduce((sum, row) => sum + row[classIdx], 0);
+    }
+  
+    // Calculate overall accuracy
+    const accuracy = (totalTruePositives / totalPredictedPositives) || 0;
+  
+    // Handle cases where there are no actual positives (optional):
+    if (totalActualPositives === 0) {
+      accuracy = 1; // Assuming all negatives are correctly classified
+    }
+  
+    return {
+      accuracy,
+      ...metrics // Spread operator to include class-wise metrics
+    };
+  }
+  
+  // Example usage:
+  const confusionMatrix = [
+    [0, 0, 0],
+    [0, 0, 8],
+    [0, 0, 37]
+  ];
+  
+  const results = calculateMetrics(confusionMatrix);
+  
+  console.log(results);
+  
