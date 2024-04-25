@@ -210,35 +210,6 @@ export default class UI {
                 </div>
             </div>
             `);
-            items.columns.forEach(column => {
-                let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-                $('#normalizations').append(`
-                <div class="column is-3">
-                    <div class="field">
-                    <label class="label is-size-7">${key}</label>
-                        <div class="control">
-                            <div class="select is-small mb-1">
-                                <select id="${key + '--normal'}">
-                                    <option value="0">No</option>
-                                    <option value="1">Normal</option>
-                                    <option value="2">x^2</option>
-                                    <option value="3">ln(x)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                `);
-                document.getElementById(key + '--normal').addEventListener('change', function () {
-                    const target = document.getElementById("target").value;
-                    let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
-                    let data = items.loc({ columns: [key, target] });
-                    let normalization_type = document.getElementById(key + '--normal').value
-                    myClass.scale_data(data, key, normalization_type)
-                    data.dropNa({ axis: 1, inplace: true })
-                    myClass.chart_controller.redraw_kde(data, key, target, "nrd", is_classification, true);
-                });
-            });
             $('#props').append(`
             <div class="column is-10">
                 <div class="label is-size-7">Cross Validation
@@ -647,7 +618,7 @@ export default class UI {
                 }
                 this.chart_controller.classification_target_chart(counts, unique_labels, file_name, "y_pie_chart", target);
             } else {
-                $("y_pie_chart").empty()
+                document.getElementById("y_pie_chart").innerHTML = "";
             }
         } catch (error) {
             throw error

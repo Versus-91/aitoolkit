@@ -9,6 +9,8 @@ import * as ss from "simple-statistics"
 import { schemeAccent, schemeCategory10 } from 'd3-scale-chromatic';
 import { scaleLinear, } from 'd3-scale';
 import TSNE from "./tsne";
+import { FeatureCategories, Settings } from "../feature_types.js";
+import { MinMaxScaler, DataFrame } from 'danfojs/dist/danfojs-base';
 
 export default class ChartController {
     constructor(data_processor) {
@@ -278,7 +280,24 @@ export default class ChartController {
             return Math.abs(x) <= 1 ? 0.75 * (1 - x * x) : 0;
         }
     };
+    scale_data(dataset, column, normalization_type) {
+        switch (normalization_type) {
+            case "1":
+                let scaler = new MinMaxScaler()
+                scaler.fit(dataset[column])
+                dataset.addColumn(column, scaler.transform(dataset[column]), { inplace: true })
+                break;
+            case "2":
+                dataset.addColumn(column, dataset[column].apply((x) => x * x), { inplace: true })
+                break;
+            case "3":
+                dataset.addColumn(column, dataset[column].apply((x) => Math.log(x)), { inplace: true })
+                break;
+            default:
+                break;
+        }
 
+    }
     draw_kde(dataset, column, target_name, bandwidth = "nrd", is_classification = false, redrawing = false) {
         let items = dataset.column(column).values;
         let default_bandwidth = this.nrd(items).toFixed(2);
@@ -309,8 +328,9 @@ export default class ChartController {
         newColumn.className = "column is-3";
         newColumn.setAttribute("id", column + '-kde-plot');
         if (!redrawing) {
+            let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             $("#container").append(
-                `<div class="column is-3" >
+                `<div class="column is-4" >
                     <div id="${column + '-kde-plot'}"> </div>
                     <div class="field has-addons has-addons-centered my-1">
                     <div class="control">
@@ -325,8 +345,17 @@ export default class ChartController {
                       </select>
                     </span>
                     <p class="help is-success">Kernel</p>
-
                   </div>
+                  <div class="control">
+                  <div class="select is-small mb-1">
+                      <select id="${key + '--normal'}">
+                          <option value="0">No</option>
+                          <option value="1">Normal</option>
+                          <option value="2">x^2</option>
+                          <option value="3">ln(x)</option>
+                      </select>
+                  </div>
+              </div>
                         <div class="control">
                             <input class="input is-small" type="number"  min="0" id="${column + '-kde'}" value="${default_bandwidth}">
                             <p class="help is-success">Bandwidth</p>
@@ -339,6 +368,15 @@ export default class ChartController {
                     </div>
                 </div>`
             );
+            document.getElementById(key + '--normal').addEventListener('change', function () {
+                const target = document.getElementById("target").value;
+                let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+                let data = dataset.loc({ columns: [key, target] });
+                let normalization_type = document.getElementById(key + '--normal').value
+                current_class.scale_data(data, key, normalization_type)
+                data.dropNa({ axis: 1, inplace: true })
+                current_class.redraw_kde(data, key, target, "nrd", is_classification, true);
+            });
         }
         var current_class = this;
         document.getElementById(column + '-kde-button').addEventListener("click", function () {
@@ -380,15 +418,6 @@ export default class ChartController {
             chart: {
                 type: "spline",
                 animation: true
-            },
-            legend: {
-                itemStyle: {
-                    font: '7pt Trebuchet MS, Verdana, sans-serif',
-                    color: '#A0A0A0'
-                },
-                layout: 'horizontal',
-                align: 'right',
-                verticalAlign: 'top'
             },
             title: {
                 text: column // Assuming `column` is defined elsewhere
@@ -463,7 +492,6 @@ export default class ChartController {
 
         let allData = [];
         let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
-        console.log(kernel_type);
         // Loop through subsets to generate data for all subsets
         for (let i = 0; i < subsets.length; i++) {
             if (subsets[i].length > 2) {

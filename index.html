@@ -127,33 +127,35 @@
                                 <div class="column is-12">
                                     <div class="columns is-multiline">
                                         <div class="column is-6" id="dimensionality_reduction_panel_tsne">
-                                            <p class="subtitle is-4">t-distributed stochastic neighbor
+                                            <p class="subtitle is-5">t-distributed stochastic neighbor
                                                 embedding
                                             </p>
-                                            <button class="button is-info" id="dim_red_button_tsne">fit t-SNE</button>
-
+                                            <button class="button is-small is-info" id="dim_red_button_tsne">fit
+                                                t-SNE</button>
                                             <div id="tsne">
                                             </div>
                                         </div>
                                         <div class="column is-6" id="dimensionality_reduction_panel_pca">
                                             <div class="columns is-gapless is-multiline">
                                                 <div class="column is-12">
-                                                    <p class="subtitle is-4">Principle Component Analysis</p>
+                                                    <p class="subtitle is-5">Principle Component Analysis</p>
                                                     <div class="field has-addons has-addons">
-                                                        <p class="control">
-                                                            <input id="pca_x" class="input" required min="0"
+                                                        <p class="control is-small">
+                                                            <input id="pca_x" class="input is-small" required min="0"
                                                                 type="number" placeholder="X axis">
                                                         </p>
-                                                        <p class="control">
-                                                            <input id="pca_y" class="input" required min="0"
+                                                        <p class="control is-small">
+                                                            <input id="pca_y" class="input is-small" required min="0"
                                                                 type="number" placeholder="Y axis">
                                                         </p>
-                                                        <p class="control">
-                                                            <input id="num_components" class="input" min="2" required
-                                                                type="number" placeholder="Number of Components">
+                                                        <p class="control is-small">
+                                                            <input id="num_components" class="input is-small" min="2"
+                                                                required type="number"
+                                                                placeholder="Number of Components">
                                                         </p>
-                                                        <p class="control">
-                                                            <button id="dim_red_button_pca" class="button is-primary">
+                                                        <p class="control is-small">
+                                                            <button id="dim_red_button_pca"
+                                                                class="button is-small is-primary">
                                                                 fit PCA
                                                             </button>
                                                         </p>
@@ -323,108 +325,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/11.4.0/highcharts-more.min.js"
         integrity="sha512-rAXXnwMYKNeK+0kBbnncbyW5SEJH15Xr8yR+iEcyZfjYob6hem7lb6FInWETS3i455VPw6gqc43AgCMvUvq1og=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script>
-        let data = [[3.78598857e-03, 8.27163425e-01, 1.69050587e-01],
-        [9.46759942e-01, 5.32398576e-02, 2.00228370e-07],
-        [8.73360188e-09, 1.55786699e-03, 9.98442124e-01],
-        [6.43555904e-03, 7.92090715e-01, 2.01473726e-01],
-        [1.44167343e-03, 7.74260761e-01, 2.24297566e-01],
-        [9.55797854e-01, 4.42019691e-02, 1.77067966e-07],
-        [7.76326291e-02, 9.08053248e-01, 1.43141231e-02],
-        [1.61507381e-04, 1.55712044e-01, 8.44126449e-01],
-        [2.20837508e-03, 7.62733010e-01, 2.35058615e-01],
-        [2.83250238e-02, 9.45772471e-01, 2.59025047e-02],
-        [4.39851100e-04, 2.43324013e-01, 7.56236136e-01],
-        [9.68323436e-01, 3.16764859e-02, 7.81820869e-08],
-        [9.72954548e-01, 2.70454185e-02, 3.33811329e-08],
-        [9.62114804e-01, 3.78850847e-02, 1.11084590e-07],
-        [9.79280058e-01, 2.07198771e-02, 6.48295769e-08],
-        [4.54350373e-03, 7.12595344e-01, 2.82861152e-01],
-        [7.23106253e-06, 2.42186217e-02, 9.75774147e-01],
-        [2.73373155e-02, 9.47668484e-01, 2.49942009e-02],
-        [8.23337838e-03, 8.31090525e-01, 1.60676097e-01],
-        [1.42037900e-05, 3.59586943e-02, 9.64027102e-01],
-        [9.64380961e-01, 3.56188457e-02, 1.93143832e-07],
-        [1.31411045e-03, 3.99131084e-01, 5.99554805e-01],
-        [9.61643661e-01, 3.83560777e-02, 2.61500026e-07],
-        [1.85535592e-05, 4.58834330e-02, 9.54098013e-01],
-        [1.63903120e-06, 2.58760597e-02, 9.74122301e-01],
-        [9.33177842e-05, 1.05092630e-01, 8.94814052e-01],
-        [8.69373269e-06, 5.83608323e-02, 9.41630474e-01],
-        [4.30247438e-06, 1.88640878e-02, 9.81131610e-01],
-        [9.66854730e-01, 3.31451343e-02, 1.35983598e-07],
-        [9.56321375e-01, 4.36783927e-02, 2.32748928e-07]]
-        var transposedData = [[], [], []];
-        data.forEach(function (probabilities) {
-            for (var i = 0; i < probabilities.length; i++) {
-                transposedData[i].push(probabilities[i]);
-            }
-        });
-        console.log(transposedData[0])
-        Highcharts.chart('container', {
-            chart: {
-                type: 'boxplot'
-            },
-            title: {
-                text: 'Highcharts Box Plot Example'
-            },
-            legend: {
-                enabled: false
-            },
-            xAxis: {
-                categories: ['1'], // If you only have one data point, you should have one category
-                title: {
-                    text: 'Experiment No.'
-                }
-            },
-            yAxis: {
-                title: {
-                    text: 'Observations'
-                }
-            },
-            series: [{
-                name: 'Observations',
-                data: [
-                    [
-                        0.00378598857,
-                        0.946759942,
-                        8.73360188e-9,
-                        0.00643555904,
-                        0.00144167343,
-                        0.955797854,
-                        0.0776326291,
-                        0.000161507381,
-                        0.00220837508,
-                        0.0283250238,
-                        0.0004398511,
-                        0.968323436,
-                        0.972954548,
-                        0.962114804,
-                        0.979280058,
-                        0.00454350373,
-                        0.00000723106253,
-                        0.0273373155,
-                        0.00823337838,
-                        0.00001420379,
-                        0.964380961,
-                        0.00131411045,
-                        0.961643661,
-                        0.0000185535592,
-                        0.0000016390312,
-                        0.0000933177842,
-                        0.00000869373269,
-                        0.00000430247438,
-                        0.96685473,
-                        0.956321375
-                    ]
-                ],
-                tooltip: {
-                    headerFormat: '<em>Experiment No {point.key}</em><br/>'
-                }
-            }]
-        });
-
-    </script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script type="text/javascript" id="MathJax-script" async
         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
