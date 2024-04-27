@@ -126,17 +126,8 @@
                             <li class="tabs-li">
                                 <div class="column is-12">
                                     <div class="columns is-multiline">
-                                        <div class="column is-6" id="dimensionality_reduction_panel_tsne">
-                                            <p class="subtitle is-5">t-distributed stochastic neighbor
-                                                embedding
-                                            </p>
-                                            <button class="button is-small is-info" id="dim_red_button_tsne">fit
-                                                t-SNE</button>
-                                            <div id="tsne">
-                                            </div>
-                                        </div>
-                                        <div class="column is-6" id="dimensionality_reduction_panel_pca">
-                                            <div class="columns is-gapless is-multiline">
+                                        <div class="column is-12" id="dimensionality_reduction_panel_pca">
+                                            <div class="columns is-multiline">
                                                 <div class="column is-12">
                                                     <p class="subtitle is-5">Principle Component Analysis</p>
                                                     <div class="field has-addons has-addons">
@@ -160,8 +151,22 @@
                                                             </button>
                                                         </p>
                                                     </div>
+                                                </div>
+                                                <div class="column is-6">
                                                     <div id="pca-1"></div>
                                                 </div>
+                                                <div class="column is-6">
+                                                    <div id="scree_plot"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="column is-6" id="dimensionality_reduction_panel_tsne">
+                                            <p class="subtitle is-5">t-distributed stochastic neighbor
+                                                embedding
+                                            </p>
+                                            <button class="button is-small is-info" id="dim_red_button_tsne">fit
+                                                t-SNE</button>
+                                            <div id="tsne">
                                             </div>
                                         </div>
                                     </div>

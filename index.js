@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             if (numericColumns.length > 2) {
                 if (is_pca) {
                     document.getElementById("dim_red_button_pca").classList.add("is-loading")
-                    chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                    await chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
                     document.getElementById("dim_red_button_pca").classList.remove("is-loading")
                 } else {
                     document.getElementById("dim_red_button_tsne").classList.add("is-loading")
@@ -148,6 +148,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         } catch (error) {
             ui.stop_loading()
             ui.show_error_message(error.message, "#7E191B")
+            document.getElementById("dim_red_button_pca").classList.remove("is-loading")
+            document.getElementById("dim_red_button_tsne").classList.remove("is-loading")
+
+
         }
     }
     async function train(data, len) {

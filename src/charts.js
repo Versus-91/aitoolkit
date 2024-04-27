@@ -2,7 +2,7 @@ import {
     getNumbers, getDataset, getClasses
 } from 'ml-dataset-iris';
 import Plotly from 'plotly.js-dist';
-import { PCA } from 'ml-pca';
+import PCA from './dimensionality-reduction/pca';
 import { binarize } from './utils'
 import * as tfvis from '@tensorflow/tfjs-vis';
 import * as ss from "simple-statistics"
@@ -614,7 +614,7 @@ export default class ChartController {
         }, { responsive: true });
 
     }
-    draw_pca(dataset, labels, size = 4, color_scale = "Jet") {
+    async draw_pca(dataset, labels, size = 4, color_scale = "Jet") {
         console.log("fit PCA");
         document.getElementById("dimensionality_reduction_panel_pca").style.display = "block"
         document.getElementById("pca-1").innerHTML = ""
@@ -624,14 +624,15 @@ export default class ChartController {
         var uniqueLabels = [...new Set(labels)];
         var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
 
-        const pca_data = pca.predict(dataset, { nComponents: 3 })
+        const pca_x = await pca.predict(dataset, { nComponents: 3 })
+        const pca_data = pca_x[0]
 
         let x = []
         let y = []
         let pc1 = []
         let x_axis = document.getElementById("pca_x").value;
         let y_axis = document.getElementById("pca_y").value;
-        pca_data.data.forEach((element, i) => {
+        pca_data.forEach((element, i) => {
             pc1.push({
                 x: element[x_axis - 1],
                 y: element[y_axis - 1],
@@ -655,6 +656,35 @@ export default class ChartController {
                 }
             })
         })
+        Highcharts.chart('scree_plot', {
+            credits: {
+                enabled: false
+            },
+            title: {
+                text: '',
+            },
+            yAxis: {
+                title: {
+                    text: 'Explained variance'
+                }
+            },
+            xAxis: {
+                labels: {
+                    enabled: true,
+                    formatter: function () {
+                        return this.value + 1;
+                    }
+                },
+                title: {
+                    text: 'Number of components'
+                },
+            },
+            series: [{
+                name: 'Scree Plot',
+                data: pca_x[2]
+            }],
+
+        });
         Plotly.newPlot('pca-1', traces1, {
             autosize: true,
             showlegend: true,
