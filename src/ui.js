@@ -517,6 +517,14 @@ export default class UI {
             </label>
         </div>
         <progress class="progress is-small is-primary my-1" max="100" id="progress" style="display:none;">15%</progress>
+        <div class="select is-small">
+            <select id="sample_data_select">
+            <option>Sample data selection</option>
+            <option>Iris</option>
+            <option>Wine</option>
+            <option>Diabetes</option>
+            </select>
+        </div>
         <p class="help is-danger">CSV file is supported for now</p>`)
         document.getElementById("parseCVS").addEventListener("change", upoad_handler)
     }

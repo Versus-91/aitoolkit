@@ -30,16 +30,32 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     const table_ids = ["lasso_plot", "predictions_table", "results", "knn_table", "metrics_table", "stats_table", "sample_data_table"]
     const plots = ["tsne", "pca-1", "pca-2", "pca-3"]
 
-    function handleFileSelect(evt) {
-        var target = evt.target || evt.srcElement;
-        if (target.value.length == 0) {
+    async function handleFileSelect(evt, url) {
+        var target = evt?.target || evt?.srcElement;
+        let file;
+        if (target?.value.length == 0) {
             return;
         }
-        var file = evt.target.files[0];
-        ui.reset(html_content_ids, table_ids, plots);
-        ui.toggle_loading_progress();
-        let count = 0;
+        if (!url) {
+            file = evt.target.files[0];
+            await process_file(file)
+        } else {
+            fetch(url)
+                .then(response => response.blob())
+                .then(async blob => {
+                    file = new File([blob], "url");
+                    await process_file(file)
+                })
+                .catch(error => {
+                    console.error('Error fetching the file:', error);
+                });
+        }
+
+    }
+    async function process_file(file) {
         try {
+            ui.reset(html_content_ids, table_ids, plots);
+            ui.toggle_loading_progress();
             Papa.parse(file, {
                 worker: false,
                 header: true,
@@ -112,9 +128,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             ui.stop_loading();
             ui.show_error_message(error.message, "#7E191B");
         }
-
     }
-
 
     async function dimension_reduction(is_pca = true) {
         try {
@@ -626,22 +640,11 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     document.querySelector('#dim_red_button_tsne').addEventListener('click', async function (e) {
         await dimension_reduction(false);
     });
-    // $(".tabs").on("click", function (event) {
-    //     try {
-    //         let plots_to_resize = ["y_pie_chart"]
-    //         let dataset = data_frame;
-    //         let numericColumns = ui.get_numeric_columns(dataset, true)
-    //         numericColumns.forEach(column => {
-    //             plots_to_resize.push(column + '-kde-plot')
-    //         });
-    //         for (var i = 0; i < plots_to_resize.length; i++) {
-    //             console.log("resized");
-    //             Plotly.relayout(plots_to_resize[i], { autosize: true });
-    //         }
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // })
+    document.getElementById("sample_data_select").addEventListener('change', async function (e) {
+        console.log(e.target.value);
+        handleFileSelect(null, e.target.value.toLowerCase() + '.csv')
+
+    })
 });
 
 
