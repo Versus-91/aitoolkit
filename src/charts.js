@@ -347,15 +347,16 @@ export default class ChartController {
                     <p class="help is-success">Kernel</p>
                   </div>
                   <div class="control">
-                  <div class="select is-small mb-1">
-                      <select id="${key + '--normal'}">
-                          <option value="0">No</option>
-                          <option value="1">Normal</option>
-                          <option value="2">x^2</option>
-                          <option value="3">ln(x)</option>
-                      </select>
-                  </div>
-              </div>
+                        <div class="select is-small">
+                            <select id="${key + '--normal'}">
+                                <option value="0">No</option>
+                                <option value="1">Normal</option>
+                                <option value="2">x^2</option>
+                                <option value="3">ln(x)</option>
+                            </select>
+                        </div>
+                    <p class="help is-success">Normalization</p>
+                    </div>
                         <div class="control">
                             <input class="input is-small" type="number"  min="0" id="${column + '-kde'}" value="${default_bandwidth}">
                             <p class="help is-success">Bandwidth</p>
