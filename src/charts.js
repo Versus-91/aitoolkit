@@ -552,15 +552,15 @@ export default class ChartController {
         });
 
     }
-    draw_classification_pca(dataset, labels, missclassifications, uniqueLabels, size = 4, color_scale = "Jet") {
+    async draw_classification_pca(dataset, labels, missclassifications, uniqueLabels, size = 4, color_scale = "Jet") {
         const pca = new PCA(dataset, { center: true, scale: true });
         var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
-        const pca_data = pca.predict(dataset, { nComponents: 2 })
+        const pca_data = await pca.predict(dataset, { nComponents: 2 })
         let x = []
         let y = []
         let x_error = []
         let y_error = []
-        pca_data.data.forEach((element, i) => {
+        pca_data[0].forEach((element, i) => {
             if (missclassifications.includes(i)) {
                 x_error.push(element[0])
                 y_error.push(element[1])
