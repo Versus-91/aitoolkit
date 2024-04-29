@@ -330,7 +330,9 @@ export default class ChartController {
         if (!redrawing) {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             $("#container").append(
-                `<div class="column is-4" >
+                `<div class="column is-4">
+                <div class="columns">
+                <div class="column is-12" >
                     <div id="${column + '-kde-plot'}"> </div>
                     <div class="field has-addons has-addons-centered my-1">
                     <div class="control">
@@ -367,6 +369,10 @@ export default class ChartController {
                             </a>
                         </div>
                     </div>
+                  </div>
+                  <div class="column is-12" id="${column + '-boxplot'}" style="height: 50vh">
+                  </div>
+                  </div>
                 </div>`
             );
             document.getElementById(key + '--normal').addEventListener('change', function () {
@@ -395,23 +401,70 @@ export default class ChartController {
         let allData = [];
         let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
         // Loop through subsets to generate data for all subsets
-        for (let i = 0; i < subsets.length; i++) {
-            if (subsets[i].length > 2) {
-                let ys = [];
-                var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
-                let data = [];
-                breaks.forEach((item) => {
-                    ys.push(kde(item, bandwidth));
-                    data.push([item, ys[ys.length - 1]]);
-                });
-                allData.push(data);
-            } else {
-                allData.push([]);
+        let traces = []
+        if (is_classification) {
+            for (let i = 0; i < subsets.length; i++) {
+                if (subsets[i].length > 2) {
+                    let ys = [];
+                    var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+                    let data = [];
+                    breaks.forEach((item) => {
+                        ys.push(kde(item, bandwidth));
+                        data.push([item, ys[ys.length - 1]]);
+                    });
+                    allData.push(data);
+                } else {
+                    allData.push([]);
+                }
+                traces.push({
+                    name: uniqueLabels[i],
+                    y: subsets[i],
+                    marker: {
+                        color: colorIndices[i]
+                    },
+                    type: 'box',
+                })
             }
+        } else {
+            for (let i = 0; i < subsets.length; i++) {
+                if (subsets[i].length > 2) {
+                    let ys = [];
+                    var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+                    let data = [];
+                    breaks.forEach((item) => {
+                        ys.push(kde(item, bandwidth));
+                        data.push([item, ys[ys.length - 1]]);
+                    });
+                    allData.push(data);
+                } else {
+                    allData.push([]);
+                }
+            }
+            traces.push({
+                name: "column",
+                y: items,
+                type: 'box',
+            })
         }
 
         let animationDuration = 4000;
 
+        var layout = {
+            showlegend: true,
+            margin: {
+                l: 20,
+                r: 20,
+                b: 40,
+                t: 20,
+                pad: 10
+            },
+            legend: {
+                x: 1,
+                xanchor: 'right',
+                y: 1
+            },
+        };
+        Plotly.newPlot(column + '-boxplot', traces, layout, { modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
         Highcharts.chart(container_id, {
             credits: {
                 enabled: false
