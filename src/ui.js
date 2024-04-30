@@ -278,7 +278,7 @@ export default class UI {
             document.querySelector('#config_modal_button').addEventListener('click', function (e) {
                 let model_name = document.getElementById('model_name').value;
                 model_name = model_name.replace(/\s+/g, '_').toLowerCase();
-                var model = Settings.classification[model_name];
+                var model = Settings.classification[model_name] ?? Settings.regression[model_name];
                 var options_modal_content = document.getElementById("settings");
                 if (window.getComputedStyle(options_modal_content).display !== "none") {
                     options_modal_content.innerHTML = ""

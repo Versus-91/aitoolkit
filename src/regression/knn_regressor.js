@@ -8,10 +8,20 @@ export default class KNNRegressor {
 
     }
     async train(x_train, y_train, k = 3) {
-        this.model = new KNeighborsRegressor({ nNeighbors: k, metric: this.options.metric })
-        await this.model.fit(x_train, y_train);
+        return new Promise(async (resolve, reject) => {
+            try {
+                setTimeout(async () => {
+                    this.model = new KNeighborsRegressor({ nNeighbors: k, metric: this.options.metric })
+                    await this.model.fit(x_train, y_train);
+                    resolve()
+                }, 1000)
+            } catch (error) {
+                reject(error)
+            }
+        })
     }
     predict(x_test) {
+
         if (this.model === null || this.model === undefined) {
             throw "model not found."
         }
