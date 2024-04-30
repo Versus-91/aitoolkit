@@ -1,7 +1,6 @@
 import SVM from "libsvm-js/asm";
 export default class SupportVectorMachine {
     constructor(options) {
-        console.log(options);
         this.model = new SVM(options);
     }
     train(x_train, y_train) {

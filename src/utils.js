@@ -1,30 +1,5 @@
-/**
- * @license
- * Copyright 2018 Google LLC. All Rights Reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * =============================================================================
- */
+import { asyncRun } from "./py-worker";
 import * as Papa from 'papaparse';
-const BASE_URL =
-    'https://gist.githubusercontent.com/ManrajGrover/6589d3fd3eb9a0719d2a83128741dfc1/raw/d0a86602a87bfe147c240e87e6a9641786cafc19/';
-
-/**
- *
- * @param {Array<Object>} data Downloaded data.
- *
- * @returns {Promise.Array<number[]>} Resolves to data with values parsed as
- *     floats.
- */
 async function parseCsv(data) {
     return new Promise(resolve => {
         data = data.map((row) => {
@@ -170,7 +145,7 @@ export function normalizeDataset(
  * @param {number} threshold (default: 0.5).
  * @returns {tf.Tensor} Binarized tensor.
  */
-export function  binarize(y, threshold) {
+export function binarize(y, threshold) {
     if (threshold == null) {
         threshold = 0.5;
     }
@@ -223,4 +198,32 @@ export function calculateF1Score(classIndex, confusionMatrix) {
     const recall = calculateRecall(classIndex, confusionMatrix);
     return (2 * precision * recall) / (precision + recall);
 }
+
+export async function metrics(y, y_pred) {
+    const context = {
+        y: y,
+        y_pred: y_pred,
+
+    };
+    const script = `
+        from sklearn.metrics import precision_recall_fscore_support, classification_report, f1_score
+        from js import y_pred,y       
+        # Perform t-SNE dimensionality reduction
+        precision_recall_support = precision_recall_fscore_support(y, y_pred)
+        f1_micro = f1_score(y, y_pred, average='micro')
+        (precision_recall_support,f1_micro)
+    `;
+    try {
+        const { results, error } = await asyncRun(script, context);
+        if (results) {
+            console.log(results);
+            return results;
+        } else if (error) {
+        }
+    } catch (e) {
+        throw ("Something went wrong", e)
+    }
+}
+
+
 

@@ -11,7 +11,7 @@ import * as tfvis from '@tensorflow/tfjs-vis';
 import * as sk from 'scikitjs'
 import Plotly from 'plotly.js-dist';
 import Bulma from '@vizuaalog/bulmajs';
-import { calculateRecall, calculateF1Score, calculatePrecision } from './src/utils.js';
+import { calculateRecall, calculateF1Score, calculatePrecision, metrics } from './src/utils.js';
 import SVM from "libsvm-js/asm";
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css'; // optional for styling
@@ -207,7 +207,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
             let model_factory = new ModelFactory();
             let model_settings = ui.get_model_settings();
-            console.log(model_settings);
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
                 let uniqueLabels = [...new Set(y_train.values)];
                 switch (model_name) {
@@ -252,8 +251,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                     }
                     case Settings.classification.support_vector_machine.label: {
-                        console.log(model_settings);
-                        console.log(SVM.KERNEL_TYPES[model_settings.kernel.toUpperCase()]);
 
                         let model = model_factory.createModel(Settings.classification.support_vectore_machine, {
                             kernel: SVM.KERNEL_TYPES[model_settings.kernel.toUpperCase()],
@@ -299,7 +296,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                     }
                     case Settings.classification.boosting.label: {
-                        console.log(model_settings);
                         let model = model_factory.createModel(Settings.classification.boosting, {
                             booster: model_settings.booster ?? "gbtree",
                             objective: uniqueLabels.length > 1 ? "multi:softmax" : "binary:logistic",
@@ -367,11 +363,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         predictions_table(x_test, y_test, encoder, preds, probs);
                         chart_controller.probabilities_boxplot(probs, uniqueLabels, y_t)
                         chart_controller.probablities_violin_plot(probs, classes, uniqueLabels)
-                        console.log(coefs, alphas);
                         break
                     }
                     case Settings.classification.discriminant_analysis.label: {
-                        console.log(model_settings);
                         let model = model_factory.createModel(Settings.classification.discriminant_analysis, { type: model_settings.type === "linear" ? 0 : 1, priors: model_settings.priors })
                         let encoder = new LabelEncoder()
                         encoder.fit(y_train.values)
@@ -423,7 +417,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                 }
             } else {
-                console.log(model_name);
                 switch (model_name) {
                     case Settings.regression.linear_regression.label: {
                         let model = model_factory.createModel(Settings.regression.linear_regression, null, {});
@@ -542,7 +535,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         });
     }
     function metrics_table(labels, matrix) {
-
         let metrics = []
         for (let i = 0; i < matrix.length; i++) {
             metrics.push([
@@ -587,9 +579,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         let tabs = Bulma('.tabs-wrapper').data('tabs');
         tabs.setActive(2)
         const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
-        console.log(confusionMatrix);
         const container = document.getElementById("confusion-matrix");
         const cm_table = document.getElementById("confusion-matrix-table");
+        let metric = await metrics(y.arraySync(), predictedLabels.arraySync())
         var header = "";
         header += "<th></th>";
         var tbody = "";
@@ -641,7 +633,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         await dimension_reduction(false);
     });
     document.getElementById("sample_data_select").addEventListener('change', async function (e) {
-        console.log(e.target.value);
         handleFileSelect(null, e.target.value.toLowerCase() + '.csv')
 
     })

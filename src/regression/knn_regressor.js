@@ -8,7 +8,6 @@ export default class KNNRegressor {
 
     }
     async train(x_train, y_train, k = 3) {
-        console.log(this.options.metric);
         this.model = new KNeighborsRegressor({ nNeighbors: k, metric: this.options.metric })
         await this.model.fit(x_train, y_train);
     }
