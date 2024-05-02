@@ -579,9 +579,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         let tabs = Bulma('.tabs-wrapper').data('tabs');
         tabs.setActive(2)
         const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
-        const container = document.getElementById("confusion-matrix");
-        const cm_table = document.getElementById("confusion-matrix-table");
-        let metric = await metrics(y.arraySync(), predictedLabels.arraySync())
+        let container = document.getElementById("results_container")
+        let div = document.createElement('div');
+        div.classList.add('column');
+        div.classList.add('is-4');
+        var firstChild = container.firstChild;
+        // let metric = await metrics(y.arraySync(), predictedLabels.arraySync())
         var header = "";
         header += "<th></th>";
         var tbody = "";
@@ -613,13 +616,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
         tbody += "<tr>" + row + "</tr>";
 
-        cm_table.innerHTML =
+        div.innerHTML =
             '<div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable is-size-7"><thead>' +
             header +
             "</thead><tbody>" +
             tbody +
             "</tbody></table></div>"
             ;
+        container.insertBefore(div, firstChild);
         window.tf.dispose(y)
         window.tf.dispose(predictedLabels)
         return confusionMatrix
