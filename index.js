@@ -11,6 +11,7 @@ import * as tfvis from '@tensorflow/tfjs-vis';
 import * as sk from 'scikitjs'
 import Plotly from 'plotly.js-dist';
 import Bulma from '@vizuaalog/bulmajs';
+import Tabs from '@vizuaalog/bulmajs/src/plugins/tabs.js';
 import { calculateRecall, calculateF1Score, calculatePrecision, metrics } from './src/utils.js';
 import SVM from "libsvm-js/asm";
 import tippy from 'tippy.js';
@@ -19,6 +20,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     // your code here
     sk.setBackend(tensorflow)
     let data_frame;
+    var mltool = {
+        model_number: 0
+    };
     window.tf = tensorflow
     let data_parser = new DataLoader();
     let trainer = new Trainter();
@@ -207,6 +211,20 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
             let model_factory = new ModelFactory();
             let model_settings = ui.get_model_settings();
+            mltool.model_number++
+            $("#tabs_content").append(`
+            <li data-index="${mltool.model_number}">
+               <a>${mltool.model_number}</a>
+            </li>`)
+            $("#tabs_info").append(`
+            <li data-index="${mltool.model_number}" class=" tabs-li">
+            <a>${mltool.model_number}</a>
+            </li>`)
+            var dataindex = mltool.model_number;
+            $("#tabs_content li").not(this).removeClass("is-active");
+            $("#tabs_info li").removeClass("is-active");
+            $("#tabs_info li[data-index='" + dataindex + "']").addClass("is-active");
+            $(this).toggleClass("is-active ");
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
                 let uniqueLabels = [...new Set(y_train.values)];
                 switch (model_name) {
@@ -401,7 +419,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let encoded_y_test = encoder_rf.transform(y_test.values)
 
                         let preds = await model.train_test(x_train.values, encoded_y, x_test.values)
-
                         const evaluation_result = evaluate_classification(preds, encoded_y_test)
                         const classes = encoder_rf.inverseTransform(Object.values(encoder_rf.$labels))
                         const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), classes)
@@ -575,7 +592,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
     }
 
-    async function plot_confusion_matrix(y, predictedLabels, labels = null) {
+    async function plot_confusion_matrix(y, predictedLabels, labels = null, index = 0) {
         let tabs = Bulma('.tabs-wrapper').data('tabs');
         tabs.setActive(2)
         const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
@@ -583,7 +600,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         let div = document.createElement('div');
         div.classList.add('column');
         div.classList.add('is-4');
-        var firstChild = container.firstChild;
+        div.setAttribute("id", "result_number_" + mltool.model_number);
         // let metric = await metrics(y.arraySync(), predictedLabels.arraySync())
         var header = "";
         header += "<th></th>";
@@ -623,7 +640,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             tbody +
             "</tbody></table></div>"
             ;
-        container.insertBefore(div, firstChild);
+        $("#tabs_info li[data-index='" + mltool.model_number + "']").append(div);
         window.tf.dispose(y)
         window.tf.dispose(predictedLabels)
         return confusionMatrix
@@ -640,6 +657,27 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         handleFileSelect(null, e.target.value.toLowerCase() + '.csv')
 
     })
+    $("#myList li").click(function () {
+        $(this).toggleClass("active");
+    });
+    document.querySelector('#test').addEventListener('click', async function (e) {
+        mltool.model_number++
+        $("#tabs_content").append(`
+        <li data-index="${mltool.model_number}">
+           <a>${mltool.model_number}</a>
+        </li>`)
+        $("#tabs_info").append(`
+        <li data-index="${mltool.model_number}" class=" tabs-li">
+        <a>${mltool.model_number}</a>
+        </li>`)
+    });
+    $("#tabs_content").on("click", "li", function () {
+        var index = $(this).data("index");
+        $("#tabs_content li").not(this).removeClass("is-active");
+        $("#tabs_info li").removeClass("is-active");
+        $("#tabs_info li[data-index='" + index + "']").addClass("is-active");
+        $(this).toggleClass("is-active ");
+    });
 });
 
 
