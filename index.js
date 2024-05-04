@@ -25,11 +25,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     };
     window.tf = tensorflow
     let data_parser = new DataLoader();
-    let trainer = new Trainter();
     let chart_controller = new ChartController(data_parser);
     let ui = new UI(data_parser, chart_controller);
-    let X
-    let y
     const html_content_ids = ["lasso_plot", "formulas", "regression_y_yhat", "probs_violin_plot", "probs_box_plot"]
     const table_ids = ["lasso_plot", "predictions_table", "results", "knn_table", "metrics_table", "stats_table", "sample_data_table"]
     const plots = ["tsne", "pca-1", "pca-2", "pca-3"]
@@ -218,7 +215,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             </li>`)
             $("#tabs_info").append(`
             <li data-index="${mltool.model_number}" class=" tabs-li">
-            <a>${mltool.model_number}</a>
+            <div id="results_${mltool.model_number}" class="columns is-multiline"></div>
             </li>`)
             var dataindex = mltool.model_number;
             $("#tabs_content li").not(this).removeClass("is-active");
@@ -262,7 +259,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             paging: false,
                             searching: false,
                         });
-                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels)
+                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels, mltool.model_number)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(predictions), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         predictions_table(x_test, y_test, encoder, best_result.predictions)
@@ -286,7 +283,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         model.train(x_train.values, encoded_y_train)
                         let y_preds = model.predict(x_test.values)
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
+                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, y_preds)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
@@ -307,7 +304,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             y_preds = Array.from(await model.train(x_train.values, encoded_y_train, x_test.values))
                         }
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
+                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         predictions_table(x_test, y_test, encoder, y_preds)
@@ -333,7 +330,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         await model.train(x_train.values, encoded_y_train)
                         let y_preds = await model.predict(x_test.values)
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
+                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                         predictions_table(x_test, y_test, encoder, y_preds)
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
@@ -357,9 +354,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         }));
                         // preds = encoder.transform(preds);
                         let evaluation_result = evaluate_classification(preds, y_t)
-                        await chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels)
+                        await chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(y_t), classes)
+                        const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(y_t), classes, mltool.model_number)
                         metrics_table(classes, matrix)
                         let metrics = []
                         for (let i = 0; i < stats.length; i++) {
@@ -392,7 +389,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let preds = await model.train(x_train.values, y, x_test.values)
                         preds = Array.from(preds)
                         let evaluation_result = evaluate_classification(preds, y_t)
-                        await chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels)
+                        await chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(y_t), classes)
                         metrics_table(classes, matrix)
@@ -423,7 +420,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         const classes = encoder_rf.inverseTransform(Object.values(encoder_rf.$labels))
                         const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), classes)
                         //metrics_table(classes, matrix)
-                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels)
+                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
 
                         predictions_table(x_test, y_test, encoder_rf, preds);
 
@@ -593,13 +590,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     }
 
     async function plot_confusion_matrix(y, predictedLabels, labels = null, index = 0) {
-        let tabs = Bulma('.tabs-wrapper').data('tabs');
-        tabs.setActive(2)
         const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
-        let container = document.getElementById("results_container")
         let div = document.createElement('div');
         div.classList.add('column');
-        div.classList.add('is-4');
+        div.classList.add('is-6');
         div.setAttribute("id", "result_number_" + mltool.model_number);
         // let metric = await metrics(y.arraySync(), predictedLabels.arraySync())
         var header = "";
@@ -640,7 +634,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             tbody +
             "</tbody></table></div>"
             ;
-        $("#tabs_info li[data-index='" + mltool.model_number + "']").append(div);
+        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_"+mltool.model_number+"").append(div);
         window.tf.dispose(y)
         window.tf.dispose(predictedLabels)
         return confusionMatrix
@@ -659,17 +653,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     })
     $("#myList li").click(function () {
         $(this).toggleClass("active");
-    });
-    document.querySelector('#test').addEventListener('click', async function (e) {
-        mltool.model_number++
-        $("#tabs_content").append(`
-        <li data-index="${mltool.model_number}">
-           <a>${mltool.model_number}</a>
-        </li>`)
-        $("#tabs_info").append(`
-        <li data-index="${mltool.model_number}" class=" tabs-li">
-        <a>${mltool.model_number}</a>
-        </li>`)
     });
     $("#tabs_content").on("click", "li", function () {
         var index = $(this).data("index");

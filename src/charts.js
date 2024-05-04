@@ -606,7 +606,8 @@ export default class ChartController {
         });
 
     }
-    async draw_classification_pca(dataset, labels, missclassifications, uniqueLabels, size = 4, color_scale = "Jet") {
+    async draw_classification_pca(dataset, labels, missclassifications, uniqueLabels, index) {
+
         const pca = new PCA(dataset, { center: true, scale: true });
         var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
         const pca_data = await pca.predict(dataset, { nComponents: 2 })
@@ -632,7 +633,7 @@ export default class ChartController {
             mode: 'markers',
             type: 'scatter',
             marker: {
-                size: size,
+                size: 4,
                 color: colorIndices,
                 symbol: 'circle'
             },
@@ -651,8 +652,19 @@ export default class ChartController {
             },
         };
         var data = [trace1, trace2];
-        Plotly.newPlot('pca-results', data, {
+
+        var chart_container = `<div class="column is-6" style="height: 50vh" id="pca_results_${index}"></div>`
+        $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(chart_container);
+
+        Plotly.newPlot('pca_results_' + index, data, {
             showlegend: true,
+            margin: {
+                l: 20,
+                r: 20,
+                b: 20,
+                t: 20,
+                pad: 5
+            },
             legend: {
                 x: 1,
                 xanchor: 'right',
@@ -665,7 +677,7 @@ export default class ChartController {
             yaxis: {
                 title: 'PC2'
             }
-        }, { responsive: true });
+        }, { responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
 
     }
     async draw_pca(dataset, labels, size = 4, color_scale = "Jet") {
