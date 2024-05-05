@@ -330,8 +330,8 @@ export default class ChartController {
         if (!redrawing) {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             $("#container").append(
-                `<div class="column is-4">
-                <div class="columns">
+                `<div class="column is-4 my-1">
+                <div class="columns is-multiline">
                 <div class="column is-12" >
                     <div id="${column + '-kde-plot'}"> </div>
                     <div class="field has-addons has-addons-centered my-1">
@@ -369,8 +369,7 @@ export default class ChartController {
                             </a>
                         </div>
                     </div>
-                  </div>
-                  <div class="column is-12" id="${column + '-boxplot'}" style="height: 50vh">
+                  <div class="column is-12" id="${column + '-boxplot'}" style="height:40vh;width:35vh;">
                   </div>
                   </div>
                 </div>`
@@ -452,11 +451,11 @@ export default class ChartController {
         var layout = {
             showlegend: true,
             margin: {
-                l: 20,
-                r: 20,
+                l: 40,
+                r: 40,
                 b: 40,
-                t: 20,
-                pad: 10
+                t: 30,
+                pad: 20
             },
             legend: {
                 x: 1,
@@ -464,7 +463,7 @@ export default class ChartController {
                 y: 1
             },
         };
-        Plotly.newPlot(column + '-boxplot', traces, layout, { modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
+        Plotly.newPlot(column + '-boxplot', traces, layout, { autosize: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
         Highcharts.chart(container_id, {
             credits: {
                 enabled: false
@@ -653,7 +652,7 @@ export default class ChartController {
         };
         var data = [trace1, trace2];
 
-        var chart_container = `<div class="column is-6" style="height: 50vh" id="pca_results_${index}"></div>`
+        var chart_container = `<div class="column is-6" style="height: 40vh" id="pca_results_${index}"></div>`
         $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(chart_container);
 
         Plotly.newPlot('pca_results_' + index, data, {

@@ -1,5 +1,5 @@
-import xgb from './xgboost/index';
-export default class Boosting {
+import xgb from '../xgboost/index';
+export default class BoostingRegression {
     constructor(options) {
         this.options = options
     }
@@ -11,16 +11,22 @@ export default class Boosting {
         if (!this.model) {
             await this.init(this.options);
         }
-        this.model.train(x_train, y_train);
-
-
+        return new Promise(async (resolve, reject) => {
+            try {
+                setTimeout(async () => {
+                    this.model.train(x_train, y_train);
+                    resolve()
+                }, 1000)
+            } catch (error) {
+                reject(error)
+            }
+        })
     }
     async predict(x_test) {
         if (!this.model) {
             await this.init(this.options);
         }
         const result = this.model.predict(x_test);
-        this.model.free()
         return result
     }
 }

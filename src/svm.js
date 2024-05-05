@@ -8,7 +8,7 @@ export default class SupportVectorMachine {
     }
     predict(x_test) {
         const result = this.model.predict(x_test);
-        console.log(this.model.serializeModel());
+        // console.log(this.model.serializeModel());
         this.model.free();
         return result
     }

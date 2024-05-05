@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             $("#tabs_content li").not(this).removeClass("is-active");
             $("#tabs_info li").removeClass("is-active");
             $("#tabs_info li[data-index='" + dataindex + "']").addClass("is-active");
-            ui.show_settings(model_settings,dataindex);
+            ui.show_settings(model_settings, dataindex);
             $(this).toggleClass("is-active ");
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
                 let uniqueLabels = [...new Set(y_train.values)];
@@ -283,10 +283,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let encoded_y_test = encoder.transform(y_test.values)
                         model.train(x_train.values, encoded_y_train)
                         let y_preds = model.predict(x_test.values)
+                        await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, y_preds)
-                        const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)))
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
                     }
@@ -499,6 +499,22 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         Plotly.newPlot('regression_y_yhat', [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         break;
                     }
+                    case Settings.regression.boosting.label: {
+                        let model = model_factory.createModel(Settings.regression.boosting, {
+                            objective: "reg:linear",
+                            iterations: model_settings.iterations ?? 200
+                        })
+                        let results = []
+                        let encoder = new LabelEncoder()
+                        encoder.fit(targets)
+                        let encoded_y_train = encoder.transform(y_train.values)
+                        let encoded_y_test = encoder.transform(y_test.values)
+                        await model.train(x_train.values, encoded_y_train)
+                        let y_preds = await model.predict(x_test.values)
+                        let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
+                        predictions_table_regression(x_test, y_test, y_preds)
+                        break;
+                    }
                 }
             }
 
@@ -511,7 +527,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     }
 
     function predictions_table(x, y, encoder, preds, probs = null) {
-
+        let content = `
+        <div class="column is-12">
+            <table id="predictions_table_${mltool.model_number}" class="table is-bordered is-hoverable is-narrow display" width="100%">
+           </table>
+        </div>`
+        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(content);
         let table_columns = [];
         if (probs !== null) {
             x.addColumn("probs", probs, { inplace: true });
@@ -521,7 +542,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         x.columns.forEach(element => {
             table_columns.push({ title: element });
         });
-        new DataTable('#predictions_table', {
+        new DataTable('#predictions_table_' + mltool.model_number, {
             pageLength: 25,
             responsive: true,
             paging: true,
@@ -547,6 +568,29 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     $(row).addClass('is-danger');
                 }
             }
+        });
+    }
+    function predictions_table_regression(x, y, preds) {
+        let content = `
+        <div class="column is-12">
+            <table id="predictions_table_${mltool.model_number}" class="table is-bordered is-hoverable is-narrow display" width="100%">
+           </table>
+        </div>`
+        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(content);
+        let table_columns = [];
+        x.addColumn("y", y, { inplace: true });
+        x.addColumn("predictions: ", preds, { inplace: true });
+        x.columns.forEach(element => {
+            table_columns.push({ title: element });
+        });
+        new DataTable('#predictions_table_' + mltool.model_number, {
+            pageLength: 25,
+            responsive: true,
+            paging: true,
+            "bPaginate": true,
+            columns: table_columns,
+            data: x.values,
+            bDestroy: true,
         });
     }
     function metrics_table(labels, matrix) {

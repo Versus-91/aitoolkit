@@ -3,6 +3,8 @@ import LogisticRegression from "./logistic_regression";
 import LinearRegression from "./linear_regression";
 import SupportVectorMachine from './svm';
 import Boosting from './boosting';
+import BoostingRegression from './regression/boosting';
+
 import KNNModel from './knn';
 import KNNRegressor from './regression/knn_regressor';
 import RandomForest from "./random_forest";
@@ -33,6 +35,8 @@ export var ModelFactory = function () {
         }
         else if (modelName === Settings.regression.k_nearest_neighbour) {
             model = new KNNRegressor(options);
+        } else if (modelName === Settings.regression.boosting) {
+            model = new BoostingRegression(options);
         } else {
             throw "model not supported.";
         }

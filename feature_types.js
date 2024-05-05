@@ -160,7 +160,7 @@ export const Settings = {
             "criteria": ["AIC", "BIC", "AR2",],
         },
         "k_nearest_neighbour": {
-            "label": "k nearest neighbour",
+            "label": "k nearest neighbour Regression",
             "value": 3,
             "options": {
                 "min": {
@@ -176,6 +176,81 @@ export const Settings = {
                     default: "euclidean",
                     values: ["euclidean", "manhattan"]
                 },
+            },
+        },
+        "boosting": {
+            "label": "Boosting Regression",
+            "value": 6,
+            "options": {
+                "booster": {
+                    type: "select",
+                    default: "gbtree",
+                    values: [{ label: "gbtree", value: "gbtree" }, { label: "gblinear", value: "gblinear" }, { label: "dart", value: "dart" }]
+                },
+                "eta": {
+                    type: "number",
+                    default: 0.3
+                },
+                "iterations": {
+                    type: "number",
+                    default: 200
+                },
+                "depth": {
+                    type: "number",
+                    default: 5
+                },
+
+            },
+        },
+        "support_vector_machine": {
+            "label": "Support vector machine Regression",
+            "value": 4,
+            "options": {
+                "kernel": {
+                    type: "select",
+                    default: "RBF",
+                    values: [{ label: "RBF", value: "RBF" }, { label: "Linear", value: "Linear" }, { label: "Polynomial", value: "Polynomial" }
+                        , { label: "Sigmoid", value: "Sigmoid" }]
+                },
+                "gamma": {
+                    type: "number",
+                    for: ["RBF", "Sigmoid", "Polynomial"],
+                    default: 1
+                },
+                "bias": {
+                    type: "number",
+                    for: ["Sigmoid", "Sigmoid"],
+                    default: 0
+                },
+                "degree": {
+                    type: "number",
+                    for: ["Polynomial"],
+                    default: 3
+                },
+            },
+        },
+        "random_forest": {
+            "label": "Random forest Regression",
+            "value": 5,
+            "options": {
+                "estimators": {
+                    type: "number",
+                    default: 100
+                },
+                "features": {
+                    type: "number",
+                    default: "sqrt"
+                },
+                "depth": {
+                    type: "number",
+                    default: 5
+                },
+                "criteria": {
+                    type: "select",
+                    default: "gini",
+                    "values": [{ label: "gini", value: "gini" }, { label: "log loss", value: "log_loss" },
+                    { label: "entropy", value: "entropy" }]
+                }
             },
         },
     },
