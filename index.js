@@ -221,6 +221,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             $("#tabs_content li").not(this).removeClass("is-active");
             $("#tabs_info li").removeClass("is-active");
             $("#tabs_info li[data-index='" + dataindex + "']").addClass("is-active");
+            ui.show_settings(model_settings,dataindex);
             $(this).toggleClass("is-active ");
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
                 let uniqueLabels = [...new Set(y_train.values)];
@@ -634,7 +635,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             tbody +
             "</tbody></table></div>"
             ;
-        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_"+mltool.model_number+"").append(div);
+        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(div);
         window.tf.dispose(y)
         window.tf.dispose(predictedLabels)
         return confusionMatrix

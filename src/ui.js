@@ -85,6 +85,8 @@ export default class UI {
         }
 
     }
+
+
     createDatasetPropsDropdown(items) {
         try {
             const myClass = this
@@ -663,6 +665,22 @@ export default class UI {
         } else {
             element.style.display = "none";
         }
+
+    }
+    show_settings(settings, i) {
+        let content = `
+        <div class="column is-12">
+        <div class="notification"><div class="columns is-multiline">`;
+        for (const key in settings) {
+            if (Object.hasOwnProperty.call(settings, key)) {
+                const element = settings[key];
+                content += `<div class="column is-4"><p><strong>${key}</strong>: ${element}</p></div>`
+            }
+        }
+        content += `</div></div></div>`
+
+
+        $("#tabs_info li[data-index='" + i + "'] #results_" + i + "").append(content);
 
     }
 
