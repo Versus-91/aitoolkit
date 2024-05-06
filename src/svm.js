@@ -4,7 +4,17 @@ export default class SupportVectorMachine {
         this.model = new SVM(options);
     }
     train(x_train, y_train) {
-        this.model.train(x_train, y_train);
+
+        return new Promise(async (resolve, reject) => {
+            try {
+                setTimeout(async () => {
+                    this.model.train(x_train, y_train);
+                    resolve()
+                }, 1000)
+            } catch (error) {
+                reject(error)
+            }
+        })
     }
     predict(x_test) {
         const result = this.model.predict(x_test);

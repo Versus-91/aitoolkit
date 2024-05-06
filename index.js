@@ -433,6 +433,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                 }
             } else {
+                let content = `
+                <div class="column is-12">
+                    <div id="regression_y_yhat_${mltool.model_number}" width="100%">
+                   </div>
+                </div>`
+                $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(content);
                 switch (model_name) {
                     case Settings.regression.linear_regression.value: {
                         let model = model_factory.createModel(Settings.regression.linear_regression, null, {});
@@ -476,7 +482,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         $("#formulas").html = "";
                         $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
                         MathJax.typeset(["formulas"]);
-                        Plotly.newPlot('regression_y_yhat', data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         break;
                     }
                     case Settings.regression.k_nearest_neighbour.value: {
@@ -497,7 +503,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             name: "y",
                             mode: 'markers',
                         };
-                        Plotly.newPlot('regression_y_yhat', [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         break;
                     }
                     case Settings.regression.boosting.value: {
@@ -505,14 +511,16 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             objective: "reg:linear",
                             iterations: model_settings.iterations ?? 200
                         })
-                        let results = []
-                        let encoder = new LabelEncoder()
-                        encoder.fit(targets)
-                        let encoded_y_train = encoder.transform(y_train.values)
-                        let encoded_y_test = encoder.transform(y_test.values)
-                        await model.train(x_train.values, encoded_y_train)
+                        await model.train(x_train.values, y_train.values)
                         let y_preds = await model.predict(x_test.values)
-                        let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
+                        var trace = {
+                            x: y_test.values,
+                            y: y_preds,
+                            type: 'scatter',
+                            name: "y",
+                            mode: 'markers',
+                        };
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         predictions_table_regression(x_test, y_test, y_preds)
                         break;
                     }
@@ -525,16 +533,44 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             degree: model_settings.degree,
                             quiet: true
                         })
-                        let results = []
-                        let encoder = new LabelEncoder()
-                        encoder.fit(targets)
-                        let encoded_y_train = encoder.transform(y_train.values)
-                        let encoded_y_test = encoder.transform(y_test.values)
-                        await model.train(x_train.values, encoded_y_train)
+                        await model.train(x_train.values, y_train.values)
                         let y_preds = await model.predict(x_test.values)
-                        let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
+                        var trace = {
+                            x: y_test.values,
+                            y: y_preds,
+                            type: 'scatter',
+                            name: "y",
+                            mode: 'markers',
+                        };
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         predictions_table_regression(x_test, y_test, y_preds)
                         break;
+                    }
+                    case Settings.regression.random_forest.value: {
+                        let num_features = typeof model_settings.features === "number" ? model_settings.features : parseInt(Math.sqrt(x_train.columns.length).toFixed(0))
+                        const model = model_factory.createModel(Settings.regression.random_forest, {
+                            seed: 3,
+                            maxFeatures: num_features,
+                            replacement: true,
+                            nEstimators: model_settings.estimators,
+                            treeOptions: {
+                                maxDepth: model_settings.depth
+                            },
+                            criteria: model_settings.criteria
+                        });
+
+                        let preds = await model.train_test(x_train.values, y_train.values, x_test.values)
+                        var trace = {
+                            x: y_test.values,
+                            y: preds,
+                            type: 'scatter',
+                            name: "y",
+                            mode: 'markers',
+                        };
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        predictions_table_regression(x_test, y_test, preds)
+
+                        break
                     }
                 }
             }
