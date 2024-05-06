@@ -173,6 +173,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         try {
             let dataset = data.copy()
             let model_name = document.getElementById('model_name').value
+            model_name = parseInt(model_name)
             const target = document.getElementById("target").value;
             dataset = data_parser.handle_missing_values(dataset)
             let selected_columns = ui.find_selected_columns(dataset.columns)
@@ -226,7 +227,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
                 let uniqueLabels = [...new Set(y_train.values)];
                 switch (model_name) {
-                    case Settings.classification.k_nearest_neighbour.label: {
+                    case Settings.classification.k_nearest_neighbour.value: {
                         let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour, model_settings)
                         let results = []
                         let encoder = new LabelEncoder()
@@ -266,7 +267,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         predictions_table(x_test, y_test, encoder, best_result.predictions)
                         break;
                     }
-                    case Settings.classification.support_vector_machine.label: {
+                    case Settings.classification.support_vector_machine.value: {
 
                         let model = model_factory.createModel(Settings.classification.support_vectore_machine, {
                             kernel: SVM.KERNEL_TYPES[model_settings.kernel.toUpperCase()],
@@ -290,7 +291,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
                     }
-                    case Settings.classification.naive_bayes.label: {
+                    case Settings.classification.naive_bayes.value: {
                         let model = model_factory.createModel(Settings.classification.naive_bayes, model_settings)
                         let results = []
                         let encoder = new LabelEncoder()
@@ -311,7 +312,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         predictions_table(x_test, y_test, encoder, y_preds)
                         break;
                     }
-                    case Settings.classification.boosting.label: {
+                    case Settings.classification.boosting.value: {
                         let model = model_factory.createModel(Settings.classification.boosting, {
                             booster: model_settings.booster ?? "gbtree",
                             objective: uniqueLabels.length > 1 ? "multi:softmax" : "binary:logistic",
@@ -337,7 +338,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
                     }
-                    case Settings.classification.logistic_regression.label: {
+                    case Settings.classification.logistic_regression.value: {
                         let logistic_regression = model_factory.createModel(Settings.classification.logistic_regression, chart_controller, {
                             numFeatures: 4, numClasses: 3, learningRate: 0.01, l1Regularization: 0, l2Regularization: 0
                         })
@@ -381,7 +382,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         chart_controller.probablities_violin_plot(probs, classes, uniqueLabels)
                         break
                     }
-                    case Settings.classification.discriminant_analysis.label: {
+                    case Settings.classification.discriminant_analysis.value: {
                         let model = model_factory.createModel(Settings.classification.discriminant_analysis, { type: model_settings.type === "linear" ? 0 : 1, priors: model_settings.priors })
                         let encoder = new LabelEncoder()
                         encoder.fit(y_train.values)
@@ -397,7 +398,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         predictions_table(x_test, y_test, encoder, preds);
                         break
                     }
-                    case Settings.classification.random_forest.label: {
+                    case Settings.classification.random_forest.value: {
                         let num_features = typeof model_settings.features === "number" ? model_settings.features : parseInt(Math.sqrt(x_train.columns.length).toFixed(0))
                         const model = model_factory.createModel(Settings.classification.random_forest, {
                             seed: 3,
@@ -433,7 +434,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 }
             } else {
                 switch (model_name) {
-                    case Settings.regression.linear_regression.label: {
+                    case Settings.regression.linear_regression.value: {
                         let model = model_factory.createModel(Settings.regression.linear_regression, null, {});
                         let y_t = y_train.values.map((item) => [item])
                         let y_test_t = y_test.values.map((item) => [item])
@@ -478,7 +479,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         Plotly.newPlot('regression_y_yhat', data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         break;
                     }
-                    case Settings.regression.k_nearest_neighbour.label: {
+                    case Settings.regression.k_nearest_neighbour.value: {
                         model_settings = ui.get_model_settings();
                         let model = model_factory.createModel(Settings.regression.k_nearest_neighbour, model_settings)
                         // for (let k = model_settings.min; k <= model_settings.max; k++) {
@@ -499,10 +500,30 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         Plotly.newPlot('regression_y_yhat', [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         break;
                     }
-                    case Settings.regression.boosting.label: {
+                    case Settings.regression.boosting.value: {
                         let model = model_factory.createModel(Settings.regression.boosting, {
                             objective: "reg:linear",
                             iterations: model_settings.iterations ?? 200
+                        })
+                        let results = []
+                        let encoder = new LabelEncoder()
+                        encoder.fit(targets)
+                        let encoded_y_train = encoder.transform(y_train.values)
+                        let encoded_y_test = encoder.transform(y_test.values)
+                        await model.train(x_train.values, encoded_y_train)
+                        let y_preds = await model.predict(x_test.values)
+                        let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
+                        predictions_table_regression(x_test, y_test, y_preds)
+                        break;
+                    }
+                    case Settings.regression.support_vector_machine.value: {
+                        let model = model_factory.createModel(Settings.regression.support_vector_machine, {
+                            kernel: SVM.KERNEL_TYPES[model_settings.kernel.toUpperCase()],
+                            type: SVM.SVM_TYPES.EPSILON_SVR,
+                            coef0: model_settings.bias,
+                            gamma: model_settings.gamma,
+                            degree: model_settings.degree,
+                            quiet: true
                         })
                         let results = []
                         let encoder = new LabelEncoder()

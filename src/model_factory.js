@@ -16,31 +16,33 @@ import DiscriminantAnalysis from "./lda";
 export var ModelFactory = function () {
     this.createModel = (modelName, options) => {
         var model;
-        if (modelName === Settings.classification.logistic_regression) {
+        if (modelName.value === Settings.classification.logistic_regression.value) {
             model = new LogisticRegression(options);
-        } else if (modelName === Settings.classification.k_nearest_neighbour) {
+        } else if (modelName.value === Settings.classification.k_nearest_neighbour.value) {
             model = new KNNModel(options);
-        } else if (modelName === Settings.classification.random_forest) {
+        } else if (modelName.value === Settings.classification.random_forest.value) {
             model = new RandomForest(options);
-        } else if (modelName === Settings.classification.support_vectore_machine) {
+        } else if (modelName.value === Settings.classification.support_vector_machine.value) {
             model = new SupportVectorMachine(options);
-        } else if (modelName === Settings.classification.boosting) {
+        } else if (modelName.value === Settings.classification.boosting.value) {
             model = new Boosting(options);
-        } else if (modelName === Settings.classification.discriminant_analysis) {
+        } else if (modelName.value === Settings.classification.discriminant_analysis) {
             model = new DiscriminantAnalysis(options);
-        } else if (modelName === Settings.regression.linear_regression) {
+        } else if (modelName.value === Settings.regression.linear_regression) {
             model = new LinearRegression();
-        } else if (modelName === Settings.classification.naive_bayes) {
+        } else if (modelName.value === Settings.classification.naive_bayes.value) {
             model = new NaiveBayes(options);
         }
-        else if (modelName === Settings.regression.k_nearest_neighbour) {
+        else if (modelName.value === Settings.regression.k_nearest_neighbour.value) {
             model = new KNNRegressor(options);
-        } else if (modelName === Settings.regression.boosting) {
+        } else if (modelName.value === Settings.regression.support_vector_machine.value) {
+            model = new SupportVectorMachine(options);
+        } else if (modelName.value === Settings.regression.boosting.value) {
             model = new BoostingRegression(options);
         } else {
             throw "model not supported.";
         }
-        model.name = modelName;
+        model.name = modelName.value;
         model.train = model.train;
         model.evaluate = model.evaluate;
         return model;

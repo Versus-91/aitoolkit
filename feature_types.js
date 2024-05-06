@@ -6,6 +6,7 @@ export const FeatureCategories = {
 export const Settings = {
     "classification": {
         "logistic_regression": {
+            "id":1,
             "label": "Logistic Regression",
             "value": 1,
             "options": {
@@ -18,6 +19,7 @@ export const Settings = {
             }
         },
         "discriminant_analysis": {
+            "id":2,
             "label": "Discriminant Analysis",
             "value": 2,
             "options": {
@@ -34,6 +36,7 @@ export const Settings = {
             }
         },
         "k_nearest_neighbour": {
+            "id":3,
             "label": "k nearest neighbour",
             "value": 3,
             "options": {
@@ -53,6 +56,7 @@ export const Settings = {
             },
         },
         "support_vector_machine": {
+            "id":4,
             "label": "Support vector machine",
             "value": 4,
             "options": {
@@ -80,6 +84,7 @@ export const Settings = {
             },
         },
         "random_forest": {
+            "id":5,
             "label": "Random forest",
             "value": 5,
             "options": {
@@ -104,6 +109,7 @@ export const Settings = {
             },
         },
         "boosting": {
+            "id":6,
             "label": "Boosting",
             "value": 6,
             "options": {
@@ -155,13 +161,13 @@ export const Settings = {
     "regression": {
         "linear_regression": {
             "label": "Linear Regression",
-            "value": 8,
+            "value": 9,
             "feature_selection": ["no", "Lasso", "ridge"],
             "criteria": ["AIC", "BIC", "AR2",],
         },
         "k_nearest_neighbour": {
             "label": "k nearest neighbour Regression",
-            "value": 3,
+            "value": 10,
             "options": {
                 "min": {
                     type: "number",
@@ -180,7 +186,7 @@ export const Settings = {
         },
         "boosting": {
             "label": "Boosting Regression",
-            "value": 6,
+            "value": 11,
             "options": {
                 "booster": {
                     type: "select",
@@ -204,7 +210,7 @@ export const Settings = {
         },
         "support_vector_machine": {
             "label": "Support vector machine Regression",
-            "value": 4,
+            "value": 12,
             "options": {
                 "kernel": {
                     type: "select",
@@ -231,7 +237,7 @@ export const Settings = {
         },
         "random_forest": {
             "label": "Random forest Regression",
-            "value": 5,
+            "value": 13,
             "options": {
                 "estimators": {
                     type: "number",

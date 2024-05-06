@@ -440,7 +440,7 @@ export default class ChartController {
                 }
             }
             traces.push({
-                name: "column",
+                name: column,
                 y: items,
                 type: 'box',
             })

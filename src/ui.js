@@ -11,18 +11,18 @@ export default class UI {
 
     get_model_settings() {
         let model_settings = {};
-        let model_name = document.getElementById('model_name').value;
+        let model_name = parseInt(document.getElementById('model_name').value);
         const target = document.getElementById("target").value;
         let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
         if (is_classification) {
             for (const model in Settings.classification) {
-                if (Settings.classification[model].label === model_name) {
+                if (Settings.classification[model].value === model_name) {
                     model_name = model
                 }
             }
         } else {
             for (const model in Settings.regression) {
-                if (Settings.regression[model].label === model_name) {
+                if (Settings.regression[model].value === model_name) {
                     model_name = model
                 }
             }
@@ -279,8 +279,28 @@ export default class UI {
             })
             document.querySelector('#config_modal_button').addEventListener('click', function (e) {
                 let model_name = document.getElementById('model_name').value;
-                model_name = model_name.replace(/\s+/g, '_').toLowerCase();
-                var model = Settings.classification[model_name] ?? Settings.regression[model_name];
+                const target = document.getElementById("target").value;
+                let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+                var model;
+                if (is_classification) {
+                    for (const key in Settings.classification) {
+                        if (Object.hasOwnProperty.call(Settings.classification, key)) {
+                            const element = Settings.classification[key];
+                            if (element.value === parseInt(model_name)) {
+                                model = Settings.classification[key];
+                            }
+                        }
+                    }
+                } else {
+                    for (const key in Settings.regression) {
+                        if (Object.hasOwnProperty.call(Settings.regression, key)) {
+                            const element = Settings.regression[key];
+                            if (element.value === parseInt(model_name)) {
+                                model = Settings.regression[key];
+                            }
+                        }
+                    }
+                }
                 var options_modal_content = document.getElementById("settings");
                 if (window.getComputedStyle(options_modal_content).display !== "none") {
                     options_modal_content.innerHTML = ""
@@ -353,7 +373,7 @@ export default class UI {
         for (const key in Settings[label]) {
             if (Settings.hasOwnProperty.call(Settings[label], key)) {
                 const item = Settings[label][key];
-                result += `<option value="${item.label}">${item.label}</option>`
+                result += `<option value="${item.value}">${item.label}</option>`
             }
         }
         result += '</select></div></div>'
