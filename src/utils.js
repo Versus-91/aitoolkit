@@ -199,17 +199,17 @@ export function calculateF1Score(classIndex, confusionMatrix) {
     return (2 * precision * recall) / (precision + recall);
 }
 
-export async function metrics(y, y_pred) {
+export async function metrics(y, y_pred, labels) {
     const context = {
         y: y,
         y_pred: y_pred,
-
+        labels: labels
     };
     const script = `
         from sklearn.metrics import precision_recall_fscore_support, classification_report, f1_score
-        from js import y_pred,y       
+        from js import y_pred,y,labels       
         # Perform t-SNE dimensionality reduction
-        precision_recall_support = precision_recall_fscore_support(y, y_pred)
+        precision_recall_support = precision_recall_fscore_support(y, y_pred,labels=labels)
         f1_micro = f1_score(y, y_pred, average='micro')
         (precision_recall_support,f1_micro)
     `;

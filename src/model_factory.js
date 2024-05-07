@@ -26,9 +26,9 @@ export var ModelFactory = function () {
             model = new SupportVectorMachine(options);
         } else if (modelName.value === Settings.classification.boosting.value) {
             model = new Boosting(options);
-        } else if (modelName.value === Settings.classification.discriminant_analysis) {
+        } else if (modelName.value === Settings.classification.discriminant_analysis.value) {
             model = new DiscriminantAnalysis(options);
-        } else if (modelName.value === Settings.regression.linear_regression) {
+        } else if (modelName.value === Settings.regression.linear_regression.value) {
             model = new LinearRegression();
         } else if (modelName.value === Settings.classification.naive_bayes.value) {
             model = new NaiveBayes(options);
