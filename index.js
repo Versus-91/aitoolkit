@@ -222,6 +222,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             $("#tabs_content li").not(this).removeClass("is-active");
             $("#tabs_info li").removeClass("is-active");
             $("#tabs_info li[data-index='" + dataindex + "']").addClass("is-active");
+            $("#tabs_content li[data-index='" + dataindex + "']").addClass("is-active");
+
             ui.show_settings(model_settings, dataindex);
             $(this).toggleClass("is-active ");
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
@@ -578,7 +580,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     }
                 }
             }
-
+            let tabs = Bulma('.tabs-wrapper').data('tabs');
+            tabs.setActive(2)
         } catch (error) {
             ui.stop_loading()
             ui.show_error_message(error.message, "#7E191B")
@@ -696,6 +699,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     }
 
     async function plot_confusion_matrix(y, predictedLabels, labels, uniqueClasses) {
+
+
         const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
         let div = document.createElement('div');
         div.classList.add('column');
@@ -758,6 +763,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(div);
         window.tf.dispose(y)
         window.tf.dispose(predictedLabels)
+
+        const container = document.getElementById("result_number_" + mltool.model_number);
+        await tfvis.render.confusionMatrix(container, {
+            values: confusionMatrix,
+            tickLabels: labels
+        });
         return confusionMatrix
 
     }

@@ -28,6 +28,7 @@ export default class UI {
             }
         }
         let model = Settings.classification[model_name];
+        model_name = parseInt(document.getElementById('model_name').value);
         for (const option in model?.options) {
             let option_element = document.getElementById(option + "_" + model_name);
             if (model.options[option].type === "select") {
@@ -690,7 +691,10 @@ export default class UI {
     show_settings(settings, i) {
         let content = `
         <div class="column is-12">
-        <div class="notification"><div class="columns is-multiline">`;
+        <div class="notification">
+        <p class="title is-5">Random Forest </p>
+        <div class="columns is-multiline">`;
+
         for (const key in settings) {
             if (Object.hasOwnProperty.call(settings, key)) {
                 const element = settings[key];

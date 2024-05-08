@@ -330,10 +330,12 @@ export default class ChartController {
         if (!redrawing) {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             $("#container").append(
-                `<div class="column is-4 my-1">
+                `<div class="column is-4 is-size-6-tablet my-1">
                 <div class="columns is-multiline">
                 <div class="column is-12" >
                     <div id="${column + '-kde-plot'}"> </div>
+                    <div id="${column + '-boxplot'}" style="height:40vh;width: 15vw">
+                    </div>
                     <div class="field has-addons has-addons-centered my-1">
                     <div class="control">
                     <span class="select is-small">
@@ -369,8 +371,6 @@ export default class ChartController {
                             </a>
                         </div>
                     </div>
-                  <div class="column is-12" id="${column + '-boxplot'}" style="height:40vh;width:35vh;">
-                  </div>
                   </div>
                 </div>`
             );
@@ -417,7 +417,7 @@ export default class ChartController {
                 }
                 traces.push({
                     name: uniqueLabels[i],
-                    y: subsets[i],
+                    x: subsets[i],
                     marker: {
                         color: colorIndices[i]
                     },
@@ -450,20 +450,20 @@ export default class ChartController {
 
         var layout = {
             showlegend: true,
-            margin: {
-                l: 40,
-                r: 40,
-                b: 40,
-                t: 30,
-                pad: 20
-            },
+            // margin: {
+            //     l: 40,
+            //     r: 10,
+            //     b: 10,
+            //     t: 10,
+            //     pad: 60
+            // },
             legend: {
                 x: 1,
                 xanchor: 'right',
                 y: 1
             },
         };
-        Plotly.newPlot(column + '-boxplot', traces, layout, { autosize: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
+        Plotly.newPlot(column + '-boxplot', traces, layout, { autosize: true, responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
         Highcharts.chart(container_id, {
             credits: {
                 enabled: false
@@ -639,6 +639,7 @@ export default class ChartController {
         };
         var trace2 = {
             name: 'Missclassifications',
+            id: 'Missclassifications',
             x: x_error,
             y: y_error,
             text: labels,
@@ -655,29 +656,96 @@ export default class ChartController {
         var chart_container = `<div class="column is-6" style="height: 40vh" id="pca_results_${index}"></div>`
         $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(chart_container);
 
-        Plotly.newPlot('pca_results_' + index, data, {
-            showlegend: true,
-            margin: {
-                l: 20,
-                r: 20,
-                b: 20,
-                t: 20,
-                pad: 5
+        // Plotly.newPlot('pca_results_' + index, data, {
+        //     showlegend: true,
+        //     margin: {
+        //         l: 20,
+        //         r: 20,
+        //         b: 20,
+        //         t: 20,
+        //         pad: 5
+        //     },
+        //     legend: {
+        //         x: 1,
+        //         xanchor: 'right',
+        //         y: 1
+        //     },
+        //     xaxis: {
+
+        //         title: 'PC1'
+        //     },
+        //     yaxis: {
+        //         title: 'PC2'
+        //     }
+        // }, { responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
+        Highcharts.setOptions({
+            colors: ['rgba(5,141,199,0.5)', 'rgba(80,180,50,0.5)', 'rgba(237,86,27,0.5)']
+        });
+        Highcharts.chart('pca_results_' + index, {
+            chart: {
+                type: 'scatter',
+                zoomType: 'xy'
+            },
+            title: {
+                text: 'Olympics athletes by height and weight',
+                align: 'left'
+            },
+            subtitle: {
+                text:
+                    'Source: <a href="https://www.theguardian.com/sport/datablog/2012/aug/07/olympics-2012-athletes-age-weight-height">The Guardian</a>',
+                align: 'left'
+            },
+            xAxis: {
+                title: {
+                    text: 'Height'
+                },
+                labels: {
+                    format: '{value} m'
+                },
+                startOnTick: true,
+                endOnTick: true,
+                showLastLabel: true
+            },
+            yAxis: {
+                title: {
+                    text: 'Weight'
+                },
+                labels: {
+                    format: '{value} kg'
+                }
             },
             legend: {
-                x: 1,
-                xanchor: 'right',
-                y: 1
+                enabled: true
             },
-            xaxis: {
-
-                title: 'PC1'
+            plotOptions: {
+                scatter: {
+                    marker: {
+                        radius: 2.5,
+                        symbol: 'circle',
+                        states: {
+                            hover: {
+                                enabled: true,
+                                lineColor: 'rgb(100,100,100)'
+                            }
+                        }
+                    },
+                    states: {
+                        hover: {
+                            marker: {
+                                enabled: false
+                            }
+                        }
+                    },
+                    jitter: {
+                        x: 0.005
+                    }
+                }
             },
-            yaxis: {
-                title: 'PC2'
-            }
-        }, { responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
-
+            tooltip: {
+                pointFormat: 'Height: {point.x} m <br/> Weight: {point.y} kg'
+            },
+            data
+        });
     }
     async draw_pca(dataset, labels, size = 4, color_scale = "Jet") {
         console.log("fit PCA");
