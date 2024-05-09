@@ -610,49 +610,35 @@ export default class ChartController {
         const pca = new PCA(dataset, { center: true, scale: true });
         var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
         const pca_data = await pca.predict(dataset, { nComponents: 2 })
-        let x = []
-        let y = []
-        let x_error = []
-        let y_error = []
+        let correctClassifications = []
+        let missclassificationItems = []
         pca_data[0].forEach((element, i) => {
             if (missclassifications.includes(i)) {
-                x_error.push(element[0])
-                y_error.push(element[1])
+                missclassificationItems.push([element[0], element[1]])
             } else {
-                x.push(element[0])
-                y.push(element[1])
+                correctClassifications.push([element[0], element[1]])
             }
 
         });
         var trace1 = {
-            x: x,
-            y: y,
             name: 'Predictions',
-            text: labels,
-            mode: 'markers',
-            type: 'scatter',
+            id: 'Predictions',
+            data: correctClassifications,
             marker: {
-                size: 4,
-                color: colorIndices,
-                symbol: 'circle'
-            },
+                symbol: 'square'
+            }
         };
         var trace2 = {
             name: 'Missclassifications',
             id: 'Missclassifications',
-            x: x_error,
-            y: y_error,
-            text: labels,
-            mode: 'markers',
-            type: 'scatter',
+            data: missclassificationItems,
             marker: {
-                size: 7,
-                color: colorIndices,
-                symbol: 'cross'
-            },
+                symbol: 'square'
+            }
+
         };
         var data = [trace1, trace2];
-
+        console.log(data);
         var chart_container = `<div class="column is-6" style="height: 40vh" id="pca_results_${index}"></div>`
         $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(chart_container);
 
@@ -690,61 +676,10 @@ export default class ChartController {
                 text: 'Olympics athletes by height and weight',
                 align: 'left'
             },
-            subtitle: {
-                text:
-                    'Source: <a href="https://www.theguardian.com/sport/datablog/2012/aug/07/olympics-2012-athletes-age-weight-height">The Guardian</a>',
-                align: 'left'
-            },
-            xAxis: {
-                title: {
-                    text: 'Height'
-                },
-                labels: {
-                    format: '{value} m'
-                },
-                startOnTick: true,
-                endOnTick: true,
-                showLastLabel: true
-            },
-            yAxis: {
-                title: {
-                    text: 'Weight'
-                },
-                labels: {
-                    format: '{value} kg'
-                }
-            },
             legend: {
                 enabled: true
             },
-            plotOptions: {
-                scatter: {
-                    marker: {
-                        radius: 2.5,
-                        symbol: 'circle',
-                        states: {
-                            hover: {
-                                enabled: true,
-                                lineColor: 'rgb(100,100,100)'
-                            }
-                        }
-                    },
-                    states: {
-                        hover: {
-                            marker: {
-                                enabled: false
-                            }
-                        }
-                    },
-                    jitter: {
-                        x: 0.005
-                    }
-                }
-            },
-            tooltip: {
-                pointFormat: 'Height: {point.x} m <br/> Weight: {point.y} kg'
-            },
-            data
+            series: data
         });
     }
     async draw_pca(dataset, labels, size = 4, color_scale = "Jet") {
