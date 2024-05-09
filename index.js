@@ -210,22 +210,11 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             let model_factory = new ModelFactory();
             let model_settings = ui.get_model_settings();
             mltool.model_number++
-            $("#tabs_content").append(`
-            <li data-index="${mltool.model_number}">
-               <a>${mltool.model_number}</a>
-            </li>`)
-            $("#tabs_info").append(`
-            <li data-index="${mltool.model_number}" class=" tabs-li">
-            <div id="results_${mltool.model_number}" class="columns is-multiline"></div>
-            </li>`)
-            var dataindex = mltool.model_number;
-            $("#tabs_content li").not(this).removeClass("is-active");
-            $("#tabs_info li").removeClass("is-active");
-            $("#tabs_info li[data-index='" + dataindex + "']").addClass("is-active");
-            $("#tabs_content li[data-index='" + dataindex + "']").addClass("is-active");
-
-            ui.show_settings(model_settings, dataindex);
-            $(this).toggleClass("is-active ");
+            ui.create_model_result_tab(mltool.model_number)
+            ui.show_settings(model_settings, mltool.model_number);
+            let tabs = Bulma('.tabs-wrapper').data('tabs');
+            tabs.setActive(2)
+            // $(this).toggleClass("is-active ");
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
                 let uniqueLabels = [...new Set(y_train.values)];
                 switch (model_name) {
@@ -336,10 +325,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let encoded_y_test = encoder.transform(y_test.values)
                         await model.train(x_train.values, encoded_y_train)
                         let y_preds = await model.predict(x_test.values)
-                        let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
+                        let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
                         const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
+                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, y_preds)
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
@@ -580,8 +569,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     }
                 }
             }
-            let tabs = Bulma('.tabs-wrapper').data('tabs');
-            tabs.setActive(2)
+
         } catch (error) {
             ui.stop_loading()
             ui.show_error_message(error.message, "#7E191B")
@@ -716,16 +704,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
 
         let len = confusionMatrix[0].length
-        for (let i = 0; i < len; i++) {
-            let matrix_row = confusionMatrix[i]
-            let row = "";
-            row += "<td>" + labels[i] + "</td>";
-            for (let j = 0; j < len; j++) {
-                row += `<td style="color:${i == j ? 'green' : 'red'}">${matrix_row[j]} </td>`;
-            }
-            tbody += "<tr>" + row + "</tr>";
-        }
-
         let row = "";
         row += "<td>Preceission</td>";
         for (let j = 0; j < len; j++) {
@@ -741,7 +719,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         tbody += "<tr>" + row + "</tr>";
 
         row = ""
-        row += "<td>F score</td>";
+        row += "<td>F1 score</td>";
         for (let j = 0; j < len; j++) {
             row += `<td>${info[2][j].toFixed(2)} </td>`;
         }
@@ -761,10 +739,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             "</tbody></table></div>"
             ;
         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(div);
+        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(`
+        <div class="column is-6" id="confusion_matrix_${mltool.model_number}">
+        </div>
+        `);
         window.tf.dispose(y)
         window.tf.dispose(predictedLabels)
 
-        const container = document.getElementById("result_number_" + mltool.model_number);
+        const container = document.getElementById("confusion_matrix_" + mltool.model_number);
         await tfvis.render.confusionMatrix(container, {
             values: confusionMatrix,
             tickLabels: labels

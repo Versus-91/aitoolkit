@@ -18,19 +18,20 @@ export default class UI {
             for (const model in Settings.classification) {
                 if (Settings.classification[model].value === model_name) {
                     model_name = model
+                    model_settings.name = Settings.classification[model].label
                 }
             }
         } else {
             for (const model in Settings.regression) {
                 if (Settings.regression[model].value === model_name) {
                     model_name = model
+                    model_settings.name = Settings.classification[model].label
                 }
             }
         }
         let model = Settings.classification[model_name];
         model_name = parseInt(document.getElementById('model_name').value);
         for (const option in model?.options) {
-            let option_element = document.getElementById(option + "_" + model_name);
             if (model.options[option].type === "select") {
                 let option_value = document.getElementById(option + "_" + model_name)?.value;
                 model_settings[option] = option_value ?? model.options[option].default
@@ -692,19 +693,34 @@ export default class UI {
         let content = `
         <div class="column is-12">
         <div class="notification">
-        <p class="title is-5">Random Forest </p>
+        <p class="title is-5">${settings.name}</p>
         <div class="columns is-multiline">`;
 
         for (const key in settings) {
-            if (Object.hasOwnProperty.call(settings, key)) {
-                const element = settings[key];
-                content += `<div class="column is-4"><p><strong>${key}</strong>: ${element}</p></div>`
+            if (key !== 'name') {
+                if (Object.hasOwnProperty.call(settings, key)) {
+                    const element = settings[key];
+                    content += `<div class="column is-4"><p><strong>${key}</strong>: ${element}</p></div>`
+                }
             }
+
         }
         content += `</div></div></div>`
-
-
         $("#tabs_info li[data-index='" + i + "'] #results_" + i + "").append(content);
+    }
+    create_model_result_tab(index) {
+        $("#tabs_content").append(`
+        <li data-index="${index}">
+           <a>${index}</a>
+        </li>`)
+        $("#tabs_info").append(`
+        <li data-index="${index}" class=" tabs-li">
+        <div id="results_${index}" class="columns is-multiline"></div>
+        </li>`)
+        // $("#tabs_content li").not(this).removeClass("is-active");
+        $("#tabs_info li").removeClass("is-active");
+        $("#tabs_info li[data-index='" + index + "']").addClass("is-active");
+        $("#tabs_content li[data-index='" + index + "']").addClass("is-active");
 
     }
 
