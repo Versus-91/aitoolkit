@@ -6,7 +6,7 @@ export const FeatureCategories = {
 export const Settings = {
     "classification": {
         "logistic_regression": {
-            "id":1,
+            "id": 1,
             "label": "Logistic Regression",
             "value": 1,
             "options": {
@@ -19,7 +19,7 @@ export const Settings = {
             }
         },
         "discriminant_analysis": {
-            "id":2,
+            "id": 2,
             "label": "Discriminant Analysis",
             "value": 2,
             "options": {
@@ -36,7 +36,7 @@ export const Settings = {
             }
         },
         "k_nearest_neighbour": {
-            "id":3,
+            "id": 3,
             "label": "k nearest neighbour",
             "value": 3,
             "options": {
@@ -56,7 +56,7 @@ export const Settings = {
             },
         },
         "support_vector_machine": {
-            "id":4,
+            "id": 4,
             "label": "Support vector machine",
             "value": 4,
             "options": {
@@ -84,7 +84,7 @@ export const Settings = {
             },
         },
         "random_forest": {
-            "id":5,
+            "id": 5,
             "label": "Random forest",
             "value": 5,
             "options": {
@@ -109,7 +109,7 @@ export const Settings = {
             },
         },
         "boosting": {
-            "id":6,
+            "id": 6,
             "label": "Boosting",
             "value": 6,
             "options": {
@@ -179,8 +179,8 @@ export const Settings = {
                 },
                 "metric": {
                     type: "select",
-                    default: "euclidean",
-                    values: ["euclidean", "manhattan"]
+                    default: "manhattan",
+                    values: [{ label: "euclidean", value: "euclidean" }, { label: "manhattan", value: "manhattan" }]
                 },
             },
         },

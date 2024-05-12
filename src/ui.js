@@ -25,7 +25,7 @@ export default class UI {
             for (const model in Settings.regression) {
                 if (Settings.regression[model].value === model_name) {
                     model_name = model
-                    model_settings.name = Settings.classification[model].label
+                    model_settings.name = Settings.regression[model].label
                 }
             }
         }

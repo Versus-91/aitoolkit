@@ -710,20 +710,35 @@ export default class ChartController {
             y.push(element[y_axis - 1])
         });
         let traces1 = []
-        uniqueLabels.forEach((label, i) => {
-            var items_for_label = pc1.filter(m => m.label === label)
+        if (uniqueLabels.length !== 0) {
+            uniqueLabels.forEach((label, i) => {
+                var items_for_label = pc1.filter(m => m.label === label)
+                traces1.push({
+                    x: items_for_label.map(m => m.x),
+                    y: items_for_label.map(m => m.y),
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: label,
+                    marker: {
+                        size: 4,
+                        color: this.indexToColor(i),
+                    }
+                })
+            })
+        } else {
             traces1.push({
-                x: items_for_label.map(m => m.x),
-                y: items_for_label.map(m => m.y),
+                x: pc1.map(m => m.x),
+                y: pc1.map(m => m.y),
                 mode: 'markers',
                 type: 'scatter',
-                name: label,
                 marker: {
+                    color: x,
+                    colorscale: 'YlOrRd',
                     size: 4,
-                    color: this.indexToColor(i),
                 }
             })
-        })
+        }
+
         Highcharts.chart('scree_plot', {
             credits: {
                 enabled: false

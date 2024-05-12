@@ -8,6 +8,7 @@ import BoostingRegression from './regression/boosting';
 import KNNModel from './knn';
 import KNNRegressor from './regression/knn_regressor';
 import RandomForest from "./random_forest";
+import RandomForestRegressor from "./regression/random_forest";
 import NaiveBayes from "./NaiveBayes";
 import DiscriminantAnalysis from "./lda";
 
@@ -39,6 +40,8 @@ export var ModelFactory = function () {
             model = new SupportVectorMachine(options);
         } else if (modelName.value === Settings.regression.boosting.value) {
             model = new BoostingRegression(options);
+        } else if (modelName.value === Settings.regression.random_forest.value) {
+            model = new RandomForestRegressor(options);
         } else {
             throw "model not supported.";
         }

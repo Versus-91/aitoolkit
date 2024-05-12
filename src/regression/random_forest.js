@@ -1,7 +1,7 @@
-import { asyncRun } from "./py-worker";
+import { asyncRun } from "../py-worker";
 
 
-export default class RandomForest {
+export default class RandomForestRegressor {
     constructor(options) {
         this.options = options;
         this.model = null;
