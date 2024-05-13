@@ -1,4 +1,3 @@
-import KNN from 'ml-knn';
 
 import { KNeighborsClassifier } from 'scikitjs'
 export default class KNNModel {

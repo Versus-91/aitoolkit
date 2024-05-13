@@ -3,7 +3,6 @@ import { DataFrame, tensorflow, LabelEncoder } from 'danfojs/dist/danfojs-base';
 import Papa from 'papaparse';
 import ChartController from "./src/charts.js";
 import DataLoader from "./src/data.js";
-import Trainter from "./src/trainer.js";
 import UI from "./src/ui.js";
 import { FeatureCategories, Settings } from './feature_types.js';
 import { ModelFactory } from './src/model_factory.js';
@@ -11,7 +10,6 @@ import * as tfvis from '@tensorflow/tfjs-vis';
 import * as sk from 'scikitjs'
 import Plotly from 'plotly.js-dist';
 import Bulma from '@vizuaalog/bulmajs';
-import Tabs from '@vizuaalog/bulmajs/src/plugins/tabs.js';
 import { calculateRecall, calculateF1Score, calculatePrecision, metrics } from './src/utils.js';
 import SVM from "libsvm-js/asm";
 import tippy from 'tippy.js';

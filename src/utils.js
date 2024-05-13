@@ -219,6 +219,7 @@ export async function metrics(y, y_pred, labels) {
             console.log(results);
             return results;
         } else if (error) {
+            throw error
         }
     } catch (e) {
         throw ("Something went wrong", e)

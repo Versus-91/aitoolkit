@@ -1,16 +1,11 @@
-import {
-    getNumbers, getDataset, getClasses
-} from 'ml-dataset-iris';
 import Plotly from 'plotly.js-dist';
 import PCA from './dimensionality-reduction/pca';
 import { binarize } from './utils'
-import * as tfvis from '@tensorflow/tfjs-vis';
 import * as ss from "simple-statistics"
-import { schemeAccent, schemeCategory10 } from 'd3-scale-chromatic';
-import { scaleLinear, } from 'd3-scale';
+import { schemeCategory10 } from 'd3-scale-chromatic';
 import TSNE from "./tsne";
-import { FeatureCategories, Settings } from "../feature_types.js";
-import { MinMaxScaler, DataFrame } from 'danfojs/dist/danfojs-base';
+import { FeatureCategories } from "../feature_types.js";
+import { MinMaxScaler } from 'danfojs/dist/danfojs-base';
 
 export default class ChartController {
     constructor(data_processor) {
@@ -56,7 +51,7 @@ export default class ChartController {
     draw_categorical_barplot(column_values, target, title) {
         const key = title + "- barplot";
         $("#categories_barplots").append(`<div class="column is-4" style="height:40vh;" id="${key}"></div>`)
-        const countOccurrences = column_values.reduce((acc, val, i) => {
+        const countOccurrences = column_values.reduce((acc, val) => {
             acc[val] = (acc[val] || 0) + 1;
             return acc;
         }, {});
@@ -143,7 +138,6 @@ export default class ChartController {
         if (labels.length > 0) {
             labels = labels.flat()
             var uniqueLabels = [...new Set(labels)];
-            var colorIndices = labels.map(label => uniqueLabels.indexOf(label));
             let points_labled = Y.map(function (item, i) {
                 return {
                     label: labels[i],
@@ -683,7 +677,6 @@ export default class ChartController {
         });
     }
     async draw_pca(dataset, labels, size = 4, color_scale = "Jet") {
-        console.log("fit PCA");
         document.getElementById("dimensionality_reduction_panel_pca").style.display = "block"
         document.getElementById("pca-1").innerHTML = ""
         const pca = new PCA(dataset, { center: true, scale: true });
