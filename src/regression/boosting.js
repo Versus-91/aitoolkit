@@ -11,7 +11,7 @@ export default class BoostingRegression {
         if (!this.model) {
             await this.init(this.options);
         }
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             try {
                 setTimeout(async () => {
                     this.model.train(x_train, y_train);

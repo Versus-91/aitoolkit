@@ -18,6 +18,11 @@ export default [
         Highcharts: "readonly",
         Plotly: "readonly",
         $: "readonly",
+        setTimeout: "readonly",
+        DataTable: "readonly",
+        File: "readonly",
+
+
 
 
       }

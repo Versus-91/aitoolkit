@@ -64,9 +64,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     }
                     return val
                 },
-                transformHeader: (val) => {
-                    return val.replace(/[^a-zA-Z0-9 ]/g, "").trim()
-                },
+                // transformHeader: (val) => {
+                //     return val.replace(/[^a-zA-Z0-9 ]/g, "").trim()
+                // },
                 skipEmptyLines: true,
                 dynamicTyping: true,
                 complete: async function (result) {
@@ -252,7 +252,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels, mltool.model_number)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        const matrix = await plot_confusion_matrix(window.tf.tensor(predictions), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
+                        await plot_confusion_matrix(window.tf.tensor(predictions), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         predictions_table(x_test, y_test, encoder, best_result.predictions)
                         break;
@@ -267,7 +267,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             degree: model_settings.degree,
                             quiet: true
                         })
-                        let results = []
                         let encoder = new LabelEncoder()
                         encoder.fit(targets)
                         let encoded_y_train = encoder.transform(y_train.values)
@@ -284,7 +283,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     }
                     case Settings.classification.naive_bayes.value: {
                         let model = model_factory.createModel(Settings.classification.naive_bayes, model_settings)
-                        let results = []
                         let encoder = new LabelEncoder()
                         encoder.fit(targets)
                         let encoded_y_train = encoder.transform(y_train.values)
@@ -299,7 +297,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
+                        await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         predictions_table(x_test, y_test, encoder, y_preds)
                         break;
@@ -316,16 +314,15 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             silent: 1,
                             iterations: model_settings.iterations ?? 200
                         })
-                        let results = []
                         let encoder = new LabelEncoder()
                         encoder.fit(targets)
                         let encoded_y_train = encoder.transform(y_train.values)
                         let encoded_y_test = encoder.transform(y_test.values)
                         await model.train(x_train.values, encoded_y_train)
                         let y_preds = await model.predict(x_test.values)
-                        const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                        const matrix = await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
+                        const classes = encoder.inverseTransform(Object.values(encoder.$labels))
+                        await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, y_preds)
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
@@ -413,7 +410,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let preds = await model.train_test(x_train.values, encoded_y, x_test.values)
                         const evaluation_result = evaluate_classification(preds, encoded_y_test)
                         const classes = encoder_rf.inverseTransform(Object.values(encoder_rf.$labels))
-                        const matrix = await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), classes, encoder_rf.transform(classes))
+                        await plot_confusion_matrix(window.tf.tensor(preds), window.tf.tensor(encoded_y_test), classes, encoder_rf.transform(classes))
                         //metrics_table(classes, matrix)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
 
@@ -447,7 +444,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             mode: 'markers',
                         };
 
-                        var data = [trace1];
+                        var chart_data = [trace1];
                         let model_stats = model.stats().summary.variables;
                         let model_stats_matrix = [];
                         let columns = x_train.columns
@@ -475,7 +472,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         $("#formulas").html = "";
                         $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
                         MathJax.typeset(["formulas"]);
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, chart_data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         break;
                     }
                     case Settings.regression.k_nearest_neighbour.value: {
@@ -773,6 +770,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         $("#tabs_info li[data-index='" + index + "']").addClass("is-active");
         $(this).toggleClass("is-active ");
     });
+
 });
 
 

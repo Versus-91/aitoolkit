@@ -277,10 +277,12 @@ export default class ChartController {
     scale_data(dataset, column, normalization_type) {
         switch (normalization_type) {
             case "1":
-                let scaler = new MinMaxScaler()
-                scaler.fit(dataset[column])
-                dataset.addColumn(column, scaler.transform(dataset[column]), { inplace: true })
-                break;
+                {
+                    let scaler = new MinMaxScaler()
+                    scaler.fit(dataset[column])
+                    dataset.addColumn(column, scaler.transform(dataset[column]), { inplace: true })
+                    break;
+                }
             case "2":
                 dataset.addColumn(column, dataset[column].apply((x) => x * x), { inplace: true })
                 break;
@@ -322,13 +324,15 @@ export default class ChartController {
         newColumn.className = "column is-3";
         newColumn.setAttribute("id", column + '-kde-plot');
         if (!redrawing) {
-            let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            // let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            let key = column;
+
             $("#container").append(
                 `<div class="column is-4 is-size-6-tablet my-1">
                 <div class="columns is-multiline">
                 <div class="column is-12" >
                     <div id="${column + '-kde-plot'}"> </div>
-                    <div id="${column + '-boxplot'}" style="height:40vh;width: 15vw">
+                    <div id="${column + '-boxplot'}" style="height:30vh;width: 100%">
                     </div>
                     <div class="field has-addons has-addons-centered my-1">
                     <div class="control">
@@ -443,25 +447,25 @@ export default class ChartController {
         let animationDuration = 4000;
 
         var layout = {
-            showlegend: true,
-            // margin: {
-            //     l: 40,
-            //     r: 10,
-            //     b: 10,
-            //     t: 10,
-            //     pad: 60
-            // },
+            showlegend: false,
+            margin: {
+                l: 80,
+                r: 10,
+                b: 60,
+                t: 10,
+            },
             legend: {
                 x: 1,
                 xanchor: 'right',
                 y: 1
             },
         };
-        Plotly.newPlot(column + '-boxplot', traces, layout, { autosize: true, responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
+        Plotly.newPlot(column + '-boxplot', traces, layout, { autosize: true, responsive: true, modeBarButtonsToRemove: ['pan', 'resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
         Highcharts.chart(container_id, {
             credits: {
                 enabled: false
             },
+
             chart: {
                 type: "spline",
                 animation: true
@@ -497,7 +501,7 @@ export default class ChartController {
                 data: data
             }))
         });
-
+        window.dispatchEvent(new Event('resize'));
     }
     redraw_kde(dataset, column, target_name, bandwidth = "nrd", is_classification = false, redrawing = false) {
         let items = dataset.column(column).values;
@@ -528,7 +532,6 @@ export default class ChartController {
         var newColumn = document.createElement("div");
         newColumn.className = "column is-4";
         newColumn.setAttribute("id", column + '-kde-plot');
-        var current_class = this;
         let container_id = column + '-kde-plot';
         let items_range = raw_values.column(column).values
         let minValue = Math.min(...items_range);
@@ -731,7 +734,12 @@ export default class ChartController {
                 }
             })
         }
-
+        let cumulatedExplainedVaraince = []
+        let sum = 0
+        pca_x[2].forEach(element => {
+            sum = sum + element
+            cumulatedExplainedVaraince.push(sum)
+        });
         Highcharts.chart('scree_plot', {
             credits: {
                 enabled: false
@@ -742,13 +750,27 @@ export default class ChartController {
             yAxis: {
                 title: {
                     text: 'Explained variance'
-                }
+                },
+                plotLines: [{
+                    value: 0.9,
+                    color: '#ff0000',
+                    width: 1,
+                    zIndex: 4,
+                    label: { text: '0.9' }
+                }, {
+                    value: 0.8,
+                    color: '#ff0000',
+                    width: 1,
+                    zIndex: 4,
+                    label: { text: '0.9' }
+                }]
+
             },
             xAxis: {
                 labels: {
                     enabled: true,
                     formatter: function () {
-                        return this.value + 1;
+                        return this.value;
                     }
                 },
                 title: {
@@ -758,6 +780,10 @@ export default class ChartController {
             series: [{
                 name: 'Scree Plot',
                 data: pca_x[2]
+            },
+            {
+                name: 'Sum',
+                data: cumulatedExplainedVaraince
             }],
 
         });
@@ -866,7 +892,7 @@ export default class ChartController {
         }
         for (let i = 0; i < num_columns; i++) {
             let subset = subsets[i];
-            if (!!subset) {
+            if (subset) {
                 for (let j = 0; j < num_columns; j++) {
                     let data = subset.map(item => item[j]);
                     traces.push({

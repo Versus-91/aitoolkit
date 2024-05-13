@@ -1,4 +1,3 @@
-import KNN from 'ml-knn';
 
 import { KNeighborsRegressor } from 'scikitjs'
 export default class KNNRegressor {
@@ -8,7 +7,7 @@ export default class KNNRegressor {
 
     }
     async train(x_train, y_train, k = 3) {
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             try {
                 setTimeout(async () => {
                     this.model = new KNeighborsRegressor({ nNeighbors: k, metric: this.options.metric })
