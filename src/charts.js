@@ -384,8 +384,13 @@ export default class ChartController {
         }
         var current_class = this;
         document.getElementById(column + '-kde-button').addEventListener("click", function () {
-            var newBandwidth = document.getElementById(column + '-kde').value;
-            current_class.redraw_kde(dataset, column, target_name, parseFloat(newBandwidth), is_classification = is_classification, redrawing = true)
+            const target = document.getElementById("target").value;
+            let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+            let data = dataset.loc({ columns: [column, target] });
+            let normalization_type = document.getElementById(column + '--normal').value
+            current_class.scale_data(data, column, normalization_type)
+            data.dropNa({ axis: 1, inplace: true })
+            current_class.redraw_kde(data, column, target, "nrd", is_classification, true);
         });
         let container_id = column + '-kde-plot';
         let items_range = raw_values.column(column).values
@@ -468,7 +473,7 @@ export default class ChartController {
 
             chart: {
                 type: "spline",
-                animation: true
+                animation: true,
             },
             title: {
                 text: column // Assuming `column` is defined elsewhere
@@ -510,6 +515,23 @@ export default class ChartController {
         let uniqueLabels = [...new Set(raw_values.column(target_name).values)];
         let column_values = raw_values.values;
         let subsets = [];
+        let traces = []
+        let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
+        let allData = [];
+
+        document.getElementById("kde_panel").style.display = "block";
+
+        var newColumn = document.createElement("div");
+        newColumn.className = "column is-4";
+        newColumn.setAttribute("id", column + '-kde-plot');
+        let container_id = column + '-kde-plot';
+        let items_range = raw_values.column(column).values
+        let minValue = Math.min(...items_range);
+        let maxValue = Math.max(...items_range);
+        items_range.push(minValue - parseFloat(default_bandwidth))
+        items_range.push(maxValue + parseFloat(default_bandwidth))
+        var breaks = ss.equalIntervalBreaks(items_range, 100);
+
         var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
         if (!is_classification) {
             subsets.push(raw_values.column(column).values);
@@ -526,38 +548,52 @@ export default class ChartController {
                 subsets.push(subset);
             }
         }
-
-        document.getElementById("kde_panel").style.display = "block";
-
-        var newColumn = document.createElement("div");
-        newColumn.className = "column is-4";
-        newColumn.setAttribute("id", column + '-kde-plot');
-        let container_id = column + '-kde-plot';
-        let items_range = raw_values.column(column).values
-        let minValue = Math.min(...items_range);
-        let maxValue = Math.max(...items_range);
-        items_range.push(minValue - parseFloat(default_bandwidth))
-        items_range.push(maxValue + parseFloat(default_bandwidth))
-        var breaks = ss.equalIntervalBreaks(items_range, 100);
-
-        let allData = [];
-        let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
-        // Loop through subsets to generate data for all subsets
-        for (let i = 0; i < subsets.length; i++) {
-            if (subsets[i].length > 2) {
-
-                let ys = [];
-                var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
-                let data = [];
-                breaks.forEach((item) => {
-                    ys.push(kde(item, bandwidth));
-                    data.push([item, ys[ys.length - 1]]);
-                });
-                allData.push(data);
-            } else {
-                allData.push([]);
+        if (is_classification) {
+            for (let i = 0; i < subsets.length; i++) {
+                if (subsets[i].length > 2) {
+                    let ys = [];
+                    var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+                    let data = [];
+                    breaks.forEach((item) => {
+                        ys.push(kde(item, bandwidth));
+                        data.push([item, ys[ys.length - 1]]);
+                    });
+                    allData.push(data);
+                } else {
+                    allData.push([]);
+                }
+                traces.push({
+                    name: uniqueLabels[i],
+                    x: subsets[i],
+                    marker: {
+                        color: colorIndices[i]
+                    },
+                    type: 'box',
+                })
             }
+        } else {
+            for (let i = 0; i < subsets.length; i++) {
+                if (subsets[i].length > 2) {
+                    let ys = [];
+                    var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+                    let data = [];
+                    breaks.forEach((item) => {
+                        ys.push(kde(item, bandwidth));
+                        data.push([item, ys[ys.length - 1]]);
+                    });
+                    allData.push(data);
+                } else {
+                    allData.push([]);
+                }
+            }
+            traces.push({
+                name: column,
+                y: items,
+                type: 'box',
+            })
         }
+
+
 
         let animationDuration = 4000;
 
@@ -600,6 +636,22 @@ export default class ChartController {
                 data: data
             }))
         });
+
+        var layout = {
+            showlegend: false,
+            margin: {
+                l: 80,
+                r: 10,
+                b: 60,
+                t: 10,
+            },
+            legend: {
+                x: 1,
+                xanchor: 'right',
+                y: 1
+            },
+        };
+        Plotly.newPlot(column + '-boxplot', traces, layout, { autosize: true, responsive: true, modeBarButtonsToRemove: ['pan', 'resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
 
     }
     async draw_classification_pca(dataset, labels, missclassifications, uniqueLabels, index) {

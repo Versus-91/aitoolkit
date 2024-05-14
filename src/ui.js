@@ -90,34 +90,33 @@ export default class UI {
 
 
     createDatasetPropsDropdown(items) {
-        try {
-            const myClass = this
-            //feature selection
-            $('#props').empty()
-            $('#normalizations').empty()
-            $('#features-selection').empty()
-            $('#features').empty()
-            $('#props').append(this.createTargetDropdown(items))
-            $('#features-selection').append(`<div class="column is-6"><button id ="feature_selection_modal" class="button is-warning is-small" >Select Features</button></div>`)
-            document.querySelector('#feature_selection_modal').addEventListener('click', function (e) {
-                var features_dropdown = document.getElementById("config_modal")
-                var props = document.getElementById("props")
-                var props_feature_selection_button = document.getElementById("feature_selection_modal")
+        const myClass = this
+        //feature selection
+        $('#props').empty()
+        $('#normalizations').empty()
+        $('#features-selection').empty()
+        $('#features').empty()
+        $('#props').append(this.createTargetDropdown(items))
+        $('#features-selection').append(`<div class="column is-6"><button id ="feature_selection_modal" class="button is-warning is-small" >Select Features</button></div>`)
+        document.querySelector('#feature_selection_modal').addEventListener('click', function (e) {
+            var features_dropdown = document.getElementById("config_modal")
+            var props = document.getElementById("props")
+            var props_feature_selection_button = document.getElementById("feature_selection_modal")
 
-                if (window.getComputedStyle(features_dropdown).display !== "none") {
-                    props_feature_selection_button.innerText = "Select Features"
-                    features_dropdown.style.display = "none"
-                    props.style.display = "block"
-                    const redraw_plots_data_analysis = new CustomEvent("update_graphs");
-                    props_feature_selection_button.dispatchEvent(redraw_plots_data_analysis)
-                    return
-                }
-                props_feature_selection_button.innerText = "Config model"
-                features_dropdown.style.display = "block"
-                props.style.display = "none"
+            if (window.getComputedStyle(features_dropdown).display !== "none") {
+                props_feature_selection_button.innerText = "Select Features"
+                features_dropdown.style.display = "none"
+                props.style.display = "block"
+                const redraw_plots_data_analysis = new CustomEvent("update_graphs");
+                props_feature_selection_button.dispatchEvent(redraw_plots_data_analysis)
+                return
+            }
+            props_feature_selection_button.innerText = "Config model"
+            features_dropdown.style.display = "block"
+            props.style.display = "none"
 
-            });
-            $("#features-selection").append(`
+        });
+        $("#features-selection").append(`
 
                 <div id="config_modal" style="display:none;overflow-y:scroll;max-height: 600px;height:500px">
                     <table class="table is-narrow is-size-7" 
@@ -134,17 +133,17 @@ export default class UI {
                 </div>
             </div>
             `)
-            document.querySelector('#select_all').addEventListener('click', function (e) {
-                if ($("#select_all").prop('checked')) {
-                    $('.features-filter').prop('checked', true);
-                } else {
-                    $('.features-filter').prop('checked', false);
-                }
-            });
-            const default_target = items.columns[items.columns.length - 1]
-            items.columns.forEach(column => {
-                let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-                $('#features').append(`
+        document.querySelector('#select_all').addEventListener('click', function (e) {
+            if ($("#select_all").prop('checked')) {
+                $('.features-filter').prop('checked', true);
+            } else {
+                $('.features-filter').prop('checked', false);
+            }
+        });
+        const default_target = items.columns[items.columns.length - 1]
+        items.columns.forEach(column => {
+            let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            $('#features').append(`
                 <tr>
                     <td>
                     <label class="checkbox my-2">
@@ -165,39 +164,39 @@ export default class UI {
                     </td>
                 </tr>
                 `);
-                $('#' + key).on('change', function (e) {
-                    const type = e.target.value
-                    if (key === document.getElementById("target").value) {
-                        $('#algorithm').empty()
-                        if (type === 'Numerical') {
-                            $('#algorithm').append(myClass.updateAlgorithmsSelect(1));
-                        } else {
-                            $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
-                        }
+            $('#' + key).on('change', function (e) {
+                const type = e.target.value
+                if (key === document.getElementById("target").value) {
+                    $('#algorithm').empty()
+                    if (type === 'Numerical') {
+                        $('#algorithm').append(myClass.updateAlgorithmsSelect(1));
+                    } else {
+                        $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
                     }
-                });
-                const id = column
-                if (items.column(column).dtype !== 'string') {
-                    $('#' + key).val(FeatureCategories.Numerical)
-                } else {
-                    $('#' + key).val(FeatureCategories.Nominal)
                 }
             });
+            const id = column
+            if (items.column(column).dtype !== 'string') {
+                $('#' + key).val(FeatureCategories.Numerical)
+            } else {
+                $('#' + key).val(FeatureCategories.Nominal)
+            }
+        });
 
 
 
 
 
 
-            // $(document).on('change', '#' + default_target, function (e) {
-            //     $("#algorithm").empty();
-            //     $("#algorithm").append(myClass.updateAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
-            // });
+        // $(document).on('change', '#' + default_target, function (e) {
+        //     $("#algorithm").empty();
+        //     $("#algorithm").append(myClass.updateAlgorithmsSelect(e.target.value == 1 ? 1 : 2))
+        // });
+        $("#model_options").empty();
+        $('#algorithm').on('change', function () {
             $("#model_options").empty();
-            $('#algorithm').on('change', function () {
-                $("#model_options").empty();
-            });
-            $('#props').append(`
+        });
+        $('#props').append(`
             <div class="column is-12">
                 <div class="label is-size-7">Imputation
                     <span id="imputation_help" class="icon has-text-success">
@@ -214,7 +213,7 @@ export default class UI {
                 </div>
             </div>
             `);
-            $('#props').append(`
+        $('#props').append(`
             <div class="column is-10">
                 <div class="label is-size-7">Cross Validation
                 <span id="cv_help" class="icon has-text-success">
@@ -230,41 +229,41 @@ export default class UI {
                 </div>
             </div>
             `)
-            $('#target').val(default_target)
+        $('#target').val(default_target)
 
 
-            $('#target').on('change', function (e) {
-                const redraw_plots_data_analysis = new CustomEvent("update_graphs");
-                var props_feature_selection_button = document.getElementById("feature_selection_modal")
-                props_feature_selection_button.dispatchEvent(redraw_plots_data_analysis)
-                const type = document.getElementById(e.target.value).value
-                $('#algorithm').empty()
-                if (type === 'Numerical') {
-                    $('#algorithm').append(myClass.updateAlgorithmsSelect(1));
-                } else {
-                    $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
-                }
-            });
-
-
-
-
-            //modle options
-            $('#algorithm').on('change', function (e) {
-                const model_type = items.column(default_target).dtype !== 'string' ? 1 : 2;
-                const label = model_type == 1 ? "regression" : "classification"
-                for (const key in Settings[label]) {
-                    if (Settings.hasOwnProperty.call(Settings[label], key)) {
-                        const item = Settings[label][key];
-                    }
-                }
-            });
-            if (items.column(default_target).dtype !== 'string') {
-                $('#props').append(this.createAlgorithmsSelect(1));
+        $('#target').on('change', function (e) {
+            const redraw_plots_data_analysis = new CustomEvent("update_graphs");
+            var props_feature_selection_button = document.getElementById("feature_selection_modal")
+            props_feature_selection_button.dispatchEvent(redraw_plots_data_analysis)
+            const type = document.getElementById(e.target.value).value
+            $('#algorithm').empty()
+            if (type === 'Numerical') {
+                $('#algorithm').append(myClass.updateAlgorithmsSelect(1));
             } else {
-                $('#props').append(this.createAlgorithmsSelect(2));
+                $('#algorithm').append(myClass.updateAlgorithmsSelect(2));
             }
-            $("#props").append(`
+        });
+
+
+
+
+        //modle options
+        $('#algorithm').on('change', function (e) {
+            const model_type = items.column(default_target).dtype !== 'string' ? 1 : 2;
+            const label = model_type == 1 ? "regression" : "classification"
+            for (const key in Settings[label]) {
+                if (Settings.hasOwnProperty.call(Settings[label], key)) {
+                    const item = Settings[label][key];
+                }
+            }
+        });
+        if (items.column(default_target).dtype !== 'string') {
+            $('#props').append(this.createAlgorithmsSelect(1));
+        } else {
+            $('#props').append(this.createAlgorithmsSelect(2));
+        }
+        $("#props").append(`
             <div class="column is-3">
             <button class="button is-small is-success" id="config_modal_button">
             <span class="icon is-small">
@@ -274,49 +273,49 @@ export default class UI {
             </div>
             <div class="column is-12" id="settings" style="display:none">
             </div>`)
-            $("#model_name").on("change", () => {
-                document.getElementById("settings").innerHTML = ""
-                document.getElementById("settings").style.display = "none";
+        $("#model_name").on("change", () => {
+            document.getElementById("settings").innerHTML = ""
+            document.getElementById("settings").style.display = "none";
 
-            })
-            document.querySelector('#config_modal_button').addEventListener('click', function (e) {
-                let model_name = document.getElementById('model_name').value;
-                const target = document.getElementById("target").value;
-                let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
-                var model;
-                if (is_classification) {
-                    for (const key in Settings.classification) {
-                        if (Object.hasOwnProperty.call(Settings.classification, key)) {
-                            const element = Settings.classification[key];
-                            if (element.value === parseInt(model_name)) {
-                                model = Settings.classification[key];
-                            }
-                        }
-                    }
-                } else {
-                    for (const key in Settings.regression) {
-                        if (Object.hasOwnProperty.call(Settings.regression, key)) {
-                            const element = Settings.regression[key];
-                            if (element.value === parseInt(model_name)) {
-                                model = Settings.regression[key];
-                            }
+        })
+        document.querySelector('#config_modal_button').addEventListener('click', function (e) {
+            let model_name = document.getElementById('model_name').value;
+            const target = document.getElementById("target").value;
+            let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+            var model;
+            if (is_classification) {
+                for (const key in Settings.classification) {
+                    if (Object.hasOwnProperty.call(Settings.classification, key)) {
+                        const element = Settings.classification[key];
+                        if (element.value === parseInt(model_name)) {
+                            model = Settings.classification[key];
                         }
                     }
                 }
-                var options_modal_content = document.getElementById("settings");
-                if (window.getComputedStyle(options_modal_content).display !== "none") {
-                    options_modal_content.innerHTML = ""
-                    options_modal_content.style.display = "none"
-                    return
+            } else {
+                for (const key in Settings.regression) {
+                    if (Object.hasOwnProperty.call(Settings.regression, key)) {
+                        const element = Settings.regression[key];
+                        if (element.value === parseInt(model_name)) {
+                            model = Settings.regression[key];
+                        }
+                    }
                 }
+            }
+            var options_modal_content = document.getElementById("settings");
+            if (window.getComputedStyle(options_modal_content).display !== "none") {
                 options_modal_content.innerHTML = ""
-                for (const key in model.options) {
-                    options_modal_content.style.display = "block"
-                    if (Object.hasOwnProperty.call(model.options, key)) {
-                        const option_type = model.options[key]["type"]
-                        const placeholder = model.options[key]["placeholder"]
-                        if (option_type === "number" || option_type === "text") {
-                            $('#settings').append(`
+                options_modal_content.style.display = "none"
+                return
+            }
+            options_modal_content.innerHTML = ""
+            for (const key in model.options) {
+                options_modal_content.style.display = "block"
+                if (Object.hasOwnProperty.call(model.options, key)) {
+                    const option_type = model.options[key]["type"]
+                    const placeholder = model.options[key]["placeholder"]
+                    if (option_type === "number" || option_type === "text") {
+                        $('#settings').append(`
                             <div class="column is-12">
                                 <div class="field is-horizontal">
                                     <div class="field-label is-small">
@@ -330,15 +329,15 @@ export default class UI {
                                 </div>
                             </div>
                             `)
-                            if (!!model.options[key]["default"]) {
-                                document.getElementById(key + "_" + model_name).value = model.options[key]["default"]
-                            }
-                        } else if (option_type === "select") {
-                            console.log(model.options[key]["for"]);
+                        if (model.options[key]["default"]) {
+                            document.getElementById(key + "_" + model_name).value = model.options[key]["default"]
+                        }
+                    } else if (option_type === "select") {
+                        console.log(model.options[key]["for"]);
 
-                            let result = ""
-                            let options = model.options[key]["values"]
-                            result = `
+                        let result = ""
+                        let options = model.options[key]["values"]
+                        result = `
                             <div class="column is-12">
                                 <div class="field is-horizontal">
                                     <div class="field-label is-small">
@@ -349,22 +348,17 @@ export default class UI {
                                             <select id="${key + "_" + model_name}">
                                     </div>
                             `
-                            for (let i = 0; i < options.length; i++) {
-                                result += `<option value="${options[i]?.value}">${options[i].label}</option>`
-                            }
-                            result += "</select></div></div></div>"
-                            $('#settings').append(result)
-
+                        for (let i = 0; i < options.length; i++) {
+                            result += `<option value="${options[i]?.value}">${options[i].label}</option>`
                         }
+                        result += "</select></div></div></div>"
+                        $('#settings').append(result)
+
                     }
                 }
-            });
-            $('#props').append(`<div class="column is-6"><button class="button is-info mt-2" id="train-button">train</button></div>`);
-
-
-        } catch (error) {
-            throw error
-        }
+            }
+        });
+        $('#props').append(`<div class="column is-6"><button class="button is-info mt-2" id="train-button">train</button></div>`);
 
         // $('#kde_select').append(this.createFeaturesDropdown(rowMetadata))
     }
@@ -472,13 +466,13 @@ export default class UI {
         }
 
         document.getElementById("output").innerHTML =
-            '<div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable is-size-7"><thead>' +
+            '<h2 class="subtitle">Continious features:</h2><div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable is-size-7"><thead>' +
             header +
             "</thead><tbody>" +
             tbody +
             "</tbody></table></div>"
             ;
-        document.getElementById("data_details_div").innerHTML = '<h2 class="subtitle "> Data shape : (' + data.shape[0] + ',' + data.shape[1] + ')</h2>'
+        document.getElementById("data_details_div").innerHTML = '<h2 class="subtitle"> Data shape : (' + data.shape[0] + ',' + data.shape[1] + ')</h2>'
         //build categorical feature table table
         var header_categorical = "";
         var tbody_categorical = "";
@@ -505,7 +499,7 @@ export default class UI {
 
         });
         document.getElementById("categorical_features").innerHTML =
-            '<div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable is-size-7"><thead>' +
+            '<h2 class="subtitle">Categorical features:</h2><div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable is-size-7"><thead>' +
             header_categorical +
             "</thead><tbody>" +
             tbody_categorical +
@@ -605,80 +599,76 @@ export default class UI {
         return categorical_columns
     }
     async visualize(dataset, len, file_name) {
-        try {
-            const myClass = this
-            this.renderDatasetStats(dataset);
-            let numericColumns = this.get_numeric_columns(dataset, false)
-            let categorical_columns = this.get_categorical_columns(dataset, false)
-            const target = document.getElementById("target").value;
-            const index = numericColumns.findIndex(m => m === target)
-            if (index === -1) {
-                numericColumns.push(target)
-            }
-            let columns = [...new Set(numericColumns.concat(categorical_columns))];
+        const myClass = this
+        this.renderDatasetStats(dataset);
+        let numericColumns = this.get_numeric_columns(dataset, false)
+        let categorical_columns = this.get_categorical_columns(dataset, false)
+        const target = document.getElementById("target").value;
+        const index = numericColumns.findIndex(m => m === target)
+        if (index === -1) {
+            numericColumns.push(target)
+        }
+        let columns = [...new Set(numericColumns.concat(categorical_columns))];
 
-            const filterd_dataset = dataset.loc({ columns: columns })
-            filterd_dataset.dropNa({ axis: 1, inplace: true })
-            numericColumns = numericColumns.filter(m => m !== target)
-            let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
-            //draw kdes
-            let limit = 0
-            if (numericColumns.length > 0 && limit < 10) {
-                document.getElementById("container").innerHTML = "";
-                numericColumns.forEach(col => {
-                    this.chart_controller.draw_kde(filterd_dataset, col, target, "nrd", is_classification);
-                });
-                limit++;
-            }
-            limit = 0
-            //draw categories barplot
-            if (categorical_columns.length > 0 && limit < 10) {
-                document.getElementById("categories_barplots").innerHTML = "";
-                categorical_columns.forEach(col => {
-                    if (col !== target) {
-                        this.chart_controller.draw_categorical_barplot(filterd_dataset.loc({ columns: [col] }).values, target, col);
-                    }
-                });
-                limit++;
-            }
-            if (is_classification) {
-                let labels = dataset.column(target).values;
-                let unique_labels = [...new Set(labels)];
-                let counts = [];
-                for (let i = 0; i < unique_labels.length; i++) {
-                    counts.push(labels.filter(m => m === unique_labels[i]).length);
+        const filterd_dataset = dataset.loc({ columns: columns })
+        filterd_dataset.dropNa({ axis: 1, inplace: true })
+        numericColumns = numericColumns.filter(m => m !== target)
+        let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+        //draw kdes
+        let limit = 0
+        if (numericColumns.length > 0 && limit < 10) {
+            document.getElementById("container").innerHTML = "";
+            numericColumns.forEach(col => {
+                this.chart_controller.draw_kde(filterd_dataset, col, target, "nrd", is_classification);
+            });
+            limit++;
+        }
+        limit = 0
+        //draw categories barplot
+        if (categorical_columns.length > 0 && limit < 10) {
+            document.getElementById("categories_barplots").innerHTML = "";
+            categorical_columns.forEach(col => {
+                if (col !== target) {
+                    this.chart_controller.draw_categorical_barplot(filterd_dataset.loc({ columns: [col] }).values, target, col);
                 }
-                this.chart_controller.classification_target_chart(counts, unique_labels, file_name, "y_pie_chart", target);
-            } else {
-                document.getElementById("y_pie_chart").innerHTML = "";
+            });
+            limit++;
+        }
+        if (is_classification) {
+            let labels = dataset.column(target).values;
+            let unique_labels = [...new Set(labels)];
+            let counts = [];
+            for (let i = 0; i < unique_labels.length; i++) {
+                counts.push(labels.filter(m => m === unique_labels[i]).length);
             }
-        } catch (error) {
-            throw error
+            this.chart_controller.classification_target_chart(counts, unique_labels, file_name, "y_pie_chart", target);
+        } else {
+            document.getElementById("y_pie_chart").innerHTML = "";
         }
     }
 
     async createSampleDataTable(dataset) {
-        try {
-            let cols = []
-            let column_names = dataset.columns
-            for (let i = 0; i < column_names.length; i++) {
-                cols.push({ title: column_names[i] })
-            }
-            new DataTable('#sample_data_table', {
-                responsive: true,
-                columns: cols,
-                data: dataset.head(10).values,
-                info: false,
-                search: false,
-                ordering: false,
-                searching: false,
-                paging: false,
-                bDestroy: true,
-            });
-
-        } catch (error) {
-            throw error
+        let cols = []
+        let column_names = dataset.columns
+        for (let i = 0; i < column_names.length; i++) {
+            cols.push({ title: column_names[i] })
         }
+        new DataTable('#sample_data_table', {
+            responsive: true,
+            columns: cols,
+            data: dataset.head(5).values,
+            info: false,
+            search: false,
+            ordering: false,
+            dom: '<"my-class">',
+            initComplete: function (settings, json) {
+                $('.my-class').html('Sample Data');
+            },
+            searching: false,
+            paging: false,
+            bDestroy: true,
+        });
+
     }
     toggle_loading_progress(show = false) {
         let element = document.getElementById("progress");
