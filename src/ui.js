@@ -476,7 +476,7 @@ export default class UI {
         }
 
         document.getElementById("output").innerHTML =
-            '<h2 class="subtitle">Continious features:</h2><div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable is-size-7"><thead>' +
+            '<h2 class="subtitle">Continuous features:</h2><div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable is-size-7"><thead>' +
             header +
             "</thead><tbody>" +
             tbody +
