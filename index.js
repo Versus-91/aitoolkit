@@ -296,10 +296,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             y_preds = Array.from(await model.train(x_train.values, encoded_y_train, x_test.values))
                         }
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         await plot_confusion_matrix(window.tf.tensor(y_preds), window.tf.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
+                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, y_preds)
                         break;
                     }
@@ -736,15 +736,20 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
         tbody += "<tr>" + row + "</tr>";
         div.innerHTML =
-            '<div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable is-size-7"><thead>' +
-            header +
-            "</thead><tbody>" +
-            tbody +
-            "</tbody></table></div>"
+            `
+            <h5 class="subtitle mb-1">Accuracy: ${metric[3].toFixed(2)}</h5>
+            <span class="subtitle mr-2">F1 micro: ${metric[1].toFixed(2)}</span>
+            <span class="subtitle">F1 macro: ${metric[2].toFixed(2)}</span>
+            <div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable is-size-7"><thead>
+            ${header} 
+            </thead><tbody>
+            ${tbody} 
+            </tbody></table></div>`
             ;
         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(div);
         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(`
         <div class="column is-6" id="confusion_matrix_${mltool.model_number}">
+
         </div>
         `);
         window.tf.dispose(y)
