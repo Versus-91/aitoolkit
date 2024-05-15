@@ -259,9 +259,9 @@ export const Settings = {
                 },
                 "criteria": {
                     type: "select",
-                    default: "gini",
-                    "values": [{ label: "gini", value: "gini" }, { label: "log loss", value: "log_loss" },
-                    { label: "entropy", value: "entropy" }]
+                    default: "squared_error",
+                    "values": [{ label: "squared_error", value: "squared_error" }, { label: "absolute_error", value: "absolute_error" },
+                    { label: "friedman_mse", value: "friedman_mse" }, { label: "poisson", value: "poisson" }]
                 }
             },
         },
