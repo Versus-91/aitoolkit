@@ -332,7 +332,7 @@ export default class ChartController {
                 <div class="columns is-multiline">
                 <div class="column is-12" >
                     <div id="${column + '-kde-plot'}"> </div>
-                    <div id="${column + '-boxplot'}" style="height:30vh;width: 100%">
+                    <div id="${column + '-boxplot'}" style="height:20vh;width: 100%">
                     </div>
                     <div class="field has-addons has-addons-centered my-1">
                     <div class="control">
@@ -453,9 +453,13 @@ export default class ChartController {
         let animationDuration = 4000;
 
         var layout = {
+
+            yaxis: {
+                visible: false,
+            },
             showlegend: false,
             margin: {
-                l: 80,
+                l: 20,
                 r: 10,
                 b: 60,
                 t: 10,
@@ -473,6 +477,7 @@ export default class ChartController {
             },
 
             chart: {
+                height: '90%',
                 type: "spline",
                 animation: true,
             },
@@ -603,6 +608,7 @@ export default class ChartController {
                 enabled: false
             },
             chart: {
+                height: '90%',
                 type: "spline",
                 animation: true
             },
@@ -640,8 +646,11 @@ export default class ChartController {
 
         var layout = {
             showlegend: false,
+            yaxis: {
+                visible: false,
+            },
             margin: {
-                l: 80,
+                l: 10,
                 r: 10,
                 b: 60,
                 t: 10,
@@ -802,7 +811,7 @@ export default class ChartController {
                 },
                 plotLines: [{
                     value: 0.9,
-                    color: '#ff0000',
+                    color: '#000000',
                     width: 1,
                     zIndex: 4,
                     label: { text: '0.9' }
@@ -811,7 +820,7 @@ export default class ChartController {
                     color: '#ff0000',
                     width: 1,
                     zIndex: 4,
-                    label: { text: '0.9' }
+                    label: { text: '0.8' }
                 }]
 
             },
