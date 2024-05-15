@@ -145,10 +145,6 @@ export const Settings = {
                     type: "text",
                     placeholder: "comma separated priors"
                 },
-                "laplace": {
-                    type: "number",
-                    default: 0.05
-                },
                 "type": {
                     type: "select",
                     default: "Gaussian",
@@ -164,6 +160,16 @@ export const Settings = {
             "value": 9,
             "feature_selection": ["no", "Lasso", "ridge"],
             "criteria": ["AIC", "BIC", "AR2",],
+            "options": {
+                "alpha": {
+                    type: "number",
+                    default: 0.1
+                },
+                "l1": {
+                    type: "number",
+                    default: 0.1
+                },
+            }
         },
         "k_nearest_neighbour": {
             "label": "k nearest neighbour Regression",

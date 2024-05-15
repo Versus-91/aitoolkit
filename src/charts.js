@@ -355,6 +355,7 @@ export default class ChartController {
                                 <option value="1">Normal</option>
                                 <option value="2">x^2</option>
                                 <option value="3">ln(x)</option>
+                                <option value="3">Standardize </option>
                             </select>
                         </div>
                     <p class="help is-success">Normalization</p>
@@ -659,77 +660,73 @@ export default class ChartController {
         const pca = new PCA(dataset, { center: true, scale: true });
         var colorIndices = labels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
         const pca_data = await pca.predict(dataset, { nComponents: 2 })
-        let correctClassifications = []
-        let missclassificationItems = []
+        let x = []
+        let y = []
+        let x_error = []
+        let y_error = []
         pca_data[0].forEach((element, i) => {
             if (missclassifications.includes(i)) {
-                missclassificationItems.push([element[0], element[1]])
+                x_error.push(element[0])
+                y_error.push(element[1])
             } else {
-                correctClassifications.push([element[0], element[1]])
+                x.push(element[0])
+                y.push(element[1])
             }
 
         });
         var trace1 = {
+            x: x,
+            y: y,
             name: 'Predictions',
-            id: 'Predictions',
-            data: correctClassifications,
+            text: labels,
+            mode: 'markers',
+            type: 'scatter',
             marker: {
-                symbol: 'square'
-            }
+                size: 4,
+                color: colorIndices,
+                symbol: 'circle'
+            },
         };
         var trace2 = {
             name: 'Missclassifications',
-            id: 'Missclassifications',
-            data: missclassificationItems,
+            x: x_error,
+            y: y_error,
+            text: labels,
+            mode: 'markers',
+            type: 'scatter',
             marker: {
-                symbol: 'square'
-            }
-
+                size: 7,
+                color: colorIndices,
+                symbol: 'cross'
+            },
         };
         var data = [trace1, trace2];
-        console.log(data);
-        var chart_container = `<div class="column is-6" style="height: 40vh" id="pca_results_${index}"></div>`
+
+        var chart_container = `<div class="column is-6" style="height: 50vh" id="pca_results_${index}"></div>`
         $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(chart_container);
 
-        // Plotly.newPlot('pca_results_' + index, data, {
-        //     showlegend: true,
-        //     margin: {
-        //         l: 20,
-        //         r: 20,
-        //         b: 20,
-        //         t: 20,
-        //         pad: 5
-        //     },
-        //     legend: {
-        //         x: 1,
-        //         xanchor: 'right',
-        //         y: 1
-        //     },
-        //     xaxis: {
-
-        //         title: 'PC1'
-        //     },
-        //     yaxis: {
-        //         title: 'PC2'
-        //     }
-        // }, { responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
-        Highcharts.setOptions({
-            colors: ['rgba(5,141,199,0.5)', 'rgba(80,180,50,0.5)', 'rgba(237,86,27,0.5)']
-        });
-        Highcharts.chart('pca_results_' + index, {
-            chart: {
-                type: 'scatter',
-                zoomType: 'xy'
-            },
-            title: {
-                text: 'Olympics athletes by height and weight',
-                align: 'left'
+        Plotly.newPlot('pca_results_' + index, data, {
+            showlegend: true,
+            margin: {
+                l: 30,
+                r: 20,
+                b: 30,
+                t: 20,
             },
             legend: {
-                enabled: true
+                x: 1,
+                xanchor: 'right',
+                y: 1
             },
-            series: data
-        });
+            xaxis: {
+
+                title: 'PC1'
+            },
+            yaxis: {
+                title: 'PC2'
+            }
+        }, { responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
+
     }
     async draw_pca(dataset, labels, size = 4, color_scale = "Jet") {
         document.getElementById("dimensionality_reduction_panel_pca").style.display = "block"

@@ -1,6 +1,5 @@
 import Plotly from 'plotly.js-dist';
-import Bulma from '@vizuaalog/bulmajs';
-import { MinMaxScaler, DataFrame } from 'danfojs/dist/danfojs-base';
+import { MinMaxScaler, StandardScaler } from 'danfojs/dist/danfojs-base';
 
 import { FeatureCategories, Settings } from "../feature_types.js";
 export default class UI {
@@ -14,22 +13,26 @@ export default class UI {
         let model_name = parseInt(document.getElementById('model_name').value);
         const target = document.getElementById("target").value;
         let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+        var model;
         if (is_classification) {
-            for (const model in Settings.classification) {
-                if (Settings.classification[model].value === model_name) {
-                    model_name = model
-                    model_settings.name = Settings.classification[model].label
+            for (const m in Settings.classification) {
+                if (Settings.classification[m].value === model_name) {
+                    model_name = m
+                    model_settings.name = Settings.classification[m].label
+                    model = Settings.classification[model_name];
+                    break;
                 }
             }
         } else {
-            for (const model in Settings.regression) {
-                if (Settings.regression[model].value === model_name) {
-                    model_name = model
-                    model_settings.name = Settings.regression[model].label
+            for (const m in Settings.regression) {
+                if (Settings.regression[m].value === model_name) {
+                    model_name = m
+                    model_settings.name = Settings.regression[m].label
+                    model = Settings.regression[model_name];
+                    break;
                 }
             }
         }
-        let model = Settings.classification[model_name];
         model_name = parseInt(document.getElementById('model_name').value);
         for (const option in model?.options) {
             if (model.options[option].type === "select") {
@@ -71,17 +74,24 @@ export default class UI {
     };
     scale_data(dataset, column, normalization_type) {
         switch (normalization_type) {
-            case "1":
+            case "1": {
                 let scaler = new MinMaxScaler()
                 scaler.fit(dataset[column])
                 dataset.addColumn(column, scaler.transform(dataset[column]), { inplace: true })
                 break;
+            }
             case "2":
                 dataset.addColumn(column, dataset[column].apply((x) => x * x), { inplace: true })
                 break;
             case "3":
                 dataset.addColumn(column, dataset[column].apply((x) => Math.log(x)), { inplace: true })
                 break;
+            case "4": {
+                let scaler = new StandardScaler()
+                scaler.fit(dataset[column])
+                dataset.addColumn(column, scaler.transform(dataset[column]), { inplace: true })
+                break;
+            }
             default:
                 break;
         }
@@ -382,7 +392,7 @@ export default class UI {
         for (const key in Settings[label]) {
             if (Settings.hasOwnProperty.call(Settings[label], key)) {
                 const item = Settings[label][key];
-                result += `<option value="${item.label}">${item.label}</option>`
+                result += `<option value="${item.value}">${item.label}</option>`
             }
         }
         result += '</select></div>'
@@ -707,7 +717,7 @@ export default class UI {
         <li data-index="${index}" class=" tabs-li">
         <div id="results_${index}" class="columns is-multiline"></div>
         </li>`)
-        // $("#tabs_content li").not(this).removeClass("is-active");
+        $("#tabs_content li").removeClass("is-active");
         $("#tabs_info li").removeClass("is-active");
         $("#tabs_info li[data-index='" + index + "']").addClass("is-active");
         $("#tabs_content li[data-index='" + index + "']").addClass("is-active");

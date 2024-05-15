@@ -1,6 +1,6 @@
 import { Settings } from "../feature_types";
 import LogisticRegression from "./logistic_regression";
-import LinearRegression from "./linear_regression";
+import LinearRegression from "./regression/linear_regression";
 import SupportVectorMachine from './svm';
 import Boosting from './boosting';
 import BoostingRegression from './regression/boosting';
@@ -30,7 +30,7 @@ export var ModelFactory = function () {
         } else if (modelName.value === Settings.classification.discriminant_analysis.value) {
             model = new DiscriminantAnalysis(options);
         } else if (modelName.value === Settings.regression.linear_regression.value) {
-            model = new LinearRegression();
+            model = new LinearRegression(options);
         } else if (modelName.value === Settings.classification.naive_bayes.value) {
             model = new NaiveBayes(options);
         }

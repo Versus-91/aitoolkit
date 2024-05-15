@@ -1,32 +1,65 @@
 import { asyncRun } from "../py-worker";
 
 
-export default class RandomForestRegressor {
+export default class LinearRegression {
     constructor(options) {
         this.options = options;
         this.model = null;
 
     }
-    async train(x_train, y_train, x_test) {
+    async train_test(x_train, y_train, x_test, labels) {
         this.context = {
             X_train: x_train,
             y_train: y_train,
             X_test: x_test,
+            alpha: this.options.alpha,
+            l1: this.options.l1,
+            labels: labels
         };
         const script = `
-            from sklearn.model_selection import train_test_split
-            from sklearn.ensemble import RandomForestRegressor
-            from sklearn.metrics import accuracy_score
-            from js import X_train,y_train,X_test,rf_type,max_features,num_estimators,max_depth
-            clf = RandomForestRegressor(criterion=rf_type,max_features = max_features,n_estimators=num_estimators,max_depth = max_depth, random_state=42)
-            clf.fit(X_train, y_train)
-            y_pred = clf.predict(X_test)
-            y_pred
+        import numpy as np
+        import statsmodels.api as sm
+        from js import X_train,y_train,X_test,labels,l1,alpha
+        import pandas as pd
+
+        df_test = pd.DataFrame(X_test,columns=labels)
+        x_test = df_test.iloc[:,:]
+        test = sm.add_constant(x_test, prepend = False)
+
+        df_train = pd.DataFrame(X_train,columns=labels)
+        x_train = df_train.iloc[:,:]
+        train = sm.add_constant(x_train, prepend = False)
+
+
+
+        # Fit OLS model
+        model = sm.OLS(np.array(y_train), train)
+        if alpha is 0 and l1 is 0:
+            res = model.fit()
+        else:
+            res = model.fit_regularized(method='elastic_net', alpha=alpha, L1_wt=l1, refit=True)
+        preds = res.predict(test)
+        # Extract summary information
+        summary_dict = {
+            "params": res.params.tolist(),
+            "bse": res.bse.tolist(),
+            "preds": preds.tolist(),
+            "tvalues": res.tvalues.tolist(),
+            "pvalues": res.pvalues.tolist(),
+            "rsquared": res.rsquared,
+            "rsquared_adj": res.rsquared_adj,
+            "fvalue": res.fvalue,
+            "f_pvalue": res.f_pvalue,
+            "aic": res.aic,
+            "bic": res.bic
+        }
+        
+        summary_dict
         `;
         try {
             const { results, error } = await asyncRun(script, this.context);
             if (results) {
-                return Array.from(results);
+                return results;
             } else if (error) {
                 console.log("pyodideWorker error: ", error);
             }

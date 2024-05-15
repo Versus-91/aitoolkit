@@ -21,6 +21,9 @@ export default [
         setTimeout: "readonly",
         DataTable: "readonly",
         File: "readonly",
+        MinMaxScaler: "readonly",
+        Event: "readonly",
+
 
 
 
