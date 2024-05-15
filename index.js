@@ -169,7 +169,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     }
     async function train(data, len) {
         try {
-            let dataset = data.copy()
+            // let dataset = data.copy()
+            let dataset = await data.sample(data.$data.length);
+
             let model_name = document.getElementById('model_name').value
             model_name = parseInt(model_name)
             const target = document.getElementById("target").value;
@@ -784,7 +786,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         $("#tabs_info li[data-index='" + index + "']").addClass("is-active");
         $(this).toggleClass("is-active ");
     });
-
+    $(".tabs ul li").click(function () {
+        window.dispatchEvent(new Event('resize'));
+    });
 });
 
 
