@@ -129,69 +129,104 @@ export default class ChartController {
     indexToColor(index) {
         return this.color_scheme[index + 1 % this.color_scheme.length];
     }
+    reshape(array, shape) {
+        if (shape.length === 0) return array[0];
+
+        const [size, ...restShape] = shape;
+        const result = [];
+        const restSize = restShape.reduce((a, b) => a * b, 1);
+        console.log(restSize);
+
+        for (let i = 0; i < size; i++) {
+            result.push(this.reshape(array.slice(i * restSize, (i + 1) * restSize), restShape));
+        }
+
+        return result;
+    }
     async plot_tsne(data, labels) {
         document.getElementById("dimensionality_reduction_panel_tsne").style.display = "block"
         console.assert(Array.isArray(data));
-        let model = new TSNE();
-        var Y = await model.train(data)
-        let traces = []
-        if (labels.length > 0) {
-            labels = labels.flat()
-            var uniqueLabels = [...new Set(labels)];
-            let points_labled = Y.map(function (item, i) {
-                return {
-                    label: labels[i],
-                    'x': item[0],
-                    'y': item[1]
+        // Create some data
+        // const items = tf.randomUniform([2000, 10]);
+
+        // Get a tsne optimizer
+        const tsneOpt = tsne.tsne(window.tensorflow.tensor2d(data));
+
+        // Compute a T-SNE embedding, returns a promise.
+        // Runs for 1000 iterations by default.
+        tsneOpt.compute().then(async () => {
+            // tsne.coordinate returns a *tensor* with x, y coordinates of
+            // the embedded data.
+            const coordinates = tsneOpt.coordinates();
+            // let model = new TSNE();
+            // var Y = await model.train(data)
+            const items = coordinates.dataSync()
+            const Y = this.reshape(items, coordinates.shape)
+            let x = []
+            let traces = []
+            if (labels.length > 0) {
+                labels = labels.flat()
+                var uniqueLabels = [...new Set(labels)];
+                let points_labled = Y.map(function (item, i) {
+                    return {
+                        label: labels[i],
+                        'x': item[0],
+                        'y': item[1]
+                    }
                 }
-            }
-            )
-            uniqueLabels.forEach((label, i) => {
-                var items_for_label = points_labled.filter(m => m.label === label)
-                traces.push({
-                    x: items_for_label.map(m => m.x),
-                    y: items_for_label.map(m => m.y),
-                    mode: 'markers',
-                    type: 'scatter',
-                    name: label,
-                    marker: {
-                        size: 4,
-                        color: this.indexToColor(i),
+                )
+                uniqueLabels.forEach((label, i) => {
+                    var items_for_label = points_labled.filter(m => m.label === label)
+                    traces.push({
+                        x: items_for_label.map(m => m.x),
+                        y: items_for_label.map(m => m.y),
+                        mode: 'markers',
+                        type: 'scatter',
+                        name: label,
+                        marker: {
+                            size: 4,
+                            color: this.indexToColor(i),
+                        }
+                    })
+                })
+            } else {
+                let points = Y.map(function (item, i) {
+                    return {
+                        'x': item[0],
+                        'y': item[1]
                     }
                 })
-            })
-        } else {
-            let points = Y.map(function (item, i) {
-                return {
-                    'x': item[0],
-                    'y': item[1]
-                }
-            })
-            traces.push({
-                x: points.map(m => m.x),
-                y: points.map(m => m.y),
-                mode: 'markers+text',
-                type: 'scatter',
-                marker: { size: 4 }
-            })
-        }
+                x = points.map(m => m.x)
+                traces.push({
+                    x: x,
+                    y: points.map(m => m.y),
+                    mode: 'markers+text',
+                    type: 'scatter',
+                    marker: {
+                        size: 4,
+                        colorscale: 'YlOrRd',
+                        color: x,
+                    },
+                })
+            }
 
-        var layout = {
-            showlegend: true,
-            margin: {
-                l: 20,
-                r: 20,
-                b: 20,
-                t: 20,
-                pad: 5
-            },
-            legend: {
-                x: 1,
-                xanchor: 'right',
-                y: 1
-            },
-        };
-        Plotly.newPlot('tsne', traces, layout, { responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
+            var layout = {
+                showlegend: true,
+                margin: {
+                    l: 20,
+                    r: 20,
+                    b: 20,
+                    t: 20,
+                    pad: 5
+                },
+                legend: {
+                    x: 1,
+                    xanchor: 'right',
+                    y: 1
+                },
+            };
+            Plotly.newPlot('tsne', traces, layout, { responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
+        });
     }
     trueNegatives(yTrue, yPred) {
         return tf.tidy(() => {
@@ -352,7 +387,7 @@ export default class ChartController {
                         <div class="select is-small">
                             <select id="${key + '--normal'}">
                                 <option value="0">No</option>
-                                <option value="1">Normal</option>
+                                <option value="1">Scale</option>
                                 <option value="2">x^2</option>
                                 <option value="3">ln(x)</option>
                                 <option value="3">Standardize </option>
@@ -475,9 +510,12 @@ export default class ChartController {
             credits: {
                 enabled: false
             },
-
+            legend: {
+                enabled: is_classification ? true : false, align: 'right',
+                verticalAlign: 'top',
+            },
             chart: {
-                height: '90%',
+                height: '300',
                 type: "spline",
                 animation: true,
             },
@@ -607,8 +645,13 @@ export default class ChartController {
             credits: {
                 enabled: false
             },
+            legend: {
+                enabled: is_classification ? true : false, align: 'right',
+                verticalAlign: 'top',
+            },
+
             chart: {
-                height: '90%',
+                height: '300',
                 type: "spline",
                 animation: true
             },
@@ -806,21 +849,29 @@ export default class ChartController {
                 text: '',
             },
             yAxis: {
+                min: 0,
+                max: 1,
                 title: {
                     text: 'Explained variance'
                 },
                 plotLines: [{
                     value: 0.9,
-                    color: '#000000',
+                    dashStyle: 'shortdash',
+                    color: 'grey',
                     width: 1,
                     zIndex: 4,
-                    label: { text: '0.9' }
+                    label: {
+                        text: '0.9', align: "right",
+                    }
                 }, {
                     value: 0.8,
-                    color: '#ff0000',
+                    dashStyle: 'shortdash',
+                    color: 'darkgrey',
                     width: 1,
                     zIndex: 4,
-                    label: { text: '0.8' }
+                    label: {
+                        text: '0.8', align: "right",
+                    }
                 }]
 
             },
@@ -828,19 +879,22 @@ export default class ChartController {
                 labels: {
                     enabled: true,
                     formatter: function () {
-                        return this.value;
+                        return this.value + 1;
                     }
                 },
+
                 title: {
                     text: 'Number of components'
                 },
             },
             series: [{
-                name: 'Scree Plot',
+                name: 'Propotional',
+                color: "blue",
                 data: pca_x[2]
             },
             {
-                name: 'Sum',
+                name: 'Cumulative',
+                color: "red",
                 data: cumulatedExplainedVaraince
             }],
 
@@ -849,7 +903,7 @@ export default class ChartController {
             autosize: true,
             showlegend: true,
             margin: {
-                l: 20,
+                l: 30,
                 r: 20,
                 b: 20,
                 t: 20,
