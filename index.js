@@ -698,70 +698,233 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
         let div = document.createElement('div');
         div.classList.add('column');
-        div.classList.add('is-6');
+        div.classList.add('is-12');
         div.setAttribute("id", "result_number_" + mltool.model_number);
         let metric = await metrics(y.arraySync(), predictedLabels.arraySync(), uniqueClasses)
         let info = metric[0]
-        var header = "";
-        header += "<th></th>";
-        var tbody = "";
-        for (let i = 0; i < labels.length; i++) {
-            header += "<th>" + labels[i] + "</th>";
-        }
-
+        console.log(labels);
+        console.log(confusionMatrix);
         let len = confusionMatrix[0].length
-        let row = "";
-        row += "<td>Preceission</td>";
+        let preceissions = [];
+        let supports = [];
+        let recalls = [];
+        let f1s = [];
         for (let j = 0; j < len; j++) {
-            row += `<td>${info[0][j].toFixed(2)} </td>`;
+            preceissions.push(parseFloat(info[0][j].toFixed(2)))
         }
-        tbody += "<tr>" + row + "</tr>";
 
-        row = "";
-        row += "<td>Recall</td>";
         for (let j = 0; j < len; j++) {
-            row += `<td>${info[1][j].toFixed(2)} </td>`;
-        }
-        tbody += "<tr>" + row + "</tr>";
+            recalls.push(parseFloat(info[1][j].toFixed(2)))
 
-        row = ""
-        row += "<td>F1 score</td>";
-        for (let j = 0; j < len; j++) {
-            row += `<td>${info[2][j].toFixed(2)} </td>`;
         }
-        tbody += "<tr>" + row + "</tr>";
 
-        row = ""
-        row += "<td>Support</td>";
         for (let j = 0; j < len; j++) {
-            row += `<td>${info[3][j].toFixed(2)} </td>`;
+            f1s.push(parseFloat(info[2][j].toFixed(2)))
+
         }
-        tbody += "<tr>" + row + "</tr>";
+        for (let j = 0; j < len; j++) {
+            supports.push(parseFloat(info[3][j].toFixed(2)))
+        }
         div.innerHTML =
-            `
+            `<div class="column is-12">
+
             <h5 class="subtitle mb-1">Accuracy: ${metric[3].toFixed(2)}</h5>
             <span class="subtitle mr-2">F1 micro: ${metric[1].toFixed(2)}</span>
             <span class="subtitle">F1 macro: ${metric[2].toFixed(2)}</span>
-            <div class="table-container"><table class="table is-fullwidth is-bordered is-striped is-narrow is-hoverable is-size-7"><thead>
-            ${header} 
-            </thead><tbody>
-            ${tbody} 
-            </tbody></table></div>`
+            </div>`
             ;
         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(div);
         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(`
-        <div class="column is-6" id="confusion_matrix_${mltool.model_number}">
+        <div class="column is-6" id="confusion_matrix_${mltool.model_number}" style="height:40vh">
 
         </div>
+
         `);
         window.tensorflow.dispose(y)
         window.tensorflow.dispose(predictedLabels)
 
-        const container = document.getElementById("confusion_matrix_" + mltool.model_number);
-        await tfvis.render.confusionMatrix(container, {
-            values: confusionMatrix,
-            tickLabels: labels
+        // const container = document.getElementById("confusion_matrix_" + (mltool.model_number + 1));
+        // await tfvis.render.confusionMatrix(container, {
+        //     values: confusionMatrix,
+        //     tickLabels: labels
+        // });
+
+        const metric_labels = ["Precession", "Recall", "F1 score", "Support"]
+        labels.push("Precession")
+        labels.push("Recall")
+        labels.push("F1 score")
+        // labels.push("Support")
+        confusionMatrix.push(preceissions)
+        confusionMatrix.push(recalls)
+        confusionMatrix.push(f1s)
+        // confusionMatrix.push(supports)
+        let items_labels = labels.filter(x => !metric_labels.includes(x))
+        // Substring template helper for the responsive labels
+        Highcharts.Templating.helpers.substr = (s, from, length) =>
+            s.substr(from, length);
+        let formatted_matrix = []
+        for (let i = 0; i < confusionMatrix.length; i++) {
+            const element = confusionMatrix[i];
+            for (let j = 0; j < element.length; j++) {
+                const item = element[j];
+                formatted_matrix.push([j, i, item])
+            }
+        }
+        console.log(confusionMatrix);
+        console.log(labels);
+
+        // Create the chart
+        Highcharts.chart("confusion_matrix_" + mltool.model_number, {
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: true
+            },
+            chart: {
+                type: 'heatmap',
+                marginTop: 40,
+                marginBottom: 80,
+                plotBorderWidth: 1
+            },
+
+
+            title: {
+                text: '',
+                style: {
+                    fontSize: '1em'
+                }
+            },
+
+            xAxis: [{
+                categories: items_labels,
+                title: {
+                    text: 'Predicted Class'
+                }
+            }, {
+                linkedTo: 0,
+                opposite: true,
+                tickLength: 0,
+                labels: {
+                    formatter: function () {
+                        var chart = this.chart,
+                            each = Highcharts.each,
+                            series = chart.series[0],
+                            sum = 0,
+                            x = this.value;
+
+                        each(series.options.data, function (p, i) {
+                            if (p[0] === x) {
+                                if (p[1] < uniqueClasses.length) {
+                                    sum += p[2];
+                                }
+                            }
+                        });
+
+                        return sum;
+                    }
+                }
+            }],
+
+            yAxis: [{
+                categories: labels,
+                title: {
+                    text: 'Actual Class'
+                },
+                reversed: true
+            }, {
+                linkedTo: 0,
+                opposite: true,
+                tickLength: 0,
+                labels: {
+                    formatter: function () {
+                        var chart = this.chart,
+                            each = Highcharts.each,
+                            series = chart.series[0],
+                            sum = 0,
+                            x = this.value;
+                        each(series.options.data, function (p, i) {
+                            if (p[1] === x) {
+                                if (p[1] < uniqueClasses.length) {
+                                    sum += p[2];
+                                }
+
+                            }
+                        });
+                        return sum;
+                    }
+                },
+                title: null
+            }],
+            colorAxis: {
+                min: 0,
+                minColor: '#FFFFFF',
+                maxColor: Highcharts.getOptions().colors[0]
+            },
+
+            legend: {
+                align: 'right',
+                layout: 'vertical',
+                margin: 0,
+                verticalAlign: 'top',
+                y: 25,
+                symbolHeight: 280
+            },
+
+            tooltip: {
+                formatter: function () {
+                    var totalCount = this.series.data.reduce(function (acc, cur) {
+                        return acc + cur.value;
+                    }, 0);
+                    var count = this.point.value;
+                    var percentage = ((count / totalCount) * 100).toFixed(2);
+                    return '<b>Actual: </b>' + this.series.yAxis.categories[this.point.y] +
+                        '<br><b>Predicted: </b>' + this.series.xAxis.categories[this.point.x] +
+                        '<br><b>Count: </b>' + count +
+                        '<br><b>Percentage: </b>' + percentage + '%';
+                }
+            },
+            series: [{
+                name: 'Sales per employee',
+                borderWidth: 1,
+                data: formatted_matrix,
+                dataLabels: {
+                    enabled: true,
+                    color: '#000000',
+                    formatter: function () {
+                        var totalCount = this.series.data.reduce(function (acc, cur) {
+                            return acc + cur.value;
+                        }, 0);
+                        var count = this.point.value;
+                        var skip = this.point.index >= this.series.data.length - (3 * uniqueClasses.length);
+
+                        if (!skip) {
+                            var percentage = ((count / totalCount) * 100).toFixed(2);
+                            return count + ' (' + percentage + '%)';
+                        } else {
+                            return count;
+                        }
+                    }
+                }
+            }],
+
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 500
+                    },
+                    chartOptions: {
+                        yAxis: {
+                            labels: {
+                                format: '{substr value 0 1}'
+                            }
+                        }
+                    }
+                }]
+            }
+
         });
+
         return confusionMatrix
 
     }
