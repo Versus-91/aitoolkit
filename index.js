@@ -244,7 +244,19 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         knn_table_column_names.push({ title: "k" })
                         knn_table_column_names.push({ title: "accuracy" })
                         let knn_accuracies = results.map(m => [m.k, m.evaluation.accuracy.toFixed(2)])
-                        new DataTable('#knn_table', {
+
+                        const classes = encoder.inverseTransform(Object.values(encoder.$labels))
+                        await plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
+
+                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels, mltool.model_number)
+                        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(`
+                                <div class="column is-6">
+                                    <table id="knn_table_${mltool.model_number}" class="table is-bordered is-hoverable is-narrow display"
+                                        width="100%">
+                                    </table>
+                                </div>
+                            `);
+                        new DataTable('#knn_table_' + mltool.model_number, {
                             responsive: true,
                             columns: knn_table_column_names,
                             data: knn_accuracies,
@@ -252,10 +264,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             paging: false,
                             searching: false,
                         });
-                        const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        await plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
-                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels, mltool.model_number)
 
                         predictions_table(x_test, y_test, encoder, best_result.predictions)
                         break;
@@ -328,6 +337,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         await plot_confusion_matrix(window.tensorflow.tensor(y_preds), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, y_preds)
+                        
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
                     }
