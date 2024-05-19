@@ -1,31 +1,17 @@
-// Assuming you're using TensorFlow.js 0.14
-const tf = require('@tensorflow/tfjs');
+var xValues = ['A', 'B', 'C', 'D', 'E'];
 
-// Create a tensor with shape [2, 3]
-const tensor = tf.tensor([[1, 3], [4, 6], [4, 6], [4, 6], [4, 6]]);
+var yValues = ['W', 'X', 'Y', 'Z'];
 
-// Use dataSync() to get a flattened array
-const data = tensor.dataSync(); // [1, 2, 3, 4, 5, 6]
-// Get the shape of the original tensor
-const shape = tensor.shape;
+var zValues = [
+  [1.00, 0.00, 0.75, 0.75, 0.00],
+  [0.00, 0.00, 0.75, 0.75, 0.00],
+  [0.75, 0.75, 0.75, 0.75, 0.75],
+  [0.00, 0.00, 0.00, 0.75, 0.00]
+];
 
-// A utility function to reshape the flattened array
-function reshape(array, shape) {
-    if (shape.length === 0) return array[0];
-
-    const [size, ...restShape] = shape;
-    const result = [];
-    const restSize = restShape.reduce((a, b) => a * b, 1);
-    console.log(restSize);
-
-    for (let i = 0; i < size; i++) {
-        result.push(reshape(array.slice(i * restSize, (i + 1) * restSize), restShape));
-    }
-
-    return result;
+for ( var i = 0; i < yValues.length; i++ ) {
+  for ( var j = 0; j < xValues.length; j++ ) {
+    console.log(zValues[i][j]);
+  }
 }
 
-// Reshape the flattened array back to the original shape
-const reshapedData = reshape(data, shape);
-
-console.log(reshapedData); // Output: [[1, 2, 3], [4, 5, 6]]

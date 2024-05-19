@@ -154,79 +154,79 @@ export default class ChartController {
 
         // Compute a T-SNE embedding, returns a promise.
         // Runs for 1000 iterations by default.
-        tsneOpt.compute().then(async () => {
-            // tsne.coordinate returns a *tensor* with x, y coordinates of
-            // the embedded data.
-            const coordinates = tsneOpt.coordinates();
-            // let model = new TSNE();
-            // var Y = await model.train(data)
-            const items = coordinates.dataSync()
-            const Y = this.reshape(items, coordinates.shape)
-            let x = []
-            let traces = []
-            if (labels.length > 0) {
-                labels = labels.flat()
-                var uniqueLabels = [...new Set(labels)];
-                let points_labled = Y.map(function (item, i) {
-                    return {
-                        label: labels[i],
-                        'x': item[0],
-                        'y': item[1]
-                    }
+        await tsneOpt.compute();
+        // tsne.coordinate returns a *tensor* with x, y coordinates of
+        // the embedded data.
+        const coordinates = tsneOpt.coordinates();
+        // let model = new TSNE();
+        // var Y = await model.train(data)
+        const items = coordinates.dataSync()
+        const Y = this.reshape(items, coordinates.shape)
+        let x = []
+        let traces = []
+        if (labels.length > 0) {
+            labels = labels.flat()
+            var uniqueLabels = [...new Set(labels)];
+            let points_labled = Y.map(function (item, i) {
+                return {
+                    label: labels[i],
+                    'x': item[0],
+                    'y': item[1]
                 }
-                )
-                uniqueLabels.forEach((label, i) => {
-                    var items_for_label = points_labled.filter(m => m.label === label)
-                    traces.push({
-                        x: items_for_label.map(m => m.x),
-                        y: items_for_label.map(m => m.y),
-                        mode: 'markers',
-                        type: 'scatter',
-                        name: label,
-                        marker: {
-                            size: 4,
-                            color: this.indexToColor(i),
-                        }
-                    })
-                })
-            } else {
-                let points = Y.map(function (item, i) {
-                    return {
-                        'x': item[0],
-                        'y': item[1]
-                    }
-                })
-                x = points.map(m => m.x)
+            }
+            )
+            uniqueLabels.forEach((label, i) => {
+                var items_for_label = points_labled.filter(m => m.label === label)
                 traces.push({
-                    x: x,
-                    y: points.map(m => m.y),
-                    mode: 'markers+text',
+                    x: items_for_label.map(m => m.x),
+                    y: items_for_label.map(m => m.y),
+                    mode: 'markers',
                     type: 'scatter',
+                    name: label,
                     marker: {
                         size: 4,
-                        colorscale: 'YlOrRd',
-                        color: x,
-                    },
+                        color: this.indexToColor(i),
+                    }
                 })
-            }
+            })
+        } else {
+            let points = Y.map(function (item, i) {
+                return {
+                    'x': item[0],
+                    'y': item[1]
+                }
+            })
+            x = points.map(m => m.x)
+            traces.push({
+                x: x,
+                y: points.map(m => m.y),
+                mode: 'markers+text',
+                type: 'scatter',
+                marker: {
+                    size: 4,
+                    colorscale: 'YlOrRd',
+                    color: x,
+                },
+            })
+        }
 
-            var layout = {
-                showlegend: true,
-                margin: {
-                    l: 20,
-                    r: 20,
-                    b: 20,
-                    t: 20,
-                    pad: 5
-                },
-                legend: {
-                    x: 1,
-                    xanchor: 'right',
-                    y: 1
-                },
-            };
-            Plotly.newPlot('tsne', traces, layout, { responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
-        });
+        var layout = {
+            showlegend: true,
+            margin: {
+                l: 20,
+                r: 20,
+                b: 20,
+                t: 20,
+                pad: 5
+            },
+            legend: {
+                x: 1,
+                xanchor: 'right',
+                y: 1
+            },
+        };
+        Plotly.newPlot('tsne', traces, layout, { responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
+
     }
     trueNegatives(yTrue, yPred) {
         return tf.tidy(() => {
@@ -480,7 +480,7 @@ export default class ChartController {
             }
             traces.push({
                 name: column,
-                y: items,
+                x: items,
                 type: 'box',
             })
         }
