@@ -986,7 +986,7 @@ export default class ChartController {
             return currentValue > array[maxIndex] ? currentIndex : maxIndex;
         }, 0);
     }
-    probabilities_boxplot(probs, labels, y_test) {
+    probabilities_boxplot(probs, labels, index) {
         var colorIndices = labels.map((label, i) => this.indexToColor(i));
         const num_columns = probs[0].length;
         let traces = [];
@@ -1009,39 +1009,29 @@ export default class ChartController {
                     let data = subset.map(item => item[j]);
                     traces.push({
                         type: 'box',
-                        name: labels[i],
+                        name: labels[j],
                         marker: {
                             color: colorIndices[j]
                         },
                         y: data
                     });
                 }
+                if (labels.length == 2) {
+                    break
+                }
             }
         }
+        let content = `
+        <div class="column is-6" id="probs_box_plot_${index}" style="height: 450px;">
+        </div>
+        `
+        $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(content);
+        Plotly.newPlot("probs_box_plot_" + index, traces, {
+            yaxis: {
+                zeroline: false
+            }, boxmode: 'group'
+        })
 
-        Highcharts.chart('probs_box_plot', {
-            chart: {
-                type: 'boxplot'
-            },
-            title: {
-                text: 'Box Plot Example'
-            },
-            legend: {
-                enabled: true
-            },
-            xAxis: {
-                categories: labels,
-                title: {
-                    text: 'Classes'
-                }
-            },
-            yAxis: {
-                title: {
-                    text: 'Probability'
-                }
-            },
-            series: traces
-        });
     }
     probablities_violin_plot(probs, classes, labels) {
         var colorIndices = labels.map((label, i) => this.indexToColor(i));

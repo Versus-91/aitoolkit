@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     let data_parser = new DataLoader();
     let chart_controller = new ChartController(data_parser);
     let ui = new UI(data_parser, chart_controller);
-    const html_content_ids = ["lasso_plot", "formulas", "regression_y_yhat", "probs_violin_plot", "probs_box_plot"]
+    const html_content_ids = ["lasso_plot", "formulas", "regression_y_yhat", "probs_violin_plot"]
     const table_ids = ["lasso_plot", "predictions_table", "results", "knn_table", "metrics_table", "stats_table", "sample_data_table"]
     const plots = ["tsne", "pca-1", "pca-2", "pca-3"]
 
@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         await plot_confusion_matrix(window.tensorflow.tensor(y_preds), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, y_preds)
-                        
+
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
                     }
@@ -359,16 +359,25 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         }));
                         // preds = encoder.transform(preds);
                         let evaluation_result = evaluate_classification(preds, y_t)
-                        await chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         const matrix = await plot_confusion_matrix(window.tensorflow.tensor(preds), window.tensorflow.tensor(y_t), classes, encoder.transform(classes))
+                        await chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         metrics_table(classes, matrix)
                         let metrics = []
                         for (let i = 0; i < stats.length; i++) {
                             metrics.push([
                                 ...stats[i]])
                         }
-                        new DataTable('#stats_table', {
+                        chart_controller.probabilities_boxplot(probs, uniqueLabels, mltool.model_number)
+                        let content = `
+                        <div class="column is-6">
+                            <table id="stats_table_${mltool.model_number}" class="table is-bordered is-hoverable is-narrow display is-size-7"
+                                width="100%">
+                            </table>
+                        </div>
+                        `
+                        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(content);
+                        new DataTable('#stats_table_' + mltool.model_number, {
                             responsive: true,
                             columns: [{ title: "variable" }, { title: "coefficient" }, { title: "std error" }, { title: "z" }, { title: "p value" }, { title: "[0.025" }, { title: "0.975]" }],
                             data: metrics,
@@ -381,7 +390,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
                         // chart_controller.regularization_plot(alphas, coefs, x_test.columns)
                         predictions_table(x_test, y_test, encoder, preds, probs);
-                        chart_controller.probabilities_boxplot(probs, uniqueLabels, y_t)
                         chart_controller.probablities_violin_plot(probs, classes, uniqueLabels)
                         break
                     }
@@ -597,7 +605,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     function predictions_table(x, y, encoder, preds, probs = null) {
         let content = `
         <div class="column is-12">
-            <table id="predictions_table_${mltool.model_number}" class="table is-bordered is-hoverable is-narrow display" width="100%">
+            <table id="predictions_table_${mltool.model_number}" class="table is-bordered is-hoverable is-narrow display is-size-7" width="100%">
            </table>
         </div>`
         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(content);
@@ -900,6 +908,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 data: formatted_matrix,
                 dataLabels: {
                     enabled: true,
+                    useHTML: true,
                     color: '#000000',
                     formatter: function () {
                         var totalCount = this.series.data.reduce(function (acc, cur) {
@@ -910,9 +919,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
                         if (!skip) {
                             var percentage = ((count / totalCount) * 100).toFixed(2);
-                            return count + ' (' + percentage + '%)';
+                            return '<p style="margin:auto; text-align:center;">' + count + '<br/>(' + percentage + '%)</p> ';
                         } else {
-                            return count;
+                            return '<p style="margin:auto; text-align:center;">' + count + '</p>';
                         }
                     }
                 }
