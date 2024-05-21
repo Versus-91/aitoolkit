@@ -12,6 +12,7 @@ import RandomForestRegressor from "./regression/random_forest";
 import NaiveBayes from "./NaiveBayes";
 import DiscriminantAnalysis from "./lda";
 import PolynomialRegression from "./regression/polynomial_regression";
+import KernelRegression from "./regression/kernel_regression";
 
 
 
@@ -46,6 +47,8 @@ export var ModelFactory = function () {
         }
         else if (modelName.value === Settings.regression.polynomial_regression.value) {
             model = new PolynomialRegression(options);
+        } else if (modelName.value === Settings.regression.kernel_regression.value) {
+            model = new KernelRegression(options);
         } else {
             throw "model not supported.";
         }

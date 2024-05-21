@@ -285,5 +285,15 @@ export const Settings = {
                 }
             },
         },
+        "kernel_regression": {
+            "label": "Kernel Regression",
+            "value": 15,
+            "options": {
+                "estimators": {
+                    type: "number",
+                    default: 100
+                },
+            },
+        },
     },
 };
