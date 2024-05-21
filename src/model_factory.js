@@ -11,6 +11,7 @@ import RandomForest from "./random_forest";
 import RandomForestRegressor from "./regression/random_forest";
 import NaiveBayes from "./NaiveBayes";
 import DiscriminantAnalysis from "./lda";
+import PolynomialRegression from "./regression/polynomial_regression";
 
 
 
@@ -42,6 +43,9 @@ export var ModelFactory = function () {
             model = new BoostingRegression(options);
         } else if (modelName.value === Settings.regression.random_forest.value) {
             model = new RandomForestRegressor(options);
+        }
+        else if (modelName.value === Settings.regression.polynomial_regression.value) {
+            model = new PolynomialRegression(options);
         } else {
             throw "model not supported.";
         }

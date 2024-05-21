@@ -171,6 +171,26 @@ export const Settings = {
                 },
             }
         },
+        "polynomial_regression": {
+            "label": "Polynomial Regression",
+            "value": 14,
+            "feature_selection": ["no", "Lasso", "ridge"],
+            "criteria": ["AIC", "BIC", "AR2",],
+            "options": {
+                "alpha": {
+                    type: "number",
+                    default: 0.0
+                },
+                "l1": {
+                    type: "number",
+                    default: 0.0
+                },
+                "degree": {
+                    type: "number",
+                    default: 2
+                },
+            }
+        },
         "k_nearest_neighbour": {
             "label": "k nearest neighbour Regression",
             "value": 10,
