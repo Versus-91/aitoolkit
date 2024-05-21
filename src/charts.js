@@ -1026,7 +1026,24 @@ export default class ChartController {
         </div>
         `
         $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(content);
-        Plotly.newPlot("probs_box_plot_" + index, traces, {
+
+        let data = []
+        for (let i = 0; i < labels.length; i++) {
+            let label_probs = probs.map(item => parseFloat(item[i].toFixed(2)))
+            console.log(labels[i], label_probs);
+            let trace = {
+                y: label_probs,
+                x: true_labels,
+                name: labels[i],
+                marker: { color: colorIndices[i] },
+                type: 'box'
+            };
+            data.push(trace)
+        }
+
+
+
+        Plotly.newPlot("probs_box_plot_" + index, data, {
             yaxis: {
                 zeroline: false
             }, boxmode: 'group'

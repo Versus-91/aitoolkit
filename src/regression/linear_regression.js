@@ -39,6 +39,14 @@ export default class LinearRegression {
         else:
             res = model.fit_regularized(method='elastic_net', alpha=alpha, L1_wt=l1, refit=True)
         preds = res.predict(test)
+
+        coefficients = []
+        alphas = np.logspace(-3, 3, 100)
+
+        for alpha in alphas:
+            linear_reg = model.fit_regularized(method='elastic_net', alpha=alpha, L1_wt=l1, refit=True)
+            coefficients.append(linear_reg.params.tolist())
+
         # Extract summary information
         summary_dict = {
             "params": res.params.tolist(),
@@ -51,7 +59,9 @@ export default class LinearRegression {
             "fvalue": res.fvalue,
             "f_pvalue": res.f_pvalue,
             "aic": res.aic,
-            "bic": res.bic
+            "bic": res.bic,
+            "coefs": coefficients,
+            "alphas" : np.log(alphas)
         }
         
         summary_dict

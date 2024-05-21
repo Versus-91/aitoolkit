@@ -445,7 +445,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 }
             } else {
                 let content = `
-                <div class="column is-12">
+                <div class="column is-6">
                     <div class="table-container">
                     <table
                         class="table nowrap is-striped is-narrow is-hoverable is-size-7"
@@ -453,7 +453,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     </table>
                    </div>
                 </div>
-                <div class="column is-12">
+                <div class="column is-6">
                     <div id="regression_y_yhat_${mltool.model_number}" width="100%">
                    </div>
                 </div>`
@@ -482,7 +482,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             row.push(summary.get('pvalues')[i].toFixed(2))
                             model_stats_matrix.push(row)
                         }
-
+                        plot_regularization(summary.get('coefs'), summary.get('alphas'), x_train.columns)
                         new DataTable('#metrics_table_' + mltool.model_number, {
                             dom: '<"' + mltool.model_number + '">',
                             initComplete: function () {
@@ -1039,6 +1039,78 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         });
 
         return confusionMatrix
+
+    }
+    function plot_regularization(weights, alphas, names) {
+        let content = `
+                    <div class="column is-6" id="regularization_${mltool.model_number}" style="height: 40vh;">
+                    </div>
+    `
+        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(content);
+
+        let serieses = []
+        for (let i = 0; i < names.length; i++) {
+            serieses.push({
+                name: names[i],
+                data: weights.map(m => m[i])
+            })
+        }
+        const alphas_formatted = [];
+        for (let i = 0; i < alphas.length; i++) {
+            alphas_formatted.push(alphas[i].toFixed(2));
+        }
+        Highcharts.chart("regularization_" + mltool.model_number, {
+
+            title: {
+                text: '',
+            },
+
+
+            yAxis: {
+                title: {
+                    text: 'Coefficients'
+                }
+            },
+
+            xAxis: {
+                title: {
+                    text: 'log lambda'
+                },
+                categories: alphas_formatted,
+            },
+
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle'
+            },
+
+            plotOptions: {
+                series: {
+                    label: {
+                        connectorAllowed: false
+                    },
+                }
+            },
+
+            series: serieses,
+
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 500
+                    },
+                    chartOptions: {
+                        legend: {
+                            layout: 'horizontal',
+                            align: 'center',
+                            verticalAlign: 'bottom'
+                        }
+                    }
+                }]
+            }
+
+        });
 
     }
     ui.init_upload_button(handleFileSelect)
