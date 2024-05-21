@@ -754,15 +754,15 @@ export default class ChartController {
         };
         var data = [trace1, trace2];
 
-        var chart_container = `<div class="column is-6" style="height: 50vh" id="pca_results_${index}"></div>`
+        var chart_container = `<div class="column is-6" style="height: 40vh" id="pca_results_${index}"></div>`
         $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(chart_container);
 
         Plotly.newPlot('pca_results_' + index, data, {
             showlegend: true,
             margin: {
-                l: 30,
+                l: 40,
                 r: 20,
-                b: 30,
+                b: 40,
                 t: 20,
             },
             legend: {
@@ -986,7 +986,7 @@ export default class ChartController {
             return currentValue > array[maxIndex] ? currentIndex : maxIndex;
         }, 0);
     }
-    probabilities_boxplot(probs, labels, index) {
+    probabilities_boxplot(probs, labels, true_labels, index) {
         var colorIndices = labels.map((label, i) => this.indexToColor(i));
         const num_columns = probs[0].length;
         let traces = [];

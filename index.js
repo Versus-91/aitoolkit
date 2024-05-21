@@ -368,7 +368,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             metrics.push([
                                 ...stats[i]])
                         }
-                        chart_controller.probabilities_boxplot(probs, uniqueLabels, mltool.model_number)
+                        chart_controller.probabilities_boxplot(probs, uniqueLabels, y_test.values, mltool.model_number)
                         let content = `
                         <div class="column is-6">
                             <table id="stats_table_${mltool.model_number}" class="table is-bordered is-hoverable is-narrow display is-size-7"
@@ -608,6 +608,55 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         };
                         Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         predictions_table_regression(x_test, y_test, y_preds)
+                        break;
+                    }
+                    case Settings.regression.kernel_regression.value: {
+                        model_settings.types = ''
+                        for (let i = 0; i < x_train.columns.length; i++) {
+                            model_settings.types += 'c';
+                        }
+                        let model = model_factory.createModel(Settings.regression.kernel_regression, model_settings, {});
+                        let summary = await model.train_test(x_train.values, y_train.values, x_test.values, x_train.columns)
+                        var trace1 = {
+                            x: y_test.values,
+                            y: summary.get('preds'),
+                            type: 'scatter',
+                            name: "y",
+                            mode: 'markers',
+                        };
+
+                        var chart_data = [trace1];
+                        let model_stats_matrix = [];
+                        let cols = [...x_train.columns]
+                        cols.push("intercept")
+                        for (let i = 0; i < cols.length; i++) {
+                            let row = [];
+                            row.push(cols[i])
+                            row.push(summary.get('params')[i].toFixed(2))
+                            row.push(summary.get('bse')[i].toFixed(2))
+                            row.push(summary.get('pvalues')[i].toFixed(2))
+                            model_stats_matrix.push(row)
+                        }
+
+                        new DataTable('#metrics_table_' + mltool.model_number, {
+                            dom: '<"' + mltool.model_number + '">',
+                            initComplete: function () {
+                                $('.' + mltool.model_number).html(`R squared:${summary.get('rsquared').toFixed(2)} AIC: ${summary.get('aic').toFixed(2)} BIC: ${summary.get('bic').toFixed(2)} `);
+                            },
+                            responsive: true,
+                            columns: [{ title: "variable" }, { title: "weight" }, { title: "std error" }, { title: "p value" }],
+                            data: model_stats_matrix,
+                            info: false,
+                            search: false,
+                            ordering: false,
+                            searching: false,
+                            paging: false,
+                            bDestroy: true,
+                        });
+                        $("#formulas").html = "";
+                        $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, chart_data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
+                        predictions_table_regression(x_test, y_test, summary.get('preds'))
                         break;
                     }
                     case Settings.regression.random_forest.value: {
@@ -1015,6 +1064,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     });
     $(".tabs ul li").click(function () {
         window.dispatchEvent(new Event('resize'));
+    });
+    Plotly.setPlotConfig({
+        displaylogo: false,
+        modeBarButtonsToRemove: ['resetScale2d', 'zoom2d', 'pan', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '], // Remove certain buttons from the mode bar
     });
 });
 
