@@ -20,15 +20,15 @@ export default class PolynomialRegression {
         const script = `
         import numpy as np
         import statsmodels.api as sm
-        from js import X_train,y_train,X_test,labels,l1,alpha
+        from js import X_train,y_train,X_test,labels,l1,alpha,degree
         import pandas as pd
 
         df_test = pd.DataFrame(X_test,columns=labels)
-        x_test = df_test.iloc[:,:]**2
+        x_test = df_test.iloc[:,:]**degree
         test = sm.add_constant(x_test, prepend = False)
 
         df_train = pd.DataFrame(X_train,columns=labels)
-        x_train = df_train.iloc[:,:]**2
+        x_train = df_train.iloc[:,:]**degree
         train = sm.add_constant(x_train, prepend = False)
 
 
