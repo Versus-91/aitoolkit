@@ -32,7 +32,6 @@ export default class LogisticRegression {
         summary = mdl_fit.summary()
         summary_table = summary.tables[1].data[0:]
         probabilities = np.array(mdl_fit.predict(x_test))
-        print(probabilities)
         alphas = np.logspace(-3, 3, 100)
         # Initialize a list to store coefficients for each lambda value
         coefs = []

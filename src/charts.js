@@ -988,39 +988,6 @@ export default class ChartController {
     }
     probabilities_boxplot(probs, labels, true_labels, index) {
         var colorIndices = labels.map((label, i) => this.indexToColor(i));
-        const num_columns = probs[0].length;
-        let traces = [];
-        let subsets = {};
-        if (labels.length > 1) {
-            probs.forEach((prob) => {
-                let index = this.argmax(prob);
-                if (!(index in subsets)) {
-                    subsets[index] = [];
-                    subsets[index].push(prob);
-                } else {
-                    subsets[index].push(prob);
-                }
-            });
-        }
-        for (let i = 0; i < num_columns; i++) {
-            let subset = subsets[i];
-            if (subset) {
-                for (let j = 0; j < num_columns; j++) {
-                    let data = subset.map(item => item[j]);
-                    traces.push({
-                        type: 'box',
-                        name: labels[j],
-                        marker: {
-                            color: colorIndices[j]
-                        },
-                        y: data
-                    });
-                }
-                if (labels.length == 2) {
-                    break
-                }
-            }
-        }
         let content = `
         <div class="column is-6" id="probs_box_plot_${index}" style="height: 450px;">
         </div>
