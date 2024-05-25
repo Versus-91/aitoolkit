@@ -206,8 +206,13 @@ export default class ChartController {
                     size: 4,
                     colorscale: 'YlOrRd',
                     color: x,
+                    colorbar: {
+                        title: 'Color Scale Legend',
+                        titleside: 'right'
+                    }
                 },
             })
+
         }
 
         var layout = {
@@ -832,7 +837,12 @@ export default class ChartController {
                     color: x,
                     colorscale: 'YlOrRd',
                     size: 4,
-                }
+                    colorbar: {
+                        title: 'Color Scale Legend',
+                        titleside: 'right'
+                    }
+                },
+
             })
         }
         let cumulatedExplainedVaraince = []
@@ -987,35 +997,50 @@ export default class ChartController {
         }, 0);
     }
     probabilities_boxplot(probs, labels, true_labels, index) {
+        // Map labels to colors for consistent coloring in plots
         var colorIndices = labels.map((label, i) => this.indexToColor(i));
-        let content = `
-        <div class="column is-6" id="probs_box_plot_${index}" style="height: 450px;">
-        </div>
-        `
-        $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(content);
+        const num_columns = probs[0].length;
+        let traces = [];
 
-        let data = []
-        for (let i = 0; i < labels.length; i++) {
-            let label_probs = probs.map(item => parseFloat(item[i].toFixed(2)))
-            console.log(labels[i], label_probs);
-            let trace = {
-                y: label_probs,
-                x: true_labels,
-                name: labels[i],
-                marker: { color: colorIndices[i] },
-                type: 'box'
-            };
-            data.push(trace)
+        // Create subsets of probabilities based on the true labels
+        let subsets = {};
+        true_labels.forEach((true_label, i) => {
+            if (!(true_label in subsets)) {
+                subsets[true_label] = [];
+            }
+            subsets[true_label].push(probs[i]);
+        });
+
+        // Generate box plots for each true label class
+        for (let true_label in subsets) {
+            let subset = subsets[true_label];
+            for (let j = 0; j < num_columns; j++) {
+                let data = subset.map(item => item[j]);
+                traces.push({
+                    type: 'box',
+                    name: `${labels[j]}`,
+                    marker: {
+                        color: colorIndices[j]
+                    },
+                    y: data
+                });
+            }
         }
 
+        // Create a div for the plot
+        let content = `
+            <div class="column is-6" id="probs_box_plot_${index}" style="height: 450px;">
+            </div>
+        `;
+        $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(content);
 
-
-        Plotly.newPlot("probs_box_plot_" + index, data, {
+        // Plot the box plots using Plotly
+        Plotly.newPlot("probs_box_plot_" + index, traces, {
             yaxis: {
                 zeroline: false
-            }, boxmode: 'group'
-        })
-
+            },
+            boxmode: 'group'
+        });
     }
     probablities_violin_plot(probs, classes, labels) {
         var colorIndices = labels.map((label, i) => this.indexToColor(i));
