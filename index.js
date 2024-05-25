@@ -167,6 +167,31 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
         }
     }
+    function calculateRSquared(actual, predicted) {
+        const meanActual = mean(actual);
+        const totalSumOfSquares = actual.reduce((acc, val) => acc + Math.pow(val - meanActual, 2), 0);
+        const residualSumOfSquares = actual.reduce((acc, val, index) => acc + Math.pow(val - predicted[index], 2), 0);
+        return 1 - (residualSumOfSquares / totalSumOfSquares);
+    }
+    function calculateMSE(actualValues, predictedValues) {
+        if (actualValues.length !== predictedValues.length) {
+            throw new Error("The lengths of actual values and predicted values must be the same.");
+        }
+
+        const n = actualValues.length;
+        let sumSquaredError = 0;
+
+        for (let i = 0; i < n; i++) {
+            const squaredError = Math.pow(actualValues[i] - predictedValues[i], 2);
+            sumSquaredError += squaredError;
+        }
+
+        const meanSquaredError = sumSquaredError / n;
+        return meanSquaredError;
+    }
+    function mean(array) {
+        return array.reduce((acc, val) => acc + val, 0) / array.length;
+    }
     async function train(data, len) {
         try {
             // let dataset = data.copy()
@@ -453,6 +478,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     </table>
                    </div>
                 </div>
+                <div class="column is-12" id="metrics_${mltool.model_number}">
+                </div>
                 <div class="column is-6">
                     <div id="regression_y_yhat_${mltool.model_number}" width="100%">
                    </div>
@@ -500,7 +527,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
                         $("#formulas").html = "";
                         $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, chart_data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, chart_data, { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
                         predictions_table_regression(x_test, y_test, summary.get('preds'))
                         break;
                     }
@@ -545,7 +572,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
                         $("#formulas").html = "";
                         $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, chart_data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, chart_data, { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
                         predictions_table_regression(x_test, y_test, summary.get('preds'))
                         break;
                     }
@@ -567,7 +594,18 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             name: "y",
                             mode: 'markers',
                         };
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        let r2 = calculateRSquared(y_test.values, y_preds)
+                        let mse = calculateMSE(y_test.values, y_preds)
+                        let content = `
+                        <div class="column is-12" id="regularization_${mltool.model_number}">
+                            <p>R squared : ${r2.toFixed(2)}</p>
+                            <p>Mean Squared Error: ${mse.toFixed(2)}</p>
+                        </div>
+        `
+                        $("#metrics_" + mltool.model_number).html(content);
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        predictions_table_regression(x_test, y_test, y_preds)
+
                         break;
                     }
                     case Settings.regression.boosting.value: {
@@ -577,6 +615,15 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         })
                         await model.train(x_train.values, y_train.values)
                         let y_preds = await model.predict(x_test.values)
+                        let r2 = calculateRSquared(y_test.values, y_preds)
+                        let mse = calculateMSE(y_test.values, y_preds)
+                        let content = `
+                        <div class="column is-12" id="regularization_${mltool.model_number}">
+                            <p>R squared : ${r2.toFixed(2)}</p>
+                            <p>Mean Squared Error: ${mse.toFixed(2)}</p>
+                        </div>
+        `
+                        $("#metrics_" + mltool.model_number).html(content);
                         var trace = {
                             x: y_test.values,
                             y: y_preds,
@@ -584,7 +631,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             name: "y",
                             mode: 'markers',
                         };
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         predictions_table_regression(x_test, y_test, y_preds)
                         break;
                     }
@@ -599,6 +646,15 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         })
                         await model.train(x_train.values, y_train.values)
                         let y_preds = await model.predict(x_test.values)
+                        let r2 = calculateRSquared(y_test.values, y_preds)
+                        let mse = calculateMSE(y_test.values, y_preds)
+                        let content = `
+                        <div class="column is-12" id="regularization_${mltool.model_number}">
+                            <p>R squared : ${r2.toFixed(2)}</p>
+                            <p>Mean Squared Error: ${mse.toFixed(2)}</p>
+                        </div>
+        `
+                        $("#metrics_" + mltool.model_number).html(content);
                         var trace = {
                             x: y_test.values,
                             y: y_preds,
@@ -606,7 +662,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             name: "y",
                             mode: 'markers',
                         };
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         predictions_table_regression(x_test, y_test, y_preds)
                         break;
                     }
@@ -655,7 +711,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
                         $("#formulas").html = "";
                         $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, chart_data, { title: "y vs y hat", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, chart_data, { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
                         predictions_table_regression(x_test, y_test, summary.get('preds'))
                         break;
                     }
@@ -673,6 +729,15 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
 
                         let preds = await model.train_test(x_train.values, y_train.values, x_test.values)
+                        let r2 = calculateRSquared(y_test.values, preds)
+                        let mse = calculateMSE(y_test.values, preds)
+                        let content = `
+                        <div class="column is-12" id="regularization_${mltool.model_number}">
+                            <p>R squared : ${r2.toFixed(2)}</p>
+                            <p>Mean Squared Error: ${mse.toFixed(2)}</p>
+                        </div>
+        `
+                        $("#metrics_" + mltool.model_number).html(content);
                         var trace = {
                             x: y_test.values,
                             y: preds,
@@ -680,7 +745,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             name: "y",
                             mode: 'markers',
                         };
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y hat", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         predictions_table_regression(x_test, y_test, preds)
 
                         break
@@ -847,7 +912,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             ;
         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(div);
         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(`
-        <div class="column is-6" id="confusion_matrix_${mltool.model_number}" style="height:40vh">
+        <div class="column is-6" id="confusion_matrix_${mltool.model_number}" style="height:50vh">
 
         </div>
 
@@ -895,8 +960,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             },
             chart: {
                 type: 'heatmap',
-                marginTop: 40,
-                marginBottom: 80,
                 plotBorderWidth: 1
             },
 
@@ -943,7 +1006,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 title: {
                     text: 'Actual Class'
                 },
-                reversed: true
+                reversed: true, endOnTick: false
             }, {
                 linkedTo: 0,
                 opposite: true,
