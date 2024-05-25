@@ -22,24 +22,24 @@ export default class PolynomialRegression {
         import statsmodels.api as sm
         from js import X_train,y_train,X_test,labels,l1,alpha,degree
         import pandas as pd
+        from sklearn.preprocessing import PolynomialFeatures
 
+        polynomial_features= PolynomialFeatures(degree=degree)
         df_test = pd.DataFrame(X_test,columns=labels)
-        x_test = df_test.iloc[:,:]**degree
-        test = sm.add_constant(x_test, prepend = False)
-
+        
         df_train = pd.DataFrame(X_train,columns=labels)
-        x_train = df_train.iloc[:,:]**degree
-        train = sm.add_constant(x_train, prepend = False)
+        x_train = polynomial_features.fit_transform(df_train.iloc[:,:])
 
+        x_test = polynomial_features.transform(df_test.iloc[:,:])
 
 
         # Fit OLS model
-        model = sm.OLS(np.array(y_train), train)
+        model = sm.OLS(np.array(y_train), x_train)
         if alpha is 0 and l1 is 0:
             res = model.fit()
         else:
             res = model.fit_regularized(method='elastic_net', alpha=alpha, L1_wt=l1, refit=True)
-        preds = res.predict(test)
+        preds = res.predict(x_test)
         # Extract summary information
         summary_dict = {
             "params": res.params.tolist(),
