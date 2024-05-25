@@ -14,10 +14,10 @@ export default class KNNModel {
         if (this.model === null || this.model === undefined) {
             throw "model not found."
         }
-        var ans = window.tf.tidy(() => {
+        var predictions = window.tf.tidy(() => {
             let results = this.model.predict(x_test);
             return Array.from(results.dataSync())
         })
-        return ans
+        return predictions
     }
 }

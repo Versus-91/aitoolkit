@@ -3,9 +3,10 @@ import PCA from './dimensionality-reduction/pca';
 import { binarize } from './utils'
 import * as ss from "simple-statistics"
 import { schemeCategory10 } from 'd3-scale-chromatic';
-import TSNE from "./tsne";
 import { FeatureCategories } from "../feature_types.js";
 import { MinMaxScaler } from 'danfojs/dist/danfojs-base';
+import { metrics } from './utils.js';
+import * as tfvis from '@tensorflow/tfjs-vis';
 
 export default class ChartController {
     constructor(data_processor) {
@@ -445,11 +446,12 @@ export default class ChartController {
         let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
         // Loop through subsets to generate data for all subsets
         let traces = []
+        let kde;
         if (is_classification) {
             for (let i = 0; i < subsets.length; i++) {
                 if (subsets[i].length > 2) {
                     let ys = [];
-                    var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+                    kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
                     let data = [];
                     breaks.forEach((item) => {
                         ys.push(kde(item, bandwidth));
@@ -472,7 +474,7 @@ export default class ChartController {
             for (let i = 0; i < subsets.length; i++) {
                 if (subsets[i].length > 2) {
                     let ys = [];
-                    var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+                    kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
                     let data = [];
                     breaks.forEach((item) => {
                         ys.push(kde(item, bandwidth));
@@ -597,11 +599,12 @@ export default class ChartController {
                 subsets.push(subset);
             }
         }
+        let kde;
         if (is_classification) {
             for (let i = 0; i < subsets.length; i++) {
                 if (subsets[i].length > 2) {
                     let ys = [];
-                    var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+                    kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
                     let data = [];
                     breaks.forEach((item) => {
                         ys.push(kde(item, bandwidth));
@@ -624,7 +627,7 @@ export default class ChartController {
             for (let i = 0; i < subsets.length; i++) {
                 if (subsets[i].length > 2) {
                     let ys = [];
-                    var kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+                    kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
                     let data = [];
                     breaks.forEach((item) => {
                         ys.push(kde(item, bandwidth));
@@ -1076,5 +1079,305 @@ export default class ChartController {
         }
 
         Plotly.newPlot('probs_violin_plot', traces, layout);
+    }
+    async plot_confusion_matrix(y, predictedLabels, labels, uniqueClasses, tab_index) {
+
+
+        const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
+        let div = document.createElement('div');
+        div.classList.add('column');
+        div.classList.add('is-12');
+        div.setAttribute("id", "result_number_" + tab_index);
+        let metric = await metrics(y.arraySync(), predictedLabels.arraySync(), uniqueClasses)
+        let info = metric[0]
+        console.log(labels);
+        console.log(confusionMatrix);
+        let len = confusionMatrix[0].length
+        let preceissions = [];
+        let supports = [];
+        let recalls = [];
+        let f1s = [];
+        for (let j = 0; j < len; j++) {
+            preceissions.push(parseFloat(info[0][j].toFixed(2)))
+        }
+
+        for (let j = 0; j < len; j++) {
+            recalls.push(parseFloat(info[1][j].toFixed(2)))
+
+        }
+
+        for (let j = 0; j < len; j++) {
+            f1s.push(parseFloat(info[2][j].toFixed(2)))
+
+        }
+        for (let j = 0; j < len; j++) {
+            supports.push(parseFloat(info[3][j].toFixed(2)))
+        }
+        div.innerHTML =
+            `<div class="column is-12">
+
+            <h5 class="subtitle mb-1">Accuracy: ${metric[3].toFixed(2)}</h5>
+            <span class="subtitle mr-2">F1 micro: ${metric[1].toFixed(2)}</span>
+            <span class="subtitle">F1 macro: ${metric[2].toFixed(2)}</span>
+            </div>`
+            ;
+        $("#tabs_info li[data-index='" + tab_index + "'] #results_" + tab_index + "").append(div);
+        $("#tabs_info li[data-index='" + tab_index + "'] #results_" + tab_index + "").append(`
+        <div class="column is-6" id="confusion_matrix_${tab_index}" style="height:50vh">
+
+        </div>
+
+        `);
+        window.tensorflow.dispose(y)
+        window.tensorflow.dispose(predictedLabels)
+
+        const metric_labels = ["Precession", "Recall", "F1 score", "Support"]
+        labels.push("Precession")
+        labels.push("Recall")
+        labels.push("F1 score")
+        // labels.push("Support")
+        confusionMatrix.push(preceissions)
+        confusionMatrix.push(recalls)
+        confusionMatrix.push(f1s)
+        // confusionMatrix.push(supports)
+        let items_labels = labels.filter(x => !metric_labels.includes(x))
+        // Substring template helper for the responsive labels
+        Highcharts.Templating.helpers.substr = (s, from, length) =>
+            s.substr(from, length);
+        let formatted_matrix = []
+        for (let i = 0; i < confusionMatrix.length; i++) {
+            const element = confusionMatrix[i];
+            for (let j = 0; j < element.length; j++) {
+                const item = element[j];
+                formatted_matrix.push([j, i, item])
+            }
+        }
+        console.log(confusionMatrix);
+        console.log(labels);
+
+        // Create the chart
+        Highcharts.chart("confusion_matrix_" + tab_index, {
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: true
+            },
+            chart: {
+                type: 'heatmap',
+                plotBorderWidth: 1
+            },
+
+
+            title: {
+                text: '',
+                style: {
+                    fontSize: '1em'
+                }
+            },
+
+            xAxis: [{
+                categories: items_labels,
+                title: {
+                    text: 'Predicted Class'
+                }
+            }, {
+                linkedTo: 0,
+                opposite: true,
+                tickLength: 0,
+                labels: {
+                    formatter: function () {
+                        var chart = this.chart,
+                            each = Highcharts.each,
+                            series = chart.series[0],
+                            sum = 0,
+                            x = this.value;
+
+                        each(series.options.data, function (p, i) {
+                            if (p[0] === x) {
+                                if (p[1] < uniqueClasses.length) {
+                                    sum += p[2];
+                                }
+                            }
+                        });
+
+                        return sum;
+                    }
+                }
+            }],
+
+            yAxis: [{
+                categories: labels,
+                title: {
+                    text: 'Actual Class'
+                },
+                reversed: true, endOnTick: false
+            }, {
+                linkedTo: 0,
+                opposite: true,
+                tickLength: 0,
+                labels: {
+                    formatter: function () {
+                        var chart = this.chart,
+                            each = Highcharts.each,
+                            series = chart.series[0],
+                            sum = 0,
+                            x = this.value;
+                        each(series.options.data, function (p, i) {
+                            if (p[1] === x) {
+                                if (p[1] < uniqueClasses.length) {
+                                    sum += p[2];
+                                }
+
+                            }
+                        });
+                        return sum;
+                    }
+                },
+                title: null
+            }],
+            colorAxis: {
+                min: 0,
+                minColor: '#FFFFFF',
+                maxColor: Highcharts.getOptions().colors[0]
+            },
+
+            legend: {
+                align: 'right',
+                layout: 'vertical',
+                margin: 0,
+                verticalAlign: 'top',
+                y: 25,
+                symbolHeight: 280
+            },
+
+            tooltip: {
+                formatter: function () {
+                    var totalCount = this.series.data.reduce(function (acc, cur) {
+                        return acc + cur.value;
+                    }, 0);
+                    var count = this.point.value;
+                    var percentage = ((count / totalCount) * 100).toFixed(2);
+                    return '<b>Actual: </b>' + this.series.yAxis.categories[this.point.y] +
+                        '<br><b>Predicted: </b>' + this.series.xAxis.categories[this.point.x] +
+                        '<br><b>Count: </b>' + count +
+                        '<br><b>Percentage: </b>' + percentage + '%';
+                }
+            },
+            series: [{
+                name: 'Sales per employee',
+                borderWidth: 1,
+                data: formatted_matrix,
+                dataLabels: {
+                    enabled: true,
+                    useHTML: true,
+                    color: '#000000',
+                    formatter: function () {
+                        var totalCount = this.series.data.reduce(function (acc, cur) {
+                            return acc + cur.value;
+                        }, 0);
+                        var count = this.point.value;
+                        var skip = this.point.index >= this.series.data.length - (3 * uniqueClasses.length);
+
+                        if (!skip) {
+                            var percentage = ((count / totalCount) * 100).toFixed(2);
+                            return '<p style="margin:auto; text-align:center;">' + count + '<br/>(' + percentage + '%)</p> ';
+                        } else {
+                            return '<p style="margin:auto; text-align:center;">' + count + '</p>';
+                        }
+                    }
+                }
+            }],
+
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 500
+                    },
+                    chartOptions: {
+                        yAxis: {
+                            labels: {
+                                format: '{substr value 0 1}'
+                            }
+                        }
+                    }
+                }]
+            }
+
+        });
+
+        return confusionMatrix
+    }
+    plot_regularization(weights, alphas, names, tab_index) {
+        let content = `
+                    <div class="column is-6" id="regularization_${tab_index}" style="height: 40vh;">
+                    </div>
+    `
+        $("#tabs_info li[data-index='" + tab_index + "'] #results_" + tab_index + "").append(content);
+
+        let serieses = []
+        for (let i = 0; i < names.length; i++) {
+            serieses.push({
+                name: names[i],
+                data: weights.map(m => m[i])
+            })
+        }
+        const alphas_formatted = [];
+        for (let i = 0; i < alphas.length; i++) {
+            alphas_formatted.push(alphas[i].toFixed(2));
+        }
+        Highcharts.chart("regularization_" + tab_index, {
+
+            title: {
+                text: '',
+            },
+
+
+            yAxis: {
+                title: {
+                    text: 'Coefficients'
+                }
+            },
+
+            xAxis: {
+                title: {
+                    text: 'log lambda'
+                },
+                categories: alphas_formatted,
+            },
+
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle'
+            },
+
+            plotOptions: {
+                series: {
+                    label: {
+                        connectorAllowed: false
+                    },
+                }
+            },
+
+            series: serieses,
+
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 500
+                    },
+                    chartOptions: {
+                        legend: {
+                            layout: 'horizontal',
+                            align: 'center',
+                            verticalAlign: 'bottom'
+                        }
+                    }
+                }]
+            }
+
+        });
+
     }
 }

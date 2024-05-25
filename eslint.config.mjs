@@ -23,11 +23,8 @@ export default [
         File: "readonly",
         MinMaxScaler: "readonly",
         Event: "readonly",
-
-
-
-
-
+        tsne: "readonly",
+        fetch: "readonly",
       }
     }
   }

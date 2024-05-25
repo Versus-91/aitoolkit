@@ -6,11 +6,10 @@ import DataLoader from "./src/data.js";
 import UI from "./src/ui.js";
 import { FeatureCategories, Settings } from './feature_types.js';
 import { ModelFactory } from './src/model_factory.js';
-import * as tfvis from '@tensorflow/tfjs-vis';
 import * as sk from 'scikitjs'
 import Plotly from 'plotly.js-dist';
 import Bulma from '@vizuaalog/bulmajs';
-import { calculateRecall, calculateF1Score, calculatePrecision, metrics } from './src/utils.js';
+import { calculateRecall, calculateF1Score, calculatePrecision, calculateRSquared, calculateMSE } from './src/utils.js';
 import SVM from "libsvm-js/asm";
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css'; // optional for styling
@@ -167,31 +166,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
         }
     }
-    function calculateRSquared(actual, predicted) {
-        const meanActual = mean(actual);
-        const totalSumOfSquares = actual.reduce((acc, val) => acc + Math.pow(val - meanActual, 2), 0);
-        const residualSumOfSquares = actual.reduce((acc, val, index) => acc + Math.pow(val - predicted[index], 2), 0);
-        return 1 - (residualSumOfSquares / totalSumOfSquares);
-    }
-    function calculateMSE(actualValues, predictedValues) {
-        if (actualValues.length !== predictedValues.length) {
-            throw new Error("The lengths of actual values and predicted values must be the same.");
-        }
 
-        const n = actualValues.length;
-        let sumSquaredError = 0;
-
-        for (let i = 0; i < n; i++) {
-            const squaredError = Math.pow(actualValues[i] - predictedValues[i], 2);
-            sumSquaredError += squaredError;
-        }
-
-        const meanSquaredError = sumSquaredError / n;
-        return meanSquaredError;
-    }
-    function mean(array) {
-        return array.reduce((acc, val) => acc + val, 0) / array.length;
-    }
     async function train(data, len) {
         try {
             // let dataset = data.copy()
@@ -271,7 +246,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let knn_accuracies = results.map(m => [m.k, m.evaluation.accuracy.toFixed(2)])
 
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        await plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
+                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
 
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels, mltool.model_number)
                         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(`
@@ -311,7 +286,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         await model.train(x_train.values, encoded_y_train)
                         let y_preds = model.predict(x_test.values)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        await plot_confusion_matrix(window.tensorflow.tensor(y_preds), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
+                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(y_preds), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, y_preds)
@@ -333,7 +308,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         }
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        await plot_confusion_matrix(window.tensorflow.tensor(y_preds), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
+                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(y_preds), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, y_preds)
@@ -359,7 +334,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let y_preds = await model.predict(x_test.values)
                         let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        await plot_confusion_matrix(window.tensorflow.tensor(y_preds), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes))
+                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(y_preds), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, y_preds)
 
@@ -385,7 +360,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         // preds = encoder.transform(preds);
                         let evaluation_result = evaluate_classification(preds, y_t)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        const matrix = await plot_confusion_matrix(window.tensorflow.tensor(preds), window.tensorflow.tensor(y_t), classes, encoder.transform(classes))
+                        const matrix = await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(preds), window.tensorflow.tensor(y_t), classes, encoder.transform(classes), mltool.model_number)
                         await chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         metrics_table(classes, matrix)
                         let metrics = []
@@ -428,7 +403,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         preds = Array.from(preds)
                         let evaluation_result = evaluate_classification(preds, y_t)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        const matrix = await plot_confusion_matrix(window.tensorflow.tensor(preds), window.tensorflow.tensor(y_t), classes, encoder.transform(classes))
+                        const matrix = await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(preds), window.tensorflow.tensor(y_t), classes, encoder.transform(classes), mltool.model_number)
                         metrics_table(classes, matrix)
                         await chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, preds);
@@ -456,7 +431,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let preds = await model.train_test(x_train.values, encoded_y, x_test.values)
                         const evaluation_result = evaluate_classification(preds, encoded_y_test)
                         const classes = encoder_rf.inverseTransform(Object.values(encoder_rf.$labels))
-                        await plot_confusion_matrix(window.tensorflow.tensor(preds), window.tensorflow.tensor(encoded_y_test), classes, encoder_rf.transform(classes))
+                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(preds), window.tensorflow.tensor(encoded_y_test), classes, encoder_rf.transform(classes), mltool.model_number)
                         //metrics_table(classes, matrix)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
 
@@ -469,22 +444,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                 }
             } else {
-                let content = `
-                <div class="column is-6">
-                    <div class="table-container">
-                    <table
-                        class="table nowrap is-striped is-narrow is-hoverable is-size-7"
-                        id="metrics_table_${mltool.model_number}" >
-                    </table>
-                   </div>
-                </div>
-                <div class="column is-12" id="metrics_${mltool.model_number}">
-                </div>
-                <div class="column is-6">
-                    <div id="regression_y_yhat_${mltool.model_number}" width="100%">
-                   </div>
-                </div>`
-                $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(content);
+                ui.init_regression_results_tab(mltool.model_number)
                 switch (model_name) {
                     case Settings.regression.linear_regression.value: {
                         let model = model_factory.createModel(Settings.regression.linear_regression, model_settings, {});
@@ -509,7 +469,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             row.push(summary.get('pvalues')[i].toFixed(2))
                             model_stats_matrix.push(row)
                         }
-                        plot_regularization(summary.get('coefs'), summary.get('alphas'), x_train.columns)
+                        chart_controller.plot_regularization(summary.get('coefs'), summary.get('alphas'), x_train.columns, mltool.model_number)
                         new DataTable('#metrics_table_' + mltool.model_number, {
                             dom: '<"' + mltool.model_number + '">',
                             initComplete: function () {
@@ -869,313 +829,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
     }
 
-    async function plot_confusion_matrix(y, predictedLabels, labels, uniqueClasses) {
 
 
-        const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
-        let div = document.createElement('div');
-        div.classList.add('column');
-        div.classList.add('is-12');
-        div.setAttribute("id", "result_number_" + mltool.model_number);
-        let metric = await metrics(y.arraySync(), predictedLabels.arraySync(), uniqueClasses)
-        let info = metric[0]
-        console.log(labels);
-        console.log(confusionMatrix);
-        let len = confusionMatrix[0].length
-        let preceissions = [];
-        let supports = [];
-        let recalls = [];
-        let f1s = [];
-        for (let j = 0; j < len; j++) {
-            preceissions.push(parseFloat(info[0][j].toFixed(2)))
-        }
-
-        for (let j = 0; j < len; j++) {
-            recalls.push(parseFloat(info[1][j].toFixed(2)))
-
-        }
-
-        for (let j = 0; j < len; j++) {
-            f1s.push(parseFloat(info[2][j].toFixed(2)))
-
-        }
-        for (let j = 0; j < len; j++) {
-            supports.push(parseFloat(info[3][j].toFixed(2)))
-        }
-        div.innerHTML =
-            `<div class="column is-12">
-
-            <h5 class="subtitle mb-1">Accuracy: ${metric[3].toFixed(2)}</h5>
-            <span class="subtitle mr-2">F1 micro: ${metric[1].toFixed(2)}</span>
-            <span class="subtitle">F1 macro: ${metric[2].toFixed(2)}</span>
-            </div>`
-            ;
-        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(div);
-        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(`
-        <div class="column is-6" id="confusion_matrix_${mltool.model_number}" style="height:50vh">
-
-        </div>
-
-        `);
-        window.tensorflow.dispose(y)
-        window.tensorflow.dispose(predictedLabels)
-
-        // const container = document.getElementById("confusion_matrix_" + (mltool.model_number + 1));
-        // await tfvis.render.confusionMatrix(container, {
-        //     values: confusionMatrix,
-        //     tickLabels: labels
-        // });
-
-        const metric_labels = ["Precession", "Recall", "F1 score", "Support"]
-        labels.push("Precession")
-        labels.push("Recall")
-        labels.push("F1 score")
-        // labels.push("Support")
-        confusionMatrix.push(preceissions)
-        confusionMatrix.push(recalls)
-        confusionMatrix.push(f1s)
-        // confusionMatrix.push(supports)
-        let items_labels = labels.filter(x => !metric_labels.includes(x))
-        // Substring template helper for the responsive labels
-        Highcharts.Templating.helpers.substr = (s, from, length) =>
-            s.substr(from, length);
-        let formatted_matrix = []
-        for (let i = 0; i < confusionMatrix.length; i++) {
-            const element = confusionMatrix[i];
-            for (let j = 0; j < element.length; j++) {
-                const item = element[j];
-                formatted_matrix.push([j, i, item])
-            }
-        }
-        console.log(confusionMatrix);
-        console.log(labels);
-
-        // Create the chart
-        Highcharts.chart("confusion_matrix_" + mltool.model_number, {
-            credits: {
-                enabled: false
-            },
-            exporting: {
-                enabled: true
-            },
-            chart: {
-                type: 'heatmap',
-                plotBorderWidth: 1
-            },
-
-
-            title: {
-                text: '',
-                style: {
-                    fontSize: '1em'
-                }
-            },
-
-            xAxis: [{
-                categories: items_labels,
-                title: {
-                    text: 'Predicted Class'
-                }
-            }, {
-                linkedTo: 0,
-                opposite: true,
-                tickLength: 0,
-                labels: {
-                    formatter: function () {
-                        var chart = this.chart,
-                            each = Highcharts.each,
-                            series = chart.series[0],
-                            sum = 0,
-                            x = this.value;
-
-                        each(series.options.data, function (p, i) {
-                            if (p[0] === x) {
-                                if (p[1] < uniqueClasses.length) {
-                                    sum += p[2];
-                                }
-                            }
-                        });
-
-                        return sum;
-                    }
-                }
-            }],
-
-            yAxis: [{
-                categories: labels,
-                title: {
-                    text: 'Actual Class'
-                },
-                reversed: true, endOnTick: false
-            }, {
-                linkedTo: 0,
-                opposite: true,
-                tickLength: 0,
-                labels: {
-                    formatter: function () {
-                        var chart = this.chart,
-                            each = Highcharts.each,
-                            series = chart.series[0],
-                            sum = 0,
-                            x = this.value;
-                        each(series.options.data, function (p, i) {
-                            if (p[1] === x) {
-                                if (p[1] < uniqueClasses.length) {
-                                    sum += p[2];
-                                }
-
-                            }
-                        });
-                        return sum;
-                    }
-                },
-                title: null
-            }],
-            colorAxis: {
-                min: 0,
-                minColor: '#FFFFFF',
-                maxColor: Highcharts.getOptions().colors[0]
-            },
-
-            legend: {
-                align: 'right',
-                layout: 'vertical',
-                margin: 0,
-                verticalAlign: 'top',
-                y: 25,
-                symbolHeight: 280
-            },
-
-            tooltip: {
-                formatter: function () {
-                    var totalCount = this.series.data.reduce(function (acc, cur) {
-                        return acc + cur.value;
-                    }, 0);
-                    var count = this.point.value;
-                    var percentage = ((count / totalCount) * 100).toFixed(2);
-                    return '<b>Actual: </b>' + this.series.yAxis.categories[this.point.y] +
-                        '<br><b>Predicted: </b>' + this.series.xAxis.categories[this.point.x] +
-                        '<br><b>Count: </b>' + count +
-                        '<br><b>Percentage: </b>' + percentage + '%';
-                }
-            },
-            series: [{
-                name: 'Sales per employee',
-                borderWidth: 1,
-                data: formatted_matrix,
-                dataLabels: {
-                    enabled: true,
-                    useHTML: true,
-                    color: '#000000',
-                    formatter: function () {
-                        var totalCount = this.series.data.reduce(function (acc, cur) {
-                            return acc + cur.value;
-                        }, 0);
-                        var count = this.point.value;
-                        var skip = this.point.index >= this.series.data.length - (3 * uniqueClasses.length);
-
-                        if (!skip) {
-                            var percentage = ((count / totalCount) * 100).toFixed(2);
-                            return '<p style="margin:auto; text-align:center;">' + count + '<br/>(' + percentage + '%)</p> ';
-                        } else {
-                            return '<p style="margin:auto; text-align:center;">' + count + '</p>';
-                        }
-                    }
-                }
-            }],
-
-            responsive: {
-                rules: [{
-                    condition: {
-                        maxWidth: 500
-                    },
-                    chartOptions: {
-                        yAxis: {
-                            labels: {
-                                format: '{substr value 0 1}'
-                            }
-                        }
-                    }
-                }]
-            }
-
-        });
-
-        return confusionMatrix
-
-    }
-    function plot_regularization(weights, alphas, names) {
-        let content = `
-                    <div class="column is-6" id="regularization_${mltool.model_number}" style="height: 40vh;">
-                    </div>
-    `
-        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(content);
-
-        let serieses = []
-        for (let i = 0; i < names.length; i++) {
-            serieses.push({
-                name: names[i],
-                data: weights.map(m => m[i])
-            })
-        }
-        const alphas_formatted = [];
-        for (let i = 0; i < alphas.length; i++) {
-            alphas_formatted.push(alphas[i].toFixed(2));
-        }
-        Highcharts.chart("regularization_" + mltool.model_number, {
-
-            title: {
-                text: '',
-            },
-
-
-            yAxis: {
-                title: {
-                    text: 'Coefficients'
-                }
-            },
-
-            xAxis: {
-                title: {
-                    text: 'log lambda'
-                },
-                categories: alphas_formatted,
-            },
-
-            legend: {
-                layout: 'vertical',
-                align: 'right',
-                verticalAlign: 'middle'
-            },
-
-            plotOptions: {
-                series: {
-                    label: {
-                        connectorAllowed: false
-                    },
-                }
-            },
-
-            series: serieses,
-
-            responsive: {
-                rules: [{
-                    condition: {
-                        maxWidth: 500
-                    },
-                    chartOptions: {
-                        legend: {
-                            layout: 'horizontal',
-                            align: 'center',
-                            verticalAlign: 'bottom'
-                        }
-                    }
-                }]
-            }
-
-        });
-
-    }
     ui.init_upload_button(handleFileSelect)
     document.querySelector('#dim_red_button_pca').addEventListener('click', async function (e) {
         await dimension_reduction();

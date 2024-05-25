@@ -721,7 +721,23 @@ export default class UI {
         $("#tabs_info li").removeClass("is-active");
         $("#tabs_info li[data-index='" + index + "']").addClass("is-active");
         $("#tabs_content li[data-index='" + index + "']").addClass("is-active");
-
     }
-
+    init_regression_results_tab(index) {
+        let content = `
+        <div class="column is-6">
+            <div class="table-container">
+            <table
+                class="table nowrap is-striped is-narrow is-hoverable is-size-7"
+                id="metrics_table_${index}" >
+            </table>
+           </div>
+        </div>
+        <div class="column is-12" id="metrics_${index}">
+        </div>
+        <div class="column is-6">
+            <div id="regression_y_yhat_${index}" width="100%">
+           </div>
+        </div>`
+        $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(content);
+    }
 }

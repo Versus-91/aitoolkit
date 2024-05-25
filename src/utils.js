@@ -227,6 +227,31 @@ export async function metrics(y, y_pred, labels) {
         throw ("Something went wrong", e)
     }
 }
+export function calculateRSquared(actual, predicted) {
+    const meanActual = mean_array(actual);
+    const totalSumOfSquares = actual.reduce((acc, val) => acc + Math.pow(val - meanActual, 2), 0);
+    const residualSumOfSquares = actual.reduce((acc, val, index) => acc + Math.pow(val - predicted[index], 2), 0);
+    return 1 - (residualSumOfSquares / totalSumOfSquares);
+}
+export function calculateMSE(actualValues, predictedValues) {
+    if (actualValues.length !== predictedValues.length) {
+        throw new Error("The lengths of actual values and predicted values must be the same.");
+    }
+
+    const n = actualValues.length;
+    let sumSquaredError = 0;
+
+    for (let i = 0; i < n; i++) {
+        const squaredError = Math.pow(actualValues[i] - predictedValues[i], 2);
+        sumSquaredError += squaredError;
+    }
+
+    const meanSquaredError = sumSquaredError / n;
+    return meanSquaredError;
+}
+function mean_array(array) {
+    return array.reduce((acc, val) => acc + val, 0) / array.length;
+}
 
 
 
