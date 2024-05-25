@@ -78,37 +78,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     ui.createDatasetPropsDropdown(dataset);
                     ui.createSampleDataTable(dataset);
                     await ui.visualize(dataset, result.data.length, file.name);
-                    tippy('#kde_help', {
-                        interactive: true,
-                        popperOptions: {
-                            positionFixed: true,
-                        },
-                        content: 'Default bandwidth method :Silverman’s rule of thumb',
-                    });
-                    tippy('#normalization_help', {
-                        interactive: true,
-                        popperOptions: {
-                            positionFixed: true,
-                        },
-                        content: '<p>not functional yet</p><p>standard scaler uses z = (x - u) / s</p><p>Transform features by scaling each feature to a given range</p>',
-                        allowHTML: true,
-                    });
-                    tippy('#imputation_help', {
-                        interactive: true,
-                        popperOptions: {
-                            positionFixed: true,
-                        },
-                        content: 'currently we are just deleting rows with missing values',
-                        allowHTML: true,
-                    });
-                    tippy('#cv_help', {
-                        interactive: true,
-                        popperOptions: {
-                            positionFixed: true,
-                        },
-                        content: 'option 1 and 2 are working',
-                        allowHTML: true,
-                    });
+                    ui.init_tooltips(tippy)
                     document.querySelector('#feature_selection_modal').addEventListener('update_graphs', async function (e) {
                         await ui.visualize(data_frame);
                     });
@@ -449,15 +419,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     case Settings.regression.linear_regression.value: {
                         let model = model_factory.createModel(Settings.regression.linear_regression, model_settings, {});
                         let summary = await model.train_test(x_train.values, y_train.values, x_test.values, x_train.columns)
-                        var trace1 = {
-                            x: y_test.values,
-                            y: summary.get('preds'),
-                            type: 'scatter',
-                            name: "y",
-                            mode: 'markers',
-                        };
 
-                        var chart_data = [trace1];
                         let model_stats_matrix = [];
                         let cols = [...x_train.columns]
                         cols.push("intercept")
@@ -487,22 +449,21 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
                         $("#formulas").html = "";
                         $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, chart_data, { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [{
+                            x: y_test.values,
+                            y: summary.get('preds'),
+                            type: 'scatter',
+                            name: "y",
+                            mode: 'markers',
+                        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
                         predictions_table_regression(x_test, y_test, summary.get('preds'))
                         break;
                     }
                     case Settings.regression.polynomial_regression.value: {
                         let model = model_factory.createModel(Settings.regression.polynomial_regression, model_settings, {});
                         let summary = await model.train_test(x_train.values, y_train.values, x_test.values, x_train.columns)
-                        var trace1 = {
-                            x: y_test.values,
-                            y: summary.get('preds'),
-                            type: 'scatter',
-                            name: "y",
-                            mode: 'markers',
-                        };
 
-                        var chart_data = [trace1];
+
                         let model_stats_matrix = [];
                         let cols = [...x_train.columns]
                         cols.push("intercept")
@@ -532,7 +493,26 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
                         $("#formulas").html = "";
                         $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, chart_data, { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [{
+                            x: y_test.values,
+                            y: summary.get('preds'),
+                            type: 'scatter',
+                            name: "y",
+                            mode: 'markers',
+                        }],
+                            {
+                                title: "y vs y&#770;", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" }
+                                , shapes: [{
+                                    type: 'line',
+                                    xref: 'paper',
+                                    x0: 0,
+                                    x1: 1,
+                                    yref: 'paper',
+                                    y0: 0,
+                                    y1: 1
+                                }]
+                            }
+                            , { responsive: true });
                         predictions_table_regression(x_test, y_test, summary.get('preds'))
                         break;
                     }
@@ -584,14 +564,13 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         </div>
         `
                         $("#metrics_" + mltool.model_number).html(content);
-                        var trace = {
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [{
                             x: y_test.values,
                             y: y_preds,
                             type: 'scatter',
                             name: "y",
                             mode: 'markers',
-                        };
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         predictions_table_regression(x_test, y_test, y_preds)
                         break;
                     }
@@ -615,14 +594,13 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         </div>
         `
                         $("#metrics_" + mltool.model_number).html(content);
-                        var trace = {
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [{
                             x: y_test.values,
                             y: y_preds,
                             type: 'scatter',
                             name: "y",
                             mode: 'markers',
-                        };
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         predictions_table_regression(x_test, y_test, y_preds)
                         break;
                     }
@@ -633,15 +611,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         }
                         let model = model_factory.createModel(Settings.regression.kernel_regression, model_settings, {});
                         let summary = await model.train_test(x_train.values, y_train.values, x_test.values, x_train.columns)
-                        var trace1 = {
-                            x: y_test.values,
-                            y: summary.get('preds'),
-                            type: 'scatter',
-                            name: "y",
-                            mode: 'markers',
-                        };
-
-                        var chart_data = [trace1];
                         let model_stats_matrix = [];
                         let cols = [...x_train.columns]
                         cols.push("intercept")
@@ -671,7 +640,13 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
                         $("#formulas").html = "";
                         $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, chart_data, { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [{
+                            x: y_test.values,
+                            y: summary.get('preds'),
+                            type: 'scatter',
+                            name: "y",
+                            mode: 'markers',
+                        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
                         predictions_table_regression(x_test, y_test, summary.get('preds'))
                         break;
                     }
@@ -698,16 +673,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         </div>
         `
                         $("#metrics_" + mltool.model_number).html(content);
-                        var trace = {
+                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [{
                             x: y_test.values,
                             y: preds,
                             type: 'scatter',
                             name: "y",
                             mode: 'markers',
-                        };
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+                        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
                         predictions_table_regression(x_test, y_test, preds)
-
                         break
                     }
                 }
