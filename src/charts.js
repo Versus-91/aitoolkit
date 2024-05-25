@@ -4,7 +4,7 @@ import { binarize } from './utils'
 import * as ss from "simple-statistics"
 import { schemeCategory10 } from 'd3-scale-chromatic';
 import { FeatureCategories } from "../feature_types.js";
-import { MinMaxScaler } from 'danfojs/dist/danfojs-base';
+import { MinMaxScaler, StandardScaler } from 'danfojs/dist/danfojs-base';
 import { metrics } from './utils.js';
 import * as tfvis from '@tensorflow/tfjs-vis';
 
@@ -330,6 +330,13 @@ export default class ChartController {
             case "3":
                 dataset.addColumn(column, dataset[column].apply((x) => Math.log(x)), { inplace: true })
                 break;
+            case "4":
+                {
+                    let scaler = new StandardScaler()
+                    scaler.fit(dataset[column])
+                    dataset.addColumn(column, scaler.transform(dataset[column]), { inplace: true })
+                    break;
+                }
             default:
                 break;
         }
@@ -344,7 +351,7 @@ export default class ChartController {
         let subsets = [];
         var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
         if (!is_classification) {
-            subsets.push(raw_values.column(column).values);
+            subsets.push(dataset[column].values);
         } else {
             for (let i = 0; i < uniqueLabels.length; i++) {
                 const label = uniqueLabels[i];
@@ -396,7 +403,7 @@ export default class ChartController {
                                 <option value="1">Scale</option>
                                 <option value="2">x^2</option>
                                 <option value="3">ln(x)</option>
-                                <option value="3">Standardize </option>
+                                <option value="4">Standardize </option>
                             </select>
                         </div>
                     <p class="help is-success">Normalization</p>
@@ -585,7 +592,7 @@ export default class ChartController {
 
         var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
         if (!is_classification) {
-            subsets.push(raw_values.column(column).values);
+            subsets.push(dataset[column].values);
         } else {
             for (let i = 0; i < uniqueLabels.length; i++) {
                 const label = uniqueLabels[i];
@@ -640,7 +647,7 @@ export default class ChartController {
             }
             traces.push({
                 name: column,
-                y: items,
+                x: items,
                 type: 'box',
             })
         }
