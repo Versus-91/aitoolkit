@@ -773,4 +773,17 @@ export default class UI {
             allowHTML: true,
         });
     }
+
+    init_tabs_events() {
+        $("#tabs_content").on("click", "li", function () {
+            var index = $(this).data("index");
+            $("#tabs_content li").not(this).removeClass("is-active");
+            $("#tabs_info li").removeClass("is-active");
+            $("#tabs_info li[data-index='" + index + "']").addClass("is-active");
+            $(this).toggleClass("is-active ");
+        });
+        $(".tabs ul li").click(function () {
+            window.dispatchEvent(new Event('resize'));
+        });
+    }
 }

@@ -9,7 +9,7 @@ import { ModelFactory } from './src/model_factory.js';
 import * as sk from 'scikitjs'
 import Plotly from 'plotly.js-dist';
 import Bulma from '@vizuaalog/bulmajs';
-import { calculateRecall, calculateF1Score, calculatePrecision, calculateRSquared, calculateMSE } from './src/utils.js';
+import { calculateRecall, calculateF1Score, calculatePrecision, calculateRSquared, calculateMSE, evaluate_classification } from './src/utils.js';
 import SVM from "libsvm-js/asm";
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css'; // optional for styling
@@ -233,8 +233,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             paging: false,
                             searching: false,
                         });
-                        //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
-
                         predictions_table(x_test, y_test, encoder, best_result.predictions)
                         break;
                     }
@@ -259,7 +257,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let evaluation_result = evaluate_classification(predictions, encoded_y_test)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, predictions)
-                        //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
                     }
                     case Settings.classification.naive_bayes.value: {
@@ -278,7 +275,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let evaluation_result = evaluate_classification(predictions, encoded_y_test)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
-                        //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, predictions)
                         break;
@@ -306,8 +302,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, predictions)
-
-                        //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
                     }
                     case Settings.classification.logistic_regression.value: {
@@ -326,12 +320,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             let key = Object.keys(encoder.$labels)[item.indexOf(Math.max(...item))]
                             predictions.push(parseInt(encoder.$labels[key]))
                         }));
-                        // predictions = encoder.transform(predictions);
                         let evaluation_result = evaluate_classification(predictions, y_t)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         const matrix = await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(y_t), classes, encoder.transform(classes), mltool.model_number)
                         await chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels, mltool.model_number)
-                        metrics_table(classes, matrix)
                         let metrics = []
                         for (let i = 0; i < stats.length; i++) {
                             metrics.push([
@@ -357,7 +349,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             paging: false,
                             bDestroy: true,
                         });
-                        // chart_controller.regularization_plot(alphas, coefs, x_test.columns)
                         predictions_table(x_test, y_test, encoder, predictions, probs);
                         chart_controller.probablities_violin_plot(probs, classes, uniqueLabels)
                         break
@@ -372,8 +363,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         predictions = Array.from(predictions)
                         let evaluation_result = evaluate_classification(predictions, y_t)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        const matrix = await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(y_t), classes, encoder.transform(classes), mltool.model_number)
-                        metrics_table(classes, matrix)
+                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(y_t), classes, encoder.transform(classes), mltool.model_number)
                         await chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         predictions_table(x_test, y_test, encoder, predictions);
                         break
@@ -401,7 +391,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         const evaluation_result = evaluate_classification(predictions, encoded_y_test)
                         const classes = encoder_rf.inverseTransform(Object.values(encoder_rf.$labels))
                         await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), classes, encoder_rf.transform(classes), mltool.model_number)
-                        //metrics_table(classes, matrix)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
 
                         predictions_table(x_test, y_test, encoder_rf, predictions);
@@ -682,46 +671,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             bDestroy: true,
         });
     }
-    function metrics_table(labels, matrix) {
-        let metrics = []
-        for (let i = 0; i < matrix.length; i++) {
-            metrics.push([
-                labels[i],
-                calculateRecall(i, matrix).toFixed(4),
-                calculatePrecision(i, matrix).toFixed(4),
-                calculateF1Score(i, matrix).toFixed(4),
-            ]
-            )
-        }
-        new DataTable('#metrics_table', {
-            responsive: true,
-            columns: [{ title: "Class" }, { title: "Recall" }, { title: "Precision" }, { title: "f1" }],
-            data: metrics,
-            info: false,
-            search: false,
-            ordering: false,
-            searching: false,
-            paging: false,
-            bDestroy: true,
-        });
-    }
-    function evaluate_classification(predictions, y_test) {
-        console.assert(predictions.length === y_test.length, "predictions and test should have the same length.")
-        let missclassification_indexes = []
-        let currect_classifications_sum = 0
-        y_test.forEach((element, i) => {
-            if (element === predictions[i]) {
-                currect_classifications_sum++
-            } else {
-                missclassification_indexes.push(i)
-
-            }
-        });
-        return {
-            accuracy: (currect_classifications_sum / predictions.length) * 100,
-            indexes: missclassification_indexes
-        }
-    }
 
 
 
@@ -736,19 +685,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         handleFileSelect(null, e.target.value.toLowerCase() + '.csv')
 
     })
-    $("#myList li").click(function () {
-        $(this).toggleClass("active");
-    });
-    $("#tabs_content").on("click", "li", function () {
-        var index = $(this).data("index");
-        $("#tabs_content li").not(this).removeClass("is-active");
-        $("#tabs_info li").removeClass("is-active");
-        $("#tabs_info li[data-index='" + index + "']").addClass("is-active");
-        $(this).toggleClass("is-active ");
-    });
-    $(".tabs ul li").click(function () {
-        window.dispatchEvent(new Event('resize'));
-    });
+    ui.init_tabs_events();
     Plotly.setPlotConfig({
         displaylogo: false,
         modeBarButtonsToRemove: ['resetScale2d', 'zoom2d', 'pan', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '], // Remove certain buttons from the mode bar

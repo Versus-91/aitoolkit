@@ -252,6 +252,23 @@ export function calculateMSE(actualValues, predictedValues) {
 function mean_array(array) {
     return array.reduce((acc, val) => acc + val, 0) / array.length;
 }
+export function evaluate_classification(predictions, y_test) {
+    console.assert(predictions.length === y_test.length, "predictions and test should have the same length.")
+    let missclassification_indexes = []
+    let currect_classifications_sum = 0
+    y_test.forEach((element, i) => {
+        if (element === predictions[i]) {
+            currect_classifications_sum++
+        } else {
+            missclassification_indexes.push(i)
+
+        }
+    });
+    return {
+        accuracy: (currect_classifications_sum / predictions.length) * 100,
+        indexes: missclassification_indexes
+    }
+}
 
 
 
