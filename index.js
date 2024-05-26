@@ -24,8 +24,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     let data_parser = new DataLoader();
     let chart_controller = new ChartController(data_parser);
     let ui = new UI(data_parser, chart_controller);
-    const html_content_ids = ["lasso_plot", "formulas", "regression_y_yhat", "probs_violin_plot"]
-    const table_ids = ["lasso_plot", "predictions_table", "results", "knn_table", "metrics_table", "stats_table", "sample_data_table"]
+    const html_content_ids = []
+    const table_ids = ["sample_data_table"]
     const plots = ["tsne", "pca-1", "pca-2", "pca-3"]
 
     async function handleFileSelect(evt, url) {
@@ -197,11 +197,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let encoded_y_test = encoder.transform(y_test.values)
                         for (let k = model_settings.min; k <= model_settings.max; k++) {
                             await knn_classifier.train(x_train.values, encoded_y_train, k)
-                            let y_preds = knn_classifier.predict(x_test.values)
-                            let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                            results.push({ k: k, predictions: y_preds, evaluation: evaluation_result })
+                            let predictions = knn_classifier.predict(x_test.values)
+                            let evaluation_result = evaluate_classification(predictions, encoded_y_test)
+                            results.push({ k: k, predictions: predictions, evaluation: evaluation_result })
                         }
-
                         let best_result = results[0];
                         results.forEach(element => {
                             if (element.evaluation.accuracy > best_result.accuracy) {
@@ -221,7 +220,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels, mltool.model_number)
                         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(`
                                 <div class="column is-6">
-                                    <table id="knn_table_${mltool.model_number}" class="table is-bordered is-hoverable is-narrow display"
+                                    <table id="knn_table_${mltool.model_number}" class="table is-bordered is-hoverable is-narrow is-size-7 display"
                                         width="100%">
                                     </table>
                                 </div>
@@ -254,12 +253,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let encoded_y_train = encoder.transform(y_train.values)
                         let encoded_y_test = encoder.transform(y_test.values)
                         await model.train(x_train.values, encoded_y_train)
-                        let y_preds = model.predict(x_test.values)
+                        let predictions = model.predict(x_test.values)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(y_preds), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
-                        let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
+                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
+                        let evaluation_result = evaluate_classification(predictions, encoded_y_test)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
-                        predictions_table(x_test, y_test, encoder, y_preds)
+                        predictions_table(x_test, y_test, encoder, predictions)
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
                     }
@@ -269,19 +268,19 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         encoder.fit(targets)
                         let encoded_y_train = encoder.transform(y_train.values)
                         let encoded_y_test = encoder.transform(y_test.values)
-                        let y_preds
+                        let predictions
                         if (model_settings.type === 'Gaussian') {
                             await model.train(x_train.values, encoded_y_train)
-                            y_preds = Array.from(model.predict(x_test.values))
+                            predictions = Array.from(model.predict(x_test.values))
                         } else {
-                            y_preds = Array.from(await model.train(x_train.values, encoded_y_train, x_test.values))
+                            predictions = Array.from(await model.train(x_train.values, encoded_y_train, x_test.values))
                         }
-                        let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
+                        let evaluation_result = evaluate_classification(predictions, encoded_y_test)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(y_preds), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
+                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
-                        predictions_table(x_test, y_test, encoder, y_preds)
+                        predictions_table(x_test, y_test, encoder, predictions)
                         break;
                     }
                     case Settings.classification.boosting.value: {
@@ -301,12 +300,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let encoded_y_train = encoder.transform(y_train.values)
                         let encoded_y_test = encoder.transform(y_test.values)
                         await model.train(x_train.values, encoded_y_train)
-                        let y_preds = await model.predict(x_test.values)
-                        let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
+                        let predictions = await model.predict(x_test.values)
+                        let evaluation_result = evaluate_classification(predictions, encoded_y_test)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(y_preds), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
+                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
-                        predictions_table(x_test, y_test, encoder, y_preds)
+                        predictions_table(x_test, y_test, encoder, predictions)
 
                         //metrics_table(encoder.inverseTransform(Object.values(encoder.$labels)), matrix)
                         break;
@@ -322,15 +321,15 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let y_t = encoder.transform(y_test.values)
                         let probs, stats, test, coefs, alphas;
                         [stats, probs, test, coefs, alphas] = await logistic_regression.train(x_train.values, y_train.values, x_test.values, x_train.columns)
-                        let preds = []
+                        let predictions = []
                         probs.forEach((item => {
                             let key = Object.keys(encoder.$labels)[item.indexOf(Math.max(...item))]
-                            preds.push(parseInt(encoder.$labels[key]))
+                            predictions.push(parseInt(encoder.$labels[key]))
                         }));
-                        // preds = encoder.transform(preds);
-                        let evaluation_result = evaluate_classification(preds, y_t)
+                        // predictions = encoder.transform(predictions);
+                        let evaluation_result = evaluate_classification(predictions, y_t)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        const matrix = await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(preds), window.tensorflow.tensor(y_t), classes, encoder.transform(classes), mltool.model_number)
+                        const matrix = await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(y_t), classes, encoder.transform(classes), mltool.model_number)
                         await chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels, mltool.model_number)
                         metrics_table(classes, matrix)
                         let metrics = []
@@ -359,7 +358,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             bDestroy: true,
                         });
                         // chart_controller.regularization_plot(alphas, coefs, x_test.columns)
-                        predictions_table(x_test, y_test, encoder, preds, probs);
+                        predictions_table(x_test, y_test, encoder, predictions, probs);
                         chart_controller.probablities_violin_plot(probs, classes, uniqueLabels)
                         break
                     }
@@ -369,14 +368,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         encoder.fit(y_train.values)
                         let y = encoder.transform(y_train.values)
                         let y_t = encoder.transform(y_test.values)
-                        let preds = await model.train(x_train.values, y, x_test.values)
-                        preds = Array.from(preds)
-                        let evaluation_result = evaluate_classification(preds, y_t)
+                        let predictions = await model.train(x_train.values, y, x_test.values)
+                        predictions = Array.from(predictions)
+                        let evaluation_result = evaluate_classification(predictions, y_t)
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
-                        const matrix = await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(preds), window.tensorflow.tensor(y_t), classes, encoder.transform(classes), mltool.model_number)
+                        const matrix = await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(y_t), classes, encoder.transform(classes), mltool.model_number)
                         metrics_table(classes, matrix)
                         await chart_controller.draw_classification_pca(x_test.values, encoder.inverseTransform(y_t), evaluation_result.indexes, uniqueLabels, mltool.model_number)
-                        predictions_table(x_test, y_test, encoder, preds);
+                        predictions_table(x_test, y_test, encoder, predictions);
                         break
                     }
                     case Settings.classification.random_forest.value: {
@@ -398,14 +397,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         let encoded_y = encoder_rf.transform(y_train.values)
                         let encoded_y_test = encoder_rf.transform(y_test.values)
 
-                        let preds = await model.train_test(x_train.values, encoded_y, x_test.values)
-                        const evaluation_result = evaluate_classification(preds, encoded_y_test)
+                        let predictions = await model.train_test(x_train.values, encoded_y, x_test.values)
+                        const evaluation_result = evaluate_classification(predictions, encoded_y_test)
                         const classes = encoder_rf.inverseTransform(Object.values(encoder_rf.$labels))
-                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(preds), window.tensorflow.tensor(encoded_y_test), classes, encoder_rf.transform(classes), mltool.model_number)
+                        await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), classes, encoder_rf.transform(classes), mltool.model_number)
                         //metrics_table(classes, matrix)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
 
-                        predictions_table(x_test, y_test, encoder_rf, preds);
+                        predictions_table(x_test, y_test, encoder_rf, predictions);
 
                         break
                     }
@@ -447,15 +446,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             paging: false,
                             bDestroy: true,
                         });
-                        $("#formulas").html = "";
-                        $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [{
-                            x: y_test.values,
-                            y: summary.get('preds'),
-                            type: 'scatter',
-                            name: "y",
-                            mode: 'markers',
-                        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
+                        yhat_plot(y_test.values, summary.get('preds'), mltool.model_number)
                         predictions_table_regression(x_test, y_test, summary.get('preds'))
                         break;
                     }
@@ -491,60 +482,18 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             paging: false,
                             bDestroy: true,
                         });
-                        $("#formulas").html = "";
-                        $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [{
-                            x: y_test.values,
-                            y: summary.get('preds'),
-                            type: 'scatter',
-                            name: "y",
-                            mode: 'markers',
-                        }],
-                            {
-                                title: "y vs y&#770;", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" }
-                                , shapes: [{
-                                    type: 'line',
-                                    xref: 'paper',
-                                    x0: 0,
-                                    x1: 1,
-                                    yref: 'paper',
-                                    y0: 0,
-                                    y1: 1
-                                }]
-                            }
-                            , { responsive: true });
+                        yhat_plot(y_test.values, summary.get('preds'), mltool.model_number)
                         predictions_table_regression(x_test, y_test, summary.get('preds'))
                         break;
                     }
                     case Settings.regression.k_nearest_neighbour.value: {
                         model_settings = ui.get_model_settings();
                         let model = model_factory.createModel(Settings.regression.k_nearest_neighbour, model_settings)
-                        // for (let k = model_settings.min; k <= model_settings.max; k++) {
-                        //     await model.train(x_train.values, encoded_y_train, k)
-                        //     let y_preds = model.predict(x_test.values)
-                        //     let evaluation_result = evaluate_classification(y_preds, encoded_y_test)
-                        //     results.push({ k: k, predictions: y_preds, evaluation: evaluation_result })
-                        // }
                         await model.train(x_train.values, y_train.values, 5)
-                        let y_preds = model.predict(x_test.values);
-                        var trace = {
-                            x: y_test.values,
-                            y: y_preds,
-                            type: 'scatter',
-                            name: "y",
-                            mode: 'markers',
-                        };
-                        let r2 = calculateRSquared(y_test.values, y_preds)
-                        let mse = calculateMSE(y_test.values, y_preds)
-                        let content = `
-                        <div class="column is-12" id="regularization_${mltool.model_number}">
-                            <p>R squared : ${r2.toFixed(2)}</p>
-                            <p>Mean Squared Error: ${mse.toFixed(2)}</p>
-                        </div>
-        `
-                        $("#metrics_" + mltool.model_number).html(content);
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [trace], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
-                        predictions_table_regression(x_test, y_test, y_preds)
+                        let predictions = model.predict(x_test.values);
+                        regression_metrics_display(y_test, predictions, mltool.model_number);
+                        yhat_plot(y_test.values, predictions, mltool.model_number)
+                        predictions_table_regression(x_test, y_test, predictions)
 
                         break;
                     }
@@ -554,24 +503,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             iterations: model_settings.iterations ?? 200
                         })
                         await model.train(x_train.values, y_train.values)
-                        let y_preds = await model.predict(x_test.values)
-                        let r2 = calculateRSquared(y_test.values, y_preds)
-                        let mse = calculateMSE(y_test.values, y_preds)
-                        let content = `
-                        <div class="column is-12" id="regularization_${mltool.model_number}">
-                            <p>R squared : ${r2.toFixed(2)}</p>
-                            <p>Mean Squared Error: ${mse.toFixed(2)}</p>
-                        </div>
-        `
-                        $("#metrics_" + mltool.model_number).html(content);
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [{
-                            x: y_test.values,
-                            y: y_preds,
-                            type: 'scatter',
-                            name: "y",
-                            mode: 'markers',
-                        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
-                        predictions_table_regression(x_test, y_test, y_preds)
+                        let predictions = await model.predict(x_test.values)
+                        regression_metrics_display(y_test, predictions, mltool.model_number);
+                        yhat_plot(y_test.values, predictions, mltool.model_number)
+                        predictions_table_regression(x_test, y_test, predictions)
                         break;
                     }
                     case Settings.regression.support_vector_machine.value: {
@@ -584,24 +519,11 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             quiet: true
                         })
                         await model.train(x_train.values, y_train.values)
-                        let y_preds = await model.predict(x_test.values)
-                        let r2 = calculateRSquared(y_test.values, y_preds)
-                        let mse = calculateMSE(y_test.values, y_preds)
-                        let content = `
-                        <div class="column is-12" id="regularization_${mltool.model_number}">
-                            <p>R squared : ${r2.toFixed(2)}</p>
-                            <p>Mean Squared Error: ${mse.toFixed(2)}</p>
-                        </div>
-        `
-                        $("#metrics_" + mltool.model_number).html(content);
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [{
-                            x: y_test.values,
-                            y: y_preds,
-                            type: 'scatter',
-                            name: "y",
-                            mode: 'markers',
-                        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
-                        predictions_table_regression(x_test, y_test, y_preds)
+                        let predictions = await model.predict(x_test.values)
+                        regression_metrics_display(y_test, predictions, mltool.model_number);
+                        yhat_plot(y_test.values, predictions, mltool.model_number)
+
+                        predictions_table_regression(x_test, y_test, predictions)
                         break;
                     }
                     case Settings.regression.kernel_regression.value: {
@@ -638,15 +560,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             paging: false,
                             bDestroy: true,
                         });
-                        $("#formulas").html = "";
-                        $("#formulas").append(`<span>$$y = {x1 + x2 + x3 + ... + x_n + intercept}.$$</span>`)
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [{
-                            x: y_test.values,
-                            y: summary.get('preds'),
-                            type: 'scatter',
-                            name: "y",
-                            mode: 'markers',
-                        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6", yaxis: { title: "Prediction" }, xaxis: { title: "True value" } }, { responsive: true });
+
+                        yhat_plot(y_test.values, summary.get('preds'), mltool.model_number)
                         predictions_table_regression(x_test, y_test, summary.get('preds'))
                         break;
                     }
@@ -663,24 +578,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             criteria: model_settings.criteria
                         });
 
-                        let preds = await model.train_test(x_train.values, y_train.values, x_test.values)
-                        let r2 = calculateRSquared(y_test.values, preds)
-                        let mse = calculateMSE(y_test.values, preds)
-                        let content = `
-                        <div class="column is-12" id="regularization_${mltool.model_number}">
-                            <p>R squared : ${r2.toFixed(2)}</p>
-                            <p>Mean Squared Error: ${mse.toFixed(2)}</p>
-                        </div>
-        `
-                        $("#metrics_" + mltool.model_number).html(content);
-                        Plotly.newPlot('regression_y_yhat_' + mltool.model_number, [{
-                            x: y_test.values,
-                            y: preds,
-                            type: 'scatter',
-                            name: "y",
-                            mode: 'markers',
-                        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
-                        predictions_table_regression(x_test, y_test, preds)
+                        let predictions = await model.train_test(x_train.values, y_train.values, x_test.values)
+                        regression_metrics_display(y_test, predictions, mltool.model_number);
+                        yhat_plot(y_test.values, predictions, mltool.model_number)
+                        predictions_table_regression(x_test, y_test, predictions)
                         break
                     }
                 }
@@ -692,9 +593,29 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             throw error
         }
 
-    }
 
-    function predictions_table(x, y, encoder, preds, probs = null) {
+    }
+    function yhat_plot(y_test, predictions, tab_index) {
+        Plotly.newPlot('regression_y_yhat_' + tab_index, [{
+            x: y_test,
+            y: predictions,
+            type: 'scatter',
+            name: "y",
+            mode: 'markers',
+        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+    }
+    function regression_metrics_display(y_test, predictions, tab_index) {
+        let r2 = calculateRSquared(y_test.values, predictions);
+        let mse = calculateMSE(y_test.values, predictions);
+        let content = `
+                    <div class="column is-12" id="regularization_${mltool.model_number}">
+                        <p>R squared : ${r2.toFixed(2)}</p>
+                        <p>Mean Squared Error: ${mse.toFixed(2)}</p>
+                    </div> `;
+        $("#metrics_" + tab_index).html(content);
+        return content;
+    }
+    function predictions_table(x, y, encoder, predictions, probs = null) {
         let content = `
         <div class="column is-12">
             <table id="predictions_table_${mltool.model_number}" class="table is-bordered is-hoverable is-narrow display is-size-7" width="100%">
@@ -706,7 +627,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             x.addColumn("probs", probs, { inplace: true });
         }
         x.addColumn("y", y, { inplace: true });
-        x.addColumn("predictions: ", encoder.inverseTransform(preds), { inplace: true });
+        x.addColumn("predictions: ", encoder.inverseTransform(predictions), { inplace: true });
         x.columns.forEach(element => {
             table_columns.push({ title: element });
         });
@@ -738,7 +659,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             }
         });
     }
-    function predictions_table_regression(x, y, preds) {
+    function predictions_table_regression(x, y, predictions) {
         let content = `
         <div class="column is-12">
             <table id="predictions_table_${mltool.model_number}" class="table is-bordered is-hoverable is-narrow display is-size-7" width="100%">
@@ -747,7 +668,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(content);
         let table_columns = [];
         x.addColumn("y", y, { inplace: true });
-        x.addColumn("predictions: ", preds, { inplace: true });
+        x.addColumn("predictions: ", predictions, { inplace: true });
         x.columns.forEach(element => {
             table_columns.push({ title: element });
         });
@@ -784,12 +705,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             bDestroy: true,
         });
     }
-    function evaluate_classification(y_preds, y_test) {
-        console.assert(y_preds.length === y_test.length, "preds and test should have the same length.")
+    function evaluate_classification(predictions, y_test) {
+        console.assert(predictions.length === y_test.length, "predictions and test should have the same length.")
         let missclassification_indexes = []
         let currect_classifications_sum = 0
         y_test.forEach((element, i) => {
-            if (element === y_preds[i]) {
+            if (element === predictions[i]) {
                 currect_classifications_sum++
             } else {
                 missclassification_indexes.push(i)
@@ -797,7 +718,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             }
         });
         return {
-            accuracy: (currect_classifications_sum / y_preds.length) * 100,
+            accuracy: (currect_classifications_sum / predictions.length) * 100,
             indexes: missclassification_indexes
         }
     }
