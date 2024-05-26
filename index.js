@@ -9,7 +9,7 @@ import { ModelFactory } from './src/model_factory.js';
 import * as sk from 'scikitjs'
 import Plotly from 'plotly.js-dist';
 import Bulma from '@vizuaalog/bulmajs';
-import { calculateRSquared, calculateMSE, evaluate_classification } from './src/utils.js';
+import { evaluate_classification } from './src/utils.js';
 import SVM from "libsvm-js/asm";
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css'; // optional for styling

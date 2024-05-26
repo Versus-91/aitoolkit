@@ -428,7 +428,7 @@ export default class ChartController {
                 let normalization_type = document.getElementById(key + '--normal').value
                 current_class.scale_data(data, key, normalization_type)
                 data.dropNa({ axis: 1, inplace: true })
-                current_class.redraw_kde(data, key, target, "nrd", is_classification, true);
+                current_class.draw_kde(data, key, target, "nrd", is_classification, true);
             });
         }
         var current_class = this;
@@ -439,7 +439,7 @@ export default class ChartController {
             let normalization_type = document.getElementById(column + '--normal').value
             current_class.scale_data(data, column, normalization_type)
             data.dropNa({ axis: 1, inplace: true })
-            current_class.redraw_kde(data, column, target, "nrd", is_classification, true);
+            current_class.draw_kde(data, column, target, "nrd", is_classification, true);
         });
         let container_id = column + '-kde-plot';
         let items_range = raw_values.column(column).values
@@ -448,7 +448,6 @@ export default class ChartController {
         items_range.push(minValue - parseFloat(default_bandwidth))
         items_range.push(maxValue + parseFloat(default_bandwidth))
         var breaks = ss.equalIntervalBreaks(items_range, 100);
-
         let allData = [];
         let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
         // Loop through subsets to generate data for all subsets
@@ -566,162 +565,7 @@ export default class ChartController {
         });
         window.dispatchEvent(new Event('resize'));
     }
-    redraw_kde(dataset, column, target_name, bandwidth = "nrd", is_classification = false, redrawing = false) {
-        let items = dataset.column(column).values;
-        let default_bandwidth = this.nrd(items).toFixed(2);
-        let raw_values = dataset.loc({ columns: [column, target_name] });
-        let uniqueLabels = [...new Set(raw_values.column(target_name).values)];
-        let column_values = raw_values.values;
-        let subsets = [];
-        let traces = []
-        let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
-        let allData = [];
 
-        document.getElementById("kde_panel").style.display = "block";
-
-        var newColumn = document.createElement("div");
-        newColumn.className = "column is-4";
-        newColumn.setAttribute("id", column + '-kde-plot');
-        let container_id = column + '-kde-plot';
-        let items_range = raw_values.column(column).values
-        let minValue = Math.min(...items_range);
-        let maxValue = Math.max(...items_range);
-        items_range.push(minValue - parseFloat(default_bandwidth))
-        items_range.push(maxValue + parseFloat(default_bandwidth))
-        var breaks = ss.equalIntervalBreaks(items_range, 100);
-
-        var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
-        if (!is_classification) {
-            subsets.push(dataset[column].values);
-        } else {
-            for (let i = 0; i < uniqueLabels.length; i++) {
-                const label = uniqueLabels[i];
-                let subset = [];
-                for (let i = 0; i < column_values.length; i++) {
-                    const item = column_values[i];
-                    if (item[1] === label) {
-                        subset.push(item[0])
-                    }
-                }
-                subsets.push(subset);
-            }
-        }
-        let kde;
-        if (is_classification) {
-            for (let i = 0; i < subsets.length; i++) {
-                if (subsets[i].length > 2) {
-                    let ys = [];
-                    kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
-                    let data = [];
-                    breaks.forEach((item) => {
-                        ys.push(kde(item, bandwidth));
-                        data.push([item, ys[ys.length - 1]]);
-                    });
-                    allData.push(data);
-                } else {
-                    allData.push([]);
-                }
-                traces.push({
-                    name: uniqueLabels[i],
-                    x: subsets[i],
-                    marker: {
-                        color: colorIndices[i]
-                    },
-                    type: 'box',
-                })
-            }
-        } else {
-            for (let i = 0; i < subsets.length; i++) {
-                if (subsets[i].length > 2) {
-                    let ys = [];
-                    kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
-                    let data = [];
-                    breaks.forEach((item) => {
-                        ys.push(kde(item, bandwidth));
-                        data.push([item, ys[ys.length - 1]]);
-                    });
-                    allData.push(data);
-                } else {
-                    allData.push([]);
-                }
-            }
-            traces.push({
-                name: column,
-                x: items,
-                type: 'box',
-            })
-        }
-
-
-
-        let animationDuration = 4000;
-
-        Highcharts.chart(container_id, {
-            credits: {
-                enabled: false
-            },
-            legend: {
-                enabled: is_classification ? true : false, align: 'right',
-                verticalAlign: 'top',
-            },
-
-            chart: {
-                height: '300',
-                type: "spline",
-                animation: true
-            },
-            title: {
-                text: column // Assuming `column` is defined elsewhere
-            },
-            yAxis: {
-                title: { text: null }
-            },
-            tooltip: {
-                valueDecimals: 3
-            },
-            plotOptions: {
-                series: {
-                    marker: {
-                        enabled: false
-                    },
-                    dashStyle: "shortdot",
-                    color: colorIndices,
-                    animation: {
-                        duration: animationDuration
-                    },
-                    area: true
-                }
-            },
-            series: allData.map((data, index) => ({
-                type: 'area',
-                name: uniqueLabels[index],
-                dashStyle: "solid",
-                lineWidth: 2,
-                color: colorIndices[index],
-                data: data
-            }))
-        });
-
-        var layout = {
-            showlegend: false,
-            yaxis: {
-                visible: false,
-            },
-            margin: {
-                l: 10,
-                r: 10,
-                b: 60,
-                t: 10,
-            },
-            legend: {
-                x: 1,
-                xanchor: 'right',
-                y: 1
-            },
-        };
-        Plotly.newPlot(column + '-boxplot', traces, layout, { autosize: true, responsive: true, modeBarButtonsToRemove: ['pan', 'resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
-
-    }
     async draw_classification_pca(dataset, labels, missclassifications, uniqueLabels, index) {
 
         const pca = new PCA(dataset, { center: true, scale: true });
@@ -1088,8 +932,6 @@ export default class ChartController {
         Plotly.newPlot('probs_violin_plot', traces, layout);
     }
     async plot_confusion_matrix(y, predictedLabels, labels, uniqueClasses, tab_index) {
-
-
         const confusionMatrix = await tfvis.metrics.confusionMatrix(y, predictedLabels);
         let div = document.createElement('div');
         div.classList.add('column');
@@ -1107,15 +949,11 @@ export default class ChartController {
         for (let j = 0; j < len; j++) {
             preceissions.push(parseFloat(info[0][j].toFixed(2)))
         }
-
         for (let j = 0; j < len; j++) {
             recalls.push(parseFloat(info[1][j].toFixed(2)))
-
         }
-
         for (let j = 0; j < len; j++) {
             f1s.push(parseFloat(info[2][j].toFixed(2)))
-
         }
         for (let j = 0; j < len; j++) {
             supports.push(parseFloat(info[3][j].toFixed(2)))
@@ -1131,13 +969,10 @@ export default class ChartController {
         $("#tabs_info li[data-index='" + tab_index + "'] #results_" + tab_index + "").append(div);
         $("#tabs_info li[data-index='" + tab_index + "'] #results_" + tab_index + "").append(`
         <div class="column is-6" id="confusion_matrix_${tab_index}" style="height:50vh">
-
         </div>
-
         `);
         window.tensorflow.dispose(y)
         window.tensorflow.dispose(predictedLabels)
-
         const metric_labels = ["Precession", "Recall", "F1 score", "Support"]
         labels.push("Precession")
         labels.push("Recall")
@@ -1174,8 +1009,6 @@ export default class ChartController {
                 type: 'heatmap',
                 plotBorderWidth: 1
             },
-
-
             title: {
                 text: '',
                 style: {
@@ -1212,7 +1045,6 @@ export default class ChartController {
                     }
                 }
             }],
-
             yAxis: [{
                 categories: labels,
                 title: {
@@ -1295,7 +1127,6 @@ export default class ChartController {
                     }
                 }
             }],
-
             responsive: {
                 rules: [{
                     condition: {
@@ -1310,9 +1141,7 @@ export default class ChartController {
                     }
                 }]
             }
-
         });
-
         return confusionMatrix
     }
     plot_regularization(weights, alphas, names, tab_index) {
@@ -1338,21 +1167,17 @@ export default class ChartController {
             title: {
                 text: '',
             },
-
-
             yAxis: {
                 title: {
                     text: 'Coefficients'
                 }
             },
-
             xAxis: {
                 title: {
                     text: 'log lambda'
                 },
                 categories: alphas_formatted,
             },
-
             legend: {
                 layout: 'vertical',
                 align: 'right',
@@ -1366,9 +1191,7 @@ export default class ChartController {
                     },
                 }
             },
-
             series: serieses,
-
             responsive: {
                 rules: [{
                     condition: {
@@ -1383,9 +1206,7 @@ export default class ChartController {
                     }
                 }]
             }
-
         });
-
     }
     yhat_plot(y_test, predictions, tab_index) {
         Plotly.newPlot('regression_y_yhat_' + tab_index, [{

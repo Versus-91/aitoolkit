@@ -488,8 +488,8 @@ export default class UI {
         var header_categorical = "";
         var tbody_categorical = "";
         const fileds_categorical = ["#", "Shape", "Mode", "Percentage", "# NAs"]
-        for (var p in fileds_categorical) {
-            header_categorical += "<th>" + fileds_categorical[p] + "</th>";
+        for (var f in fileds_categorical) {
+            header_categorical += "<th>" + fileds_categorical[f] + "</th>";
         }
 
         data.columns.forEach((column) => {
@@ -858,7 +858,7 @@ export default class UI {
         let r2 = calculateRSquared(y_test.values, predictions);
         let mse = calculateMSE(y_test.values, predictions);
         let content = `
-                    <div class="column is-12" id="regularization_${mltool.model_number}">
+                    <div class="column is-12" id="regularization_${tab_index}">
                         <p>R squared : ${r2.toFixed(2)}</p>
                         <p>Mean Squared Error: ${mse.toFixed(2)}</p>
                     </div> `;
