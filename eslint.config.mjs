@@ -25,6 +25,9 @@ export default [
         Event: "readonly",
         tsne: "readonly",
         fetch: "readonly",
+        CustomEvent: "readonly",
+        Toastify: "readonly",
+
       }
     }
   }

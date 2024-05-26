@@ -1387,4 +1387,13 @@ export default class ChartController {
         });
 
     }
+    yhat_plot(y_test, predictions, tab_index) {
+        Plotly.newPlot('regression_y_yhat_' + tab_index, [{
+            x: y_test,
+            y: predictions,
+            type: 'scatter',
+            name: "y",
+            mode: 'markers',
+        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+    }
 }
