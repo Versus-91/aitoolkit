@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
         if (!url) {
             file = evt.target.files[0];
-            await process_file(file, file.type)
+            await process_file(file, file.name.split('.')[1])
         } else {
             fetch(url)
                 .then(response => response.blob())
@@ -56,14 +56,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             ui.reset(html_content_ids, table_ids, plots);
             ui.toggle_loading_progress(true);
             let result = await ParserFactory.createParser(type).parse(file)
-            if (result.data.length > 10000) {
-                result.data = result.data.slice(0, 10000)
+            if (result.length > 10000) {
+                result = result.slice(0, 10000)
             }
-            let dataset = new DataFrame(result.data);
-            data_frame = new DataFrame(result.data);
+            let dataset = new DataFrame(result);
+            data_frame = new DataFrame(result);
             ui.createDatasetPropsDropdown(dataset);
             ui.createSampleDataTable(dataset);
-            await ui.visualize(dataset, result.data.length, file.name);
+            await ui.visualize(dataset, result.length, file.name);
             ui.init_tooltips(tippy)
             document.querySelector('#feature_selection_modal').addEventListener('update_graphs', async function (e) {
                 await ui.visualize(data_frame);
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             document.getElementById("train-button").onclick = async () => {
                 ui.reset(html_content_ids, table_ids.filter(m => m !== "sample_data_table"));
                 ui.start_loading();
-                await train(dataset, result.data.length);
+                await train(dataset, result.length);
                 ui.stop_loading();
             }
         } catch (error) {

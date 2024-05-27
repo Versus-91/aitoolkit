@@ -554,7 +554,7 @@ export default class UI {
             <option>Diabetes</option>
             </select>
         </div>
-        <p class="help is-danger">CSV file is supported for now</p>`)
+        <p class="help is-danger">CSV and XLSX file is supported for now</p>`)
         document.getElementById("parseCVS").addEventListener("change", upoad_handler)
     }
     start_loading() {

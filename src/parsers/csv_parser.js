@@ -19,7 +19,7 @@ export class CSVParser extends DataParser {
                 skipEmptyLines: true,
                 dynamicTyping: true,
                 complete: async function (result) {
-                    resolve(result)
+                    resolve(result.data)
                 }
             })
         }
