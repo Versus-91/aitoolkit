@@ -11,6 +11,7 @@ import Plotly from 'plotly.js-dist';
 import Bulma from '@vizuaalog/bulmajs';
 import { evaluate_classification } from './src/utils.js';
 import SVM from "libsvm-js/asm";
+import { ParserFactory } from "./src/parsers/parser_factory.js";
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css'; // optional for styling
 document.addEventListener("DOMContentLoaded", async function (event) {
@@ -36,13 +37,13 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
         if (!url) {
             file = evt.target.files[0];
-            await process_file(file)
+            await process_file(file, file.type)
         } else {
             fetch(url)
                 .then(response => response.blob())
                 .then(async blob => {
                     file = new File([blob], "url");
-                    await process_file(file)
+                    await process_file(file, blob.type)
                 })
                 .catch(error => {
                     console.error('Error fetching the file:', error);
@@ -50,47 +51,29 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
 
     }
-    async function process_file(file) {
+    async function process_file(file, type) {
         try {
             ui.reset(html_content_ids, table_ids, plots);
-            ui.toggle_loading_progress();
-            Papa.parse(file, {
-                worker: false,
-                header: true,
-                transform: (val) => {
-                    if (val === "?" || val === "NA") {
-                        return NaN
-                    }
-                    return val
-                },
-                // transformHeader: (val) => {
-                //     return val.replace(/[^a-zA-Z0-9 ]/g, "").trim()
-                // },
-                skipEmptyLines: true,
-                dynamicTyping: true,
-                complete: async function (result) {
-                    ui.toggle_loading_progress(true);
-                    if (result.data.length > 10000) {
-                        result.data = result.data.slice(0, 10000)
-                    }
-                    let dataset = new DataFrame(result.data);
-                    data_frame = new DataFrame(result.data);
-                    ui.createDatasetPropsDropdown(dataset);
-                    ui.createSampleDataTable(dataset);
-                    await ui.visualize(dataset, result.data.length, file.name);
-                    ui.init_tooltips(tippy)
-                    document.querySelector('#feature_selection_modal').addEventListener('update_graphs', async function (e) {
-                        await ui.visualize(data_frame);
-                    });
-                    document.getElementById("train-button").onclick = async () => {
-                        ui.reset(html_content_ids, table_ids.filter(m => m !== "sample_data_table"));
-                        ui.start_loading();
-                        await train(dataset, result.data.length);
-                        ui.stop_loading();
-                    }
-
-                }
+            ui.toggle_loading_progress(true);
+            let result = await ParserFactory.createParser(type).parse(file)
+            if (result.data.length > 10000) {
+                result.data = result.data.slice(0, 10000)
+            }
+            let dataset = new DataFrame(result.data);
+            data_frame = new DataFrame(result.data);
+            ui.createDatasetPropsDropdown(dataset);
+            ui.createSampleDataTable(dataset);
+            await ui.visualize(dataset, result.data.length, file.name);
+            ui.init_tooltips(tippy)
+            document.querySelector('#feature_selection_modal').addEventListener('update_graphs', async function (e) {
+                await ui.visualize(data_frame);
             });
+            document.getElementById("train-button").onclick = async () => {
+                ui.reset(html_content_ids, table_ids.filter(m => m !== "sample_data_table"));
+                ui.start_loading();
+                await train(dataset, result.data.length);
+                ui.stop_loading();
+            }
         } catch (error) {
             ui.toggle_loading_progress(true);
             ui.stop_loading();
