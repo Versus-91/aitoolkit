@@ -295,5 +295,19 @@ export const Settings = {
                 },
             },
         },
+        "bspline_regression": {
+            "label": "Bspline Regression",
+            "value": 16,
+            "options": {
+                "knots": {
+                    type: "number",
+                    default: 5
+                },
+                "degree": {
+                    type: "number",
+                    default: 3
+                },
+            },
+        },
     },
 };

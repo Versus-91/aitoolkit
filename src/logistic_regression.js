@@ -15,6 +15,7 @@ export default class LogisticRegression {
         };
         const script = `
         import statsmodels.api as st
+        from patsy import dmatrix
         import pandas as pd
         import numpy as np
         from js import X_train,y_train,X_test,column_names

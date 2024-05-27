@@ -216,7 +216,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
-
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels, mltool.model_number)
                         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(`
                                 <div class="column is-6">
@@ -237,7 +236,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                     }
                     case Settings.classification.support_vector_machine.value: {
-
                         let model = model_factory.createModel(Settings.classification.support_vector_machine, {
                             kernel: SVM.KERNEL_TYPES[model_settings.kernel.toUpperCase()],
                             type: SVM.SVM_TYPES.C_SVC,
@@ -577,6 +575,18 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         ui.predictions_table_regression(x_test, y_test, predictions, mltool.model_number)
                         break
                     }
+                    case Settings.regression.bspline_regression.value: {
+                        const model = model_factory.createModel(Settings.regression.bspline_regression, {
+                            knots: model_settings.knots,
+                            degree: model_settings.degree
+                        });
+
+                        let predictions = await model.train_test(x_train.values, y_train.values, x_test.values, y_test.values, x_train.columns)
+                        ui.regression_metrics_display(y_test, predictions, mltool.model_number);
+                        chart_controller.yhat_plot(y_test.values, predictions, mltool.model_number)
+                        ui.predictions_table_regression(x_test, y_test, predictions, mltool.model_number)
+                        break
+                    }
                 }
             }
         } catch (error) {
@@ -585,8 +595,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             throw error
         }
     }
-
-
     ui.init_upload_button(handleFileSelect)
     document.querySelector('#dim_red_button_pca').addEventListener('click', async function (e) {
         await dimension_reduction();

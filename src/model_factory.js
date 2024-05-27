@@ -1,6 +1,8 @@
 import { Settings } from "../feature_types";
 import LogisticRegression from "./logistic_regression";
 import LinearRegression from "./regression/linear_regression";
+import BSplineRegression from "./regression/bspline_regression";
+
 import SupportVectorMachine from './svm';
 import Boosting from './boosting';
 import BoostingRegression from './regression/boosting';
@@ -49,6 +51,9 @@ export var ModelFactory = function () {
             model = new PolynomialRegression(options);
         } else if (modelName.value === Settings.regression.kernel_regression.value) {
             model = new KernelRegression(options);
+        }
+        else if (modelName.value === Settings.regression.bspline_regression.value) {
+            model = new BSplineRegression(options);
         } else {
             throw "model not supported.";
         }

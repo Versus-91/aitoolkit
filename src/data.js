@@ -1,6 +1,6 @@
 import { FeatureCategories, Settings } from "../feature_types.js";
 
-import { DataFrame, LabelEncoder, Series, tensorflow, concat, OneHotEncoder, getDummies } from 'danfojs/dist/danfojs-base';
+import { LabelEncoder, getDummies } from 'danfojs/dist/danfojs-base';
 export default class DataLoader {
     kernelDensityEstimation(data, kernel, bandwidth) {
         return function (x) {

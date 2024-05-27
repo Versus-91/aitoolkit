@@ -27,7 +27,8 @@ export default [
         fetch: "readonly",
         CustomEvent: "readonly",
         Toastify: "readonly",
-
+        Worker: "readonly",
+        URL: "readonly",
       }
     }
   }

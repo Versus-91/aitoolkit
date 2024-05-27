@@ -1215,6 +1215,22 @@ export default class ChartController {
             type: 'scatter',
             name: "y",
             mode: 'markers',
-        }], { title: "y vs y&#770;", plot_bgcolor: "#E5ECF6" }, { responsive: true });
+        }, {
+            x: y_test,
+            y: y_test,
+            mode: 'lines',
+            type: 'scatter',
+            line: { color: 'red', dash: 'dash' },
+            name: 'y=x '
+        }], {
+            title: "y vs y&#770;",
+            margin: {
+                l: 20,
+                r: 20,
+                b: 20,
+                t: 30,
+                pad: 5
+            }, plot_bgcolor: "#E5ECF6"
+        }, { responsive: true });
     }
 }
