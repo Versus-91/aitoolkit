@@ -4,7 +4,7 @@ import Papa from 'papaparse';
 export class TXTParser extends DataParser {
     constructor(options) {
         super();
-        this.separators = { 0: ',', 1: '.', 2: ',' }
+        this.separators = { 0: ',', 1: '.', 2: ',', 3: ' ' }
         this.separator = options.separator;
         this.delimiter = options.delimiter;
         this.has_header = options.header

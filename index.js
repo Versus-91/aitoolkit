@@ -56,8 +56,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             ui.reset(html_content_ids, table_ids, plots);
             ui.toggle_loading_progress(true);
             let options = {
-                separator: $('#decimal_separator').find(":selected").val(),
-                delimiter: $('#items_separator').find(":selected").val(),
+                separator: $('#items_separator').find(":selected").val(),
+                delimiter: $('#decimal_separator').find(":selected").val(),
                 header: $('#header_checkbox').is(":checked")
             }
             let result = await ParserFactory.createParser(type, options).parse(file)
