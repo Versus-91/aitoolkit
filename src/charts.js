@@ -4,9 +4,9 @@ import { binarize } from './utils'
 import * as ss from "simple-statistics"
 import { schemeCategory10 } from 'd3-scale-chromatic';
 import { FeatureCategories } from "../feature_types.js";
-import { MinMaxScaler, StandardScaler } from 'danfojs/dist/danfojs-base';
 import { metrics } from './utils.js';
 import * as tfvis from '@tensorflow/tfjs-vis';
+import { scale_data } from './utils';
 
 export default class ChartController {
     constructor(data_processor) {
@@ -315,33 +315,7 @@ export default class ChartController {
             return Math.abs(x) <= 1 ? 0.75 * (1 - x * x) : 0;
         }
     };
-    scale_data(dataset, column, normalization_type) {
-        switch (normalization_type) {
-            case "1":
-                {
-                    let scaler = new MinMaxScaler()
-                    scaler.fit(dataset[column])
-                    dataset.addColumn(column, scaler.transform(dataset[column]), { inplace: true })
-                    break;
-                }
-            case "2":
-                dataset.addColumn(column, dataset[column].apply((x) => x * x), { inplace: true })
-                break;
-            case "3":
-                dataset.addColumn(column, dataset[column].apply((x) => Math.log(x)), { inplace: true })
-                break;
-            case "4":
-                {
-                    let scaler = new StandardScaler()
-                    scaler.fit(dataset[column])
-                    dataset.addColumn(column, scaler.transform(dataset[column]), { inplace: true })
-                    break;
-                }
-            default:
-                break;
-        }
 
-    }
     draw_kde(dataset, column, target_name, bandwidth = "nrd", is_classification = false, redrawing = false) {
         let items = dataset.column(column).values;
         let default_bandwidth = this.nrd(items).toFixed(2);
@@ -426,7 +400,7 @@ export default class ChartController {
                 let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
                 let data = dataset.loc({ columns: [key, target] });
                 let normalization_type = document.getElementById(key + '--normal').value
-                current_class.scale_data(data, key, normalization_type)
+                scale_data(data, key, normalization_type)
                 data.dropNa({ axis: 1, inplace: true })
                 current_class.draw_kde(data, key, target, "nrd", is_classification, true);
             });
@@ -437,7 +411,7 @@ export default class ChartController {
             let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
             let data = dataset.loc({ columns: [column, target] });
             let normalization_type = document.getElementById(column + '--normal').value
-            current_class.scale_data(data, column, normalization_type)
+            scale_data(data, column, normalization_type)
             data.dropNa({ axis: 1, inplace: true })
             current_class.draw_kde(data, column, target, "nrd", is_classification, true);
         });

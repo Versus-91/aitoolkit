@@ -1,4 +1,6 @@
 import { asyncRun } from "./py-worker";
+import { MinMaxScaler, StandardScaler } from 'danfojs/dist/danfojs-base';
+
 import * as Papa from 'papaparse';
 async function parseCsv(data) {
     return new Promise(resolve => {
@@ -269,6 +271,31 @@ export function evaluate_classification(predictions, y_test) {
         indexes: missclassification_indexes
     }
 }
-
+export function scale_data(dataset, column, normalization_type) {
+    switch (normalization_type) {
+        case "1":
+            {
+                let scaler = new MinMaxScaler()
+                scaler.fit(dataset[column])
+                dataset.addColumn(column, scaler.transform(dataset[column]), { inplace: true })
+                break;
+            }
+        case "2":
+            dataset.addColumn(column, dataset[column].apply((x) => x * x), { inplace: true })
+            break;
+        case "3":
+            dataset.addColumn(column, dataset[column].apply((x) => Math.log(x)), { inplace: true })
+            break;
+        case "4":
+            {
+                let scaler = new StandardScaler()
+                scaler.fit(dataset[column])
+                dataset.addColumn(column, scaler.transform(dataset[column]), { inplace: true })
+                break;
+            }
+        default:
+            break;
+    }
+}
 
 
