@@ -9,7 +9,7 @@ import { ModelFactory } from './src/model_factory.js';
 import * as sk from 'scikitjs'
 import Plotly from 'plotly.js-dist';
 import Bulma from '@vizuaalog/bulmajs';
-import { evaluate_classification } from './src/utils.js';
+import { evaluate_classification, apply_data_transformation } from './src/utils.js';
 import SVM from "libsvm-js/asm";
 import { ParserFactory } from "./src/parsers/parser_factory.js";
 import tippy from 'tippy.js';
@@ -102,13 +102,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             numericColumns = numericColumns.filter(m => m !== target)
             let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
             if (numericColumns.length > 2) {
+                let transformed_data = apply_data_transformation(filterd_dataset.loc({ columns: numericColumns }), numericColumns);
                 if (is_pca) {
                     document.getElementById("dim_red_button_pca").classList.add("is-loading")
-                    await chart_controller.draw_pca(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                    await chart_controller.draw_pca(transformed_data.values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
                     document.getElementById("dim_red_button_pca").classList.remove("is-loading")
                 } else {
                     document.getElementById("dim_red_button_tsne").classList.add("is-loading")
-                    await chart_controller.plot_tsne(filterd_dataset.loc({ columns: numericColumns }).values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                    await chart_controller.plot_tsne(transformed_data.values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
                     document.getElementById("dim_red_button_tsne").classList.remove("is-loading")
                 }
             } else {

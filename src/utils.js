@@ -297,5 +297,15 @@ export function scale_data(dataset, column, normalization_type) {
             break;
     }
 }
+export function apply_data_transformation(dataset, column_names) {
+    for (let i = 0; i < column_names.length; i++) {
+        const column_name = column_names[i];
+        let normalization_type = document.getElementById(column_name + '--normal').value;
+        if (normalization_type !== "0") {
+            scale_data(dataset, column_name, normalization_type)
+        }
+    }
+    return dataset
+}
 
 
