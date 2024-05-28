@@ -545,16 +545,44 @@ export default class UI {
                 </span>
             </label>
         </div>
-        <progress class="progress is-small is-primary my-1" max="100" id="progress" style="display:none;">15%</progress>
-        <div class="select is-small">
-            <select id="sample_data_select">
-            <option>Sample data selection</option>
-            <option>Iris</option>
-            <option>Wine</option>
-            <option>Diabetes</option>
-            </select>
+        <div class="column is-12">
+            <div class="select is-small">
+                <select id="decimal_separator">
+                    <option value="0">Decimal</option>
+                    <option value="1">.</option>
+                    <option value="2">,</option>
+                </select>
+            </div>
         </div>
-        <p class="help is-danger">CSV and XLSX file is supported for now</p>`)
+        <div class="column is-12">
+            <label class="checkbox"><input id="header_checkbox" type="checkbox" checked/>  Has header</label>
+        </div>
+        <div class="column is-12">
+            <div class="select is-small">
+                <select id="items_separator">
+                    <option value="0">Separator</option>
+                    <option value="1">,</option>
+                    <option value="2">;</option>
+                    <option value="3">space</option>
+                </select>
+            </div>
+        </div>
+        <progress class="progress is-small is-primary my-1" max="100" id="progress" style="display:none;">15%</progress>
+        <div class="column is-12">
+            <div class="select is-small">
+                <select id="sample_data_select">
+                <option>Sample data selection</option>
+                <option>Iris</option>
+                <option>Wine</option>
+                <option>Diabetes</option>
+                </select>
+            </div>
+        </div>
+        <div class="column is-12">
+            <p class="help is-danger">CSV, XLSX, and TXT files are supported for now</p>
+        </div>
+        `)
+
         document.getElementById("parseCVS").addEventListener("change", upoad_handler)
     }
     start_loading() {

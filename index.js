@@ -55,7 +55,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         try {
             ui.reset(html_content_ids, table_ids, plots);
             ui.toggle_loading_progress(true);
-            let result = await ParserFactory.createParser(type).parse(file)
+            let options = {
+                separator: $('#decimal_separator').find(":selected").val(),
+                delimiter: $('#items_separator').find(":selected").val(),
+                header: $('#header_checkbox').is(":checked")
+            }
+            let result = await ParserFactory.createParser(type, options).parse(file)
             if (result.length > 10000) {
                 result = result.slice(0, 10000)
             }
@@ -78,6 +83,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             ui.toggle_loading_progress(true);
             ui.stop_loading();
             ui.show_error_message(error.message, "#7E191B");
+            console.log(error.message);
         }
     }
 
