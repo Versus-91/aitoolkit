@@ -105,11 +105,11 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 let transformed_data = apply_data_transformation(filterd_dataset.loc({ columns: numericColumns }), numericColumns);
                 if (is_pca) {
                     document.getElementById("dim_red_button_pca").classList.add("is-loading")
-                    await chart_controller.draw_pca(transformed_data.values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                    await chart_controller.draw_pca(transformed_data.values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : [], filterd_dataset.loc({ columns: [target] }).values);
                     document.getElementById("dim_red_button_pca").classList.remove("is-loading")
                 } else {
                     document.getElementById("dim_red_button_tsne").classList.add("is-loading")
-                    await chart_controller.plot_tsne(transformed_data.values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : []);
+                    await chart_controller.plot_tsne(transformed_data.values, is_classification ? filterd_dataset.loc({ columns: [target] }).values : [], filterd_dataset.loc({ columns: [target] }).values);
                     document.getElementById("dim_red_button_tsne").classList.remove("is-loading")
                 }
             } else {

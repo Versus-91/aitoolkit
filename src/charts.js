@@ -144,7 +144,7 @@ export default class ChartController {
 
         return result;
     }
-    async plot_tsne(data, labels) {
+    async plot_tsne(data, labels, regression_labels) {
         document.getElementById("dimensionality_reduction_panel_tsne").style.display = "block"
         console.assert(Array.isArray(data));
         // Create some data
@@ -192,12 +192,12 @@ export default class ChartController {
             })
         } else {
             let points = Y.map(function (item, i) {
+                x.push(regression_labels[i][0])
                 return {
                     'x': item[0],
                     'y': item[1]
                 }
             })
-            x = points.map(m => m.x)
             traces.push({
                 x: x,
                 y: points.map(m => m.y),
@@ -615,7 +615,7 @@ export default class ChartController {
         }, { responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
 
     }
-    async draw_pca(dataset, labels, size = 4, color_scale = "Jet") {
+    async draw_pca(dataset, labels, regression_labels) {
         document.getElementById("dimensionality_reduction_panel_pca").style.display = "block"
         document.getElementById("pca-1").innerHTML = ""
         const pca = new PCA(dataset, { center: true, scale: true });
@@ -628,7 +628,6 @@ export default class ChartController {
         const pca_data = pca_x[0]
 
         let x = []
-        let y = []
         let pc1 = []
         let x_axis = document.getElementById("pca_x").value;
         let y_axis = document.getElementById("pca_y").value;
@@ -638,8 +637,7 @@ export default class ChartController {
                 y: element[y_axis - 1],
                 label: labels[i]
             })
-            x.push(element[x_axis - 1])
-            y.push(element[y_axis - 1])
+            x.push(regression_labels[i][0])
         });
         let traces1 = []
         if (uniqueLabels.length !== 0) {
