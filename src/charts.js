@@ -402,7 +402,8 @@ export default class ChartController {
                 let normalization_type = document.getElementById(key + '--normal').value
                 scale_data(data, key, normalization_type)
                 data.dropNa({ axis: 1, inplace: true })
-                current_class.draw_kde(data, key, target, "nrd", is_classification, true);
+                var newBandwidth = parseFloat(document.getElementById(column + '-kde').value);
+                current_class.draw_kde(data, key, target, newBandwidth, is_classification, true);
             });
         }
         var current_class = this;
@@ -412,8 +413,9 @@ export default class ChartController {
             let data = dataset.loc({ columns: [column, target] });
             let normalization_type = document.getElementById(column + '--normal').value
             scale_data(data, column, normalization_type)
+            var newBandwidth = parseFloat(document.getElementById(column + '-kde').value);
             data.dropNa({ axis: 1, inplace: true })
-            current_class.draw_kde(data, column, target, "nrd", is_classification, true);
+            current_class.draw_kde(data, column, target, newBandwidth, is_classification, true);
         });
         let container_id = column + '-kde-plot';
         let items_range = raw_values.column(column).values

@@ -512,37 +512,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             model_settings.types += 'c';
                         }
                         let model = model_factory.createModel(Settings.regression.kernel_regression, model_settings, {});
-                        let summary = await model.train_test(x_train.values, y_train.values, x_test.values, x_train.columns)
-                        let model_stats_matrix = [];
-                        let cols = [...x_train.columns]
-                        cols.push("intercept")
-                        for (let i = 0; i < cols.length; i++) {
-                            let row = [];
-                            row.push(cols[i])
-                            row.push(summary.get('params')[i].toFixed(2))
-                            row.push(summary.get('bse')[i].toFixed(2))
-                            row.push(summary.get('pvalues')[i].toFixed(2))
-                            model_stats_matrix.push(row)
-                        }
-
-                        new DataTable('#metrics_table_' + mltool.model_number, {
-                            dom: '<"' + mltool.model_number + '">',
-                            initComplete: function () {
-                                $('.' + mltool.model_number).html(`R squared:${summary.get('rsquared').toFixed(2)} AIC: ${summary.get('aic').toFixed(2)} BIC: ${summary.get('bic').toFixed(2)} `);
-                            },
-                            responsive: true,
-                            columns: [{ title: "variable" }, { title: "weight" }, { title: "std error" }, { title: "p value" }],
-                            data: model_stats_matrix,
-                            info: false,
-                            search: false,
-                            ordering: false,
-                            searching: false,
-                            paging: false,
-                            bDestroy: true,
-                        });
-
-                        chart_controller.yhat_plot(y_test.values, summary.get('preds'), mltool.model_number)
-                        ui.predictions_table_regression(x_test, y_test, summary.get('preds'), mltool.model_number)
+                        let predictions = await model.train_test(x_train.values, y_train.values, x_test.values, x_train.columns)
+                        ui.regression_metrics_display(y_test, predictions, mltool.model_number);
+                        chart_controller.yhat_plot(y_test.values, predictions, mltool.model_number)
+                        ui.predictions_table_regression(x_test, y_test, predictions, mltool.model_number)
 
                         break;
                     }
