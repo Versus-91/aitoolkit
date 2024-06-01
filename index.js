@@ -424,7 +424,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             paging: false,
                             bDestroy: true,
                         });
-                        chart_controller.chart_controller.yhat_plot(y_test.values, summary.get('preds'), mltool.model_number)
+                        chart_controller.yhat_plot(y_test.values, summary.get('preds'), mltool.model_number)
                         ui.predictions_table_regression(x_test, y_test, summary.get('preds'), mltool.model_number)
 
                         break;

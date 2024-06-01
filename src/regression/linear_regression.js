@@ -12,14 +12,13 @@ export default class LinearRegression {
             X_train: x_train,
             y_train: y_train,
             X_test: x_test,
-            alpha: this.options.alpha,
-            l1: this.options.l1,
+            regularization_type: this.options.regularization === "Lasso" ? 1 : 0,
             labels: labels
         };
         const script = `
         import numpy as np
         import statsmodels.api as sm
-        from js import X_train,y_train,X_test,labels,l1,alpha
+        from js import X_train,y_train,X_test,labels,regularization_type
         import pandas as pd
 
         df_test = pd.DataFrame(X_test,columns=labels)
@@ -34,17 +33,14 @@ export default class LinearRegression {
 
         # Fit OLS model
         model = sm.OLS(np.array(y_train), train)
-        if alpha is 0 and l1 is 0:
-            res = model.fit()
-        else:
-            res = model.fit_regularized(method='elastic_net', alpha=alpha, L1_wt=l1, refit=True)
+        res = model.fit()
         preds = res.predict(test)
 
         coefficients = []
-        alphas = np.logspace(-3, 3, 100)
+        alphas = np.logspace(-4, 1, 50)
 
         for alpha in alphas:
-            linear_reg = model.fit_regularized(method='elastic_net', alpha=alpha, L1_wt=l1, refit=True)
+            linear_reg = model.fit_regularized(method='elastic_net', alpha=alpha, L1_wt=regularization_type, refit=True)
             coefficients.append(linear_reg.params.tolist())
 
         # Extract summary information
@@ -61,7 +57,7 @@ export default class LinearRegression {
             "aic": res.aic,
             "bic": res.bic,
             "coefs": coefficients,
-            "alphas" : np.log(alphas)
+            "alphas" : alphas
         }
         
         summary_dict

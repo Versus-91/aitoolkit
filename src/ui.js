@@ -688,7 +688,7 @@ export default class UI {
             document.getElementById("y_pie_chart").innerHTML = "";
         }
         let features = Object.values(numericColumns).concat(Object.values(categorical_columns)).filter(m => m !== target)
-        this.chart_controller.scatterplot_matrix_display(dataset.loc({ columns: features }).values, features, dataset.loc({ columns: [target] }).values)
+        // this.chart_controller.scatterplot_matrix_display(dataset.loc({ columns: features }).values, features, dataset.loc({ columns: [target] }).values)
     }
 
 

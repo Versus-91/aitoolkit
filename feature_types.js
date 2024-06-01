@@ -161,14 +161,11 @@ export const Settings = {
             "feature_selection": ["no", "Lasso", "ridge"],
             "criteria": ["AIC", "BIC", "AR2",],
             "options": {
-                "alpha": {
-                    type: "number",
-                    default: 0.1
-                },
-                "l1": {
-                    type: "number",
-                    default: 0.1
-                },
+                "regularization": {
+                    type: "select",
+                    default: "Lasso",
+                    values: [{ label: "Lasso", value: "Lasso" }, { label: "Ridge", value: "Ridge" }]
+                }
             }
         },
         "polynomial_regression": {

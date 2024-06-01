@@ -1148,7 +1148,7 @@ export default class ChartController {
             },
             xAxis: {
                 title: {
-                    text: 'log lambda'
+                    text: 'penalty weight'
                 },
                 categories: alphas_formatted,
             },
