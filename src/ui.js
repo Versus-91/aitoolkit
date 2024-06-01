@@ -528,6 +528,9 @@ export default class UI {
         ids.forEach(id => {
             document.getElementById(id).innerHTML = ""
         });
+        CanvasXpress.destroy('canvasId');
+        $('#canvas-container').empty()
+        $('#canvas-container').append(`<canvas id="canvasId" width="1200" height="600"></canvas>`)
         // plots.forEach((plot) => Plotly.purge(plot));
     }
     init_upload_button(upoad_handler) {
@@ -640,8 +643,8 @@ export default class UI {
     async visualize(dataset, len, file_name) {
         const myClass = this
         this.renderDatasetStats(dataset);
-        let numericColumns = this.get_numeric_columns(dataset, false)
-        let categorical_columns = this.get_categorical_columns(dataset, false)
+        let numericColumns = this.get_numeric_columns(dataset, true)
+        let categorical_columns = this.get_categorical_columns(dataset, true)
         const target = document.getElementById("target").value;
         const index = numericColumns.findIndex(m => m === target)
         if (index === -1) {

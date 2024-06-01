@@ -70,6 +70,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             await ui.visualize(dataset, result.length, file.name);
             ui.init_tooltips(tippy)
             document.querySelector('#feature_selection_modal').addEventListener('update_graphs', async function (e) {
+                CanvasXpress.destroy('canvasId');
+                $('#canvas-container').empty()
+                $('#canvas-container').append(`<canvas id="canvasId" width="1200" height="600"></canvas>`)
                 await ui.visualize(data_frame);
             });
             document.getElementById("train-button").onclick = async () => {

@@ -1228,6 +1228,9 @@ export default class ChartController {
 
 
         var config = {
+            "legendColumns": labels.length,
+            "legendHorizontalJustification": null,
+            "legendPosition": "top",
             "broadcast": "true",
             "colorBy": "Species",
             "graphType": "Scatter2D",
