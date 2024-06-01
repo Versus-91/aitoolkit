@@ -1,4 +1,3 @@
-"use strict";
 import { DataFrame, tensorflow, LabelEncoder } from 'danfojs/dist/danfojs-base';
 import Papa from 'papaparse';
 import ChartController from "./src/charts.js";
@@ -203,7 +202,6 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         knn_table_column_names.push({ title: "k" })
                         knn_table_column_names.push({ title: "accuracy" })
                         let knn_accuracies = results.map(m => [m.k, m.evaluation.accuracy.toFixed(2)])
-
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels, mltool.model_number)

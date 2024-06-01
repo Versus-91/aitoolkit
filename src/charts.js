@@ -1207,4 +1207,38 @@ export default class ChartController {
             }, plot_bgcolor: "#E5ECF6"
         }, { responsive: true });
     }
+
+    scatterplot_matrix_display(dataset, columns, labels) {
+        let unique_labels = [...new Set(labels)];
+        if (unique_labels.length == 2) {
+            labels = labels.map(label => label[0].toString() === "0" ? 'positive' : 'negative')
+        } else {
+            labels = labels.map(label => 'class.' + label[0].toString())
+        }
+        var data = {
+            "y": {
+                "data": dataset,
+                "smps": columns,
+
+            },
+            "z": {
+                "Species": labels,
+            }
+        }
+
+
+        var config = {
+            "broadcast": "true",
+            "colorBy": "Species",
+            "graphType": "Scatter2D",
+            "layoutAdjust": "true",
+            "scatterPlotMatrix": "Species",
+            "scatterPlotMatrixType": "all",
+            "theme": "CanvasXpress"
+        }
+
+
+        var cX = new CanvasXpress("canvasId", data, config);
+
+    }
 }

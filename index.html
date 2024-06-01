@@ -10,6 +10,8 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link href="https://cdn.datatables.net/v/bm/dt-1.13.8/r-2.5.0/sb-1.6.0/datatables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://www.canvasxpress.org/dist/canvasXpress.css" type="text/css" />
+
 
     <style>
         .tabs-content li.tabs-li {
@@ -100,6 +102,9 @@
                                             </div>
                                         </div>
                                     </article>
+                                </div>
+                                <div class="column is-12">
+                                    <canvas id="canvasId" width="1200" height="600"></canvas>
                                 </div>
                                 <div class="column is-12">
                                     <article class="message is-info" id="kde_panel" style="display: none;">
@@ -308,6 +313,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.14.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-tsne"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script type="text/javascript" src="https://www.canvasxpress.org/dist/canvasXpress.min.js"></script>
 
     <script type="module" src="index.js"></script>
 </body>
