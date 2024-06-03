@@ -6,8 +6,8 @@ import { TXTParser } from './txt_parser'
 export class ParserFactory {
     static createParser(fileType, options) {
         switch (fileType.toLowerCase()) {
-            case 'text/csv':
-                return new CSVParser();
+            case 'csv':
+                return new CSVParser(options);
             case 'txt': {
                 let parser = new TXTParser(options)
                 return parser
