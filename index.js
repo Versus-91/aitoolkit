@@ -133,11 +133,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         try {
             // let dataset = data.copy()
             let dataset = await data.sample(data.$data.length);
-
+            let numericColumns = ui.get_numeric_columns(dataset, true)
             let model_name = document.getElementById('model_name').value
             model_name = parseInt(model_name)
             const target = document.getElementById("target").value;
             dataset = data_parser.handle_missing_values(dataset)
+            dataset = apply_data_transformation(dataset, numericColumns);
             let selected_columns = ui.find_selected_columns(dataset.columns)
             const index = selected_columns.findIndex(m => m === target)
             if (index === -1) {

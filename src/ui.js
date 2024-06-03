@@ -528,9 +528,6 @@ export default class UI {
         ids.forEach(id => {
             document.getElementById(id).innerHTML = ""
         });
-        CanvasXpress.destroy('canvasId');
-        $('#canvas-container').empty()
-        $('#canvas-container').append(`<canvas id="canvasId" width="1200" height="600"></canvas>`)
         // plots.forEach((plot) => Plotly.purge(plot));
     }
     init_upload_button(upoad_handler) {
@@ -688,7 +685,7 @@ export default class UI {
             document.getElementById("y_pie_chart").innerHTML = "";
         }
         let features = Object.values(numericColumns).concat(Object.values(categorical_columns)).filter(m => m !== target)
-        // this.chart_controller.scatterplot_matrix_display(dataset.loc({ columns: features }).values, features, dataset.loc({ columns: [target] }).values)
+        this.chart_controller.scatterplot_matrix_display(dataset.loc({ columns: features }).values, features, dataset.loc({ columns: [target] }).values)
     }
 
 
@@ -860,6 +857,7 @@ export default class UI {
         x.columns.forEach(element => {
             table_columns.push({ title: element });
         });
+        let rr = [...Array(table_columns.length - 3).keys()]
         new DataTable('#predictions_table_' + tab_index, {
             pageLength: 25,
             responsive: true,
@@ -877,6 +875,12 @@ export default class UI {
                         return data
                     },
                     targets: [-3]
+                },
+                {
+                    render: function (data, type, row) {
+                        return data.toFixed(2);
+                    },
+                    targets: [...Array(table_columns.length - 3).keys()]
                 }
             ],
             rowCallback: function (row, data, index) {

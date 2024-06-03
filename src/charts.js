@@ -846,7 +846,7 @@ export default class ChartController {
                 let data = subset.map(item => item[j]);
                 traces.push({
                     type: 'box',
-                    name: `${labels[j]}`,
+                    name: `${true_label}`,
                     marker: {
                         color: colorIndices[j]
                     },

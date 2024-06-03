@@ -29,6 +29,7 @@ export default [
         Toastify: "readonly",
         Worker: "readonly",
         URL: "readonly",
+        CanvasXpress: "readonly",
       }
     }
   }

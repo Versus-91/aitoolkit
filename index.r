@@ -1,30 +1,27 @@
-# Load necessary library
-library(ggplot2)
+# Install and load the glmnet package
+library(glmnet)
 
 # Load the Iris dataset
 data(iris)
 
-# Perform PCA on the numeric columns (excluding the Species column)
-iris_pca <- prcomp(iris[, -5], scale. = TRUE)
+# Prepare the data
+x <- as.matrix(iris[, 1:4])  # Features
+y <- as.factor(iris$Species)  # Target variable
 
-# Create a scree plot using base R
-screeplot(iris_pca, type = "lines", main = "Scree Plot")
+# Fit a multinomial logistic regression model with L2 regularization
+model <- glmnet(x, y, family = "multinomial", alpha = 0)
 
-# Get the proportion of variance explained by each component
-explained_variance <- iris_pca$sdev^2 / sum(iris_pca$sdev^2)
+# Display the model details
+print(model)
 
-# Create a data frame for plotting
-variance_df <- data.frame(
-  Principal_Component = 1:length(explained_variance),
-  Variance_Explained = explained_variance
-)
+# Cross-validation to find the best lambda
+cv_model <- cv.glmnet(x, y, family = "multinomial", alpha = 0)
+plot(cv_model)
+best_lambda <- cv_model$lambda.min
+print(best_lambda)
 
-# Plot using ggplot2
-ggplot(variance_df, aes(x = Principal_Component, y = Variance_Explained)) +
-  geom_bar(stat = "identity", fill = "steelblue") +
-  geom_line() +
-  geom_point() +
-  xlab("Principal Component") +
-  ylab("Proportion of Variance Explained") +
-  ggtitle("Scree Plot") +
-  theme_minimal()
+# Fit the model again with the best lambda
+final_model <- glmnet(x, y, family = "multinomial", alpha = 0, lambda = best_lambda)
+
+# Display the coefficients of the final model
+coef(final_model)

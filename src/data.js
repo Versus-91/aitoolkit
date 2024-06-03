@@ -158,7 +158,7 @@ export default class DataLoader {
             let string_column_modes = []
             let numeric_column_means = []
             data_frame.columns.forEach((item) => {
-                if (data_frame.column(item).dtype === 'string') {
+                if (data_frame.column(item)?.dtype === 'string') {
                     string_columns.push(item)
                 } else {
                     numeric_columns.push(item)
