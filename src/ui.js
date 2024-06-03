@@ -680,9 +680,9 @@ export default class UI {
             for (let i = 0; i < unique_labels.length; i++) {
                 counts.push(labels.filter(m => m === unique_labels[i]).length);
             }
-            this.chart_controller.classification_target_chart(counts, unique_labels, file_name, "y_pie_chart", target);
+            this.chart_controller.classification_target_chart(counts, unique_labels, file_name, "target_chart", target);
         } else {
-            document.getElementById("y_pie_chart").innerHTML = "";
+            document.getElementById("target_chart").innerHTML = "";
         }
         let features = Object.values(numericColumns).concat(Object.values(categorical_columns)).filter(m => m !== target)
         this.chart_controller.scatterplot_matrix_display(dataset.loc({ columns: features }).values, features, dataset.loc({ columns: [target] }).values)

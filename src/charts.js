@@ -1222,7 +1222,7 @@ export default class ChartController {
 
             },
             "z": {
-                "Species": labels,
+                "Classes": labels,
             }
         }
 
@@ -1232,16 +1232,15 @@ export default class ChartController {
             "legendHorizontalJustification": null,
             "legendPosition": "top",
             "broadcast": "true",
-            "colorBy": "Species",
+            "colorBy": "Classes",
             "graphType": "Scatter2D",
             "layoutAdjust": "true",
-            "scatterPlotMatrix": "Species",
+            "scatterPlotMatrix": "Classes",
             "scatterPlotMatrixType": "all",
             "theme": "CanvasXpress"
         }
 
-
-        var cX = new CanvasXpress("canvasId", data, config);
+        new CanvasXpress("canvasId", data, config);
 
     }
 }

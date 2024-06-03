@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 .then(response => response.blob())
                 .then(async blob => {
                     file = new File([blob], "url");
-                    await process_file(file, blob.type)
+                    await process_file(file, 'csv')
                 })
                 .catch(error => {
                     console.error('Error fetching the file:', error);
@@ -67,6 +67,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             data_frame = new DataFrame(result);
             ui.createDatasetPropsDropdown(dataset);
             ui.createSampleDataTable(dataset);
+            CanvasXpress.destroy('canvasId');
+            $('#canvas-container').empty()
+            $('#canvas-container').append(`<canvas id="canvasId" width="1200" height="600"></canvas>`)
             await ui.visualize(dataset, result.length, file.name);
             ui.init_tooltips(tippy)
             document.querySelector('#feature_selection_modal').addEventListener('update_graphs', async function (e) {
