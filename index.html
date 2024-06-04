@@ -19,6 +19,15 @@
             list-style: none;
         }
 
+        #container-canvasId {
+            width: 100%;
+            object-fit: contain;
+        }
+
+        #canvas-container {
+            width: 100%;
+        }
+
         .tabs-content li.is-active {
             display: block;
         }
@@ -78,7 +87,7 @@
                     <div class="tabs-content">
                         <ul>
                             <li class="is-active tabs-li">
-                                <div class="column is-12" id="stats" style="display: none;">
+                                <div class="column is-12" id="stats">
                                     <article class="message is-info">
                                         <div class="message-header">
                                             <p>Data Summary</p>
@@ -104,7 +113,6 @@
                                     </article>
                                 </div>
                                 <div class="column is-12" id="canvas-container">
-                                    <canvas id="canvasId" width="1200" height="600"></canvas>
                                 </div>
                                 <div class="column is-12">
                                     <article class="message is-info" id="kde_panel" style="display: none;">
@@ -314,7 +322,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-tsne"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script type="text/javascript" src="https://www.canvasxpress.org/dist/canvasXpress.min.js"></script>
+    <script type="module">
+        import('https://webr.r-wasm.org/latest/webr.mjs').then(
+            async ({ WebR }) => {
+                const webR = new WebR();
+                await webR.init();
+                let result = await webR.evalR('rnorm(10,5,1)');
+                let output = await result.toArray();
 
+                console.log('Result of running `rnorm` from webR: ', output);
+            }
+        );
+    </script>
     <script type="module" src="index.js"></script>
 </body>
 

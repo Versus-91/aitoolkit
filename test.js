@@ -1,19 +1,8 @@
-function calculateMSE(actualValues, predictedValues) {
-  if (actualValues.length !== predictedValues.length) {
-    throw new Error("The lengths of actual values and predicted values must be the same.");
-  }
+const { WebR } = require('webr'); // first = Ridham, last = Tarpara
 
-  const n = actualValues.length;
-  let sumSquaredError = 0;
+WebR.evalR('rnorm(10,5,1)').then(async (result) => {
+  let output = await result.toArray();
 
-  for (let i = 0; i < n; i++) {
-    const squaredError = Math.pow(actualValues[i] - predictedValues[i], 2);
-    sumSquaredError += squaredError;
-  }
+}).catch((err) => {
+});
 
-  const meanSquaredError = sumSquaredError / n;
-  return meanSquaredError;
-}
-let y_true = [3, -0.5, 2, 7]
-let y_pred = [2.5, 0.0, 2, 8]
-console.log(calculateMSE(y_true, y_pred));

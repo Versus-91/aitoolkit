@@ -1209,38 +1209,62 @@ export default class ChartController {
     }
 
     scatterplot_matrix_display(dataset, columns, labels) {
-        let unique_labels = [...new Set(labels)];
-        if (unique_labels.length == 2) {
-            labels = labels.map(label => label[0].toString() === "0" ? 'positive' : 'negative')
-        } else {
-            labels = labels.map(label => 'class.' + label[0].toString())
-        }
-        var data = {
-            "y": {
-                "data": dataset,
-                "smps": columns,
+        const target = document.getElementById("target").value;
+        console.log(target);
+        let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+        if (is_classification) {
+            let unique_labels = [...new Set(labels)];
+            if (unique_labels.length == 2) {
+                labels = labels.map(label => label[0].toString() === "0" ? 'positive' : 'negative')
+            } else {
+                labels = labels.map(label => 'class.' + label[0].toString())
+            }
+            var data = {
+                "y": {
+                    "data": dataset,
+                    "smps": columns,
 
-            },
-            "z": {
-                "Classes": labels,
+                },
+                "z": {
+                    "Classes": labels,
+                }
+            }
+
+
+            var config = {
+                "legendColumns": labels.length,
+                "legendHorizontalJustification": null,
+                "legendPosition": "top",
+                "broadcast": "true",
+                "colorBy": "Classes",
+                "graphType": "Scatter2D",
+                "layoutAdjust": "true",
+                "scatterPlotMatrix": true,
+                "scatterPlotMatrixType": "all",
+                "theme": "CanvasXpress"
+            }
+        } else {
+            var data = {
+                "y": {
+                    "data": dataset,
+                    "smps": columns,
+                },
+                "z": {
+                }
+            };
+            data['z'][target] = labels
+            var config = {
+                autoScaleFont: true,
+                fontSize: 8,
+                "broadcast": "true",
+                "colorBy": target,
+                "graphType": "Scatter2D",
+                "layoutAdjust": "true",
+                "scatterPlotMatrix": true,
+                "scatterPlotMatrixType": "lower",
+                "theme": "CanvasXpress"
             }
         }
-
-
-        var config = {
-            "legendColumns": labels.length,
-            "legendHorizontalJustification": null,
-            "legendPosition": "top",
-            "broadcast": "true",
-            "colorBy": "Classes",
-            "graphType": "Scatter2D",
-            "layoutAdjust": "true",
-            "scatterPlotMatrix": "Classes",
-            "scatterPlotMatrixType": "all",
-            "theme": "CanvasXpress"
-        }
-
         new CanvasXpress("canvasId", data, config);
-
     }
 }

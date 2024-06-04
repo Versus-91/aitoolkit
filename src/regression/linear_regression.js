@@ -7,10 +7,11 @@ export default class LinearRegression {
         this.model = null;
 
     }
-    async train_test(x_train, y_train, x_test, labels) {
+    async train_test(x_train, y_train, x_test, y_test, labels) {
         this.context = {
             X_train: x_train,
             y_train: y_train,
+            y_test: y_test,
             X_test: x_test,
             regularization_type: this.options.regularization === "Lasso" ? 1 : 0,
             labels: labels
@@ -18,8 +19,9 @@ export default class LinearRegression {
         const script = `
         import numpy as np
         import statsmodels.api as sm
-        from js import X_train,y_train,X_test,labels,regularization_type
+        from js import X_train,y_train,y_test,X_test,labels,regularization_type
         import pandas as pd
+        from sklearn.metrics import mean_squared_error
 
         df_test = pd.DataFrame(X_test,columns=labels)
         x_test = df_test.iloc[:,:]
@@ -38,10 +40,19 @@ export default class LinearRegression {
 
         coefficients = []
         alphas = np.logspace(-4, 1, 50)
-
+        best_alpha = 0
+        best_rmse = 10000
         for alpha in alphas:
             linear_reg = model.fit_regularized(method='elastic_net', alpha=alpha, L1_wt=regularization_type, refit=True)
             coefficients.append(linear_reg.params.tolist())
+            ypred = linear_reg.predict(test)
+            rmse = mean_squared_error(y_test, ypred)
+            if rmse < best_rmse:
+                best_rmse = rmse
+                best_alpha = alpha
+
+        print(best_rmse)
+        print(best_alpha)
 
         # Extract summary information
         summary_dict = {
@@ -53,7 +64,6 @@ export default class LinearRegression {
             "rsquared": res.rsquared,
             "rsquared_adj": res.rsquared_adj,
             "fvalue": res.fvalue,
-            "f_pvalue": res.f_pvalue,
             "aic": res.aic,
             "bic": res.bic,
             "coefs": coefficients,

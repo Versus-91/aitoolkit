@@ -69,13 +69,17 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             ui.createSampleDataTable(dataset);
             CanvasXpress.destroy('canvasId');
             $('#canvas-container').empty()
-            $('#canvas-container').append(`<canvas id="canvasId" width="1200" height="600"></canvas>`)
+            $('#canvas-container').append(`<canvas id="canvasId" responsive='true'></canvas>`)
+            let canvas = document.getElementById('canvasId')
+            let container = document.getElementById('canvas-container')
+            canvas.width = container.offsetWidth;
+            canvas.height = 600;
             await ui.visualize(dataset, result.length, file.name);
             ui.init_tooltips(tippy)
             document.querySelector('#feature_selection_modal').addEventListener('update_graphs', async function (e) {
                 CanvasXpress.destroy('canvasId');
                 $('#canvas-container').empty()
-                $('#canvas-container').append(`<canvas id="canvasId" width="1200" height="600"></canvas>`)
+                $('#canvas-container').append(`<canvas id="canvasId" responsive='true'></canvas>`)
                 await ui.visualize(data_frame);
             });
             document.getElementById("train-button").onclick = async () => {
@@ -399,7 +403,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 switch (model_name) {
                     case Settings.regression.linear_regression.value: {
                         let model = model_factory.createModel(Settings.regression.linear_regression, model_settings, {});
-                        let summary = await model.train_test(x_train.values, y_train.values, x_test.values, x_train.columns)
+                        let summary = await model.train_test(x_train.values, y_train.values, x_test.values, y_test.values, x_train.columns)
 
                         let model_stats_matrix = [];
                         let cols = [...x_train.columns]
