@@ -255,7 +255,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         let evaluation_result = evaluate_classification(predictions, encoded_y_test)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
-                        ui.predictions_table(x_test, y_test, encoder, predictions.null, mltool.model_number)
+                        ui.predictions_table(x_test, y_test, encoder, predictions,null, mltool.model_number)
                         break;
                     }
                     case Settings.classification.naive_bayes.value: {
@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
-                        ui.predictions_table(x_test, y_test, encoder, predictions.null, mltool.model_number)
+                        ui.predictions_table(x_test, y_test, encoder, predictions,null, mltool.model_number)
                         break;
                     }
                     case Settings.classification.boosting.value: {
@@ -300,7 +300,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
-                        ui.predictions_table(x_test, y_test, encoder, predictions.null, mltool.model_number)
+                        ui.predictions_table(x_test, y_test, encoder, predictions, null, mltool.model_number)
                         break;
                     }
                     case Settings.classification.logistic_regression.value: {
