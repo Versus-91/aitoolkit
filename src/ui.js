@@ -682,7 +682,7 @@ export default class UI {
             }
             this.chart_controller.classification_target_chart(counts, unique_labels, file_name, "target_chart", target);
         } else {
-            document.getElementById("target_chart").innerHTML = "";
+            this.chart_controller.regression_target_chart(dataset.column(target).values, "target_chart", target);
         }
         let features = Object.values(numericColumns).concat(Object.values(categorical_columns)).filter(m => m !== target)
         this.chart_controller.scatterplot_matrix_display(dataset.loc({ columns: features }).values, features, dataset.loc({ columns: [target] }).values)

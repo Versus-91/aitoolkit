@@ -49,6 +49,62 @@ export default class ChartController {
             series: data
         });
     }
+    regression_target_chart(items, container, name) {
+        let kde_data = [];
+        let ys = [];
+        let bandwidth = this.nrd(items.map(item => item)).toFixed(2);
+        let items_range = items
+        let minValue = Math.min(...items_range);
+        let maxValue = Math.max(...items_range);
+        items_range.push(minValue - parseFloat(bandwidth))
+        items_range.push(maxValue + parseFloat(bandwidth))
+        var breaks = ss.equalIntervalBreaks(items_range, 100);
+        let kde = ss.kernelDensityEstimation(items, 'gaussian', 'nrd');
+        breaks.forEach((item) => {
+            ys.push(kde(item, 'nrd'));
+            kde_data.push([item, ys[ys.length - 1]]);
+        });
+
+
+        Highcharts.chart(container, {
+            credits: {
+                enabled: false
+            },
+            legend: {
+                enabled: false,
+                verticalAlign: 'top',
+            },
+            chart: {
+                height: '300',
+                type: "spline",
+                animation: true,
+            },
+            title: {
+                text: name // Assuming `column` is defined elsewhere
+            },
+            yAxis: {
+                title: { text: null }
+            },
+            tooltip: {
+                valueDecimals: 3
+            },
+            plotOptions: {
+                series: {
+                    marker: {
+                        enabled: false
+                    },
+                    dashStyle: "shortdot",
+                    area: true
+                }
+            },
+            series: [{
+                type: 'area',
+                dashStyle: "solid",
+                lineWidth: 2,
+                data: kde_data
+            }]
+        });
+    }
     draw_categorical_barplot(column_values, target, title) {
         const key = title + "- barplot";
         $("#categories_barplots").append(`<div class="column is-4" style="height:40vh;" id="${key}"></div>`)

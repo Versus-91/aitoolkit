@@ -50,6 +50,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
 
     }
+    function init_canvas() {
+        $('#canvas-container').empty()
+        $('#canvas-container').append(`<canvas id="canvasId" responsive='true'></canvas>`)
+        let canvas = document.getElementById('canvasId')
+        let container = document.getElementById('canvas-container')
+        canvas.width = container.offsetWidth;
+        canvas.height = 600;
+    }
     async function process_file(file, type) {
         try {
             ui.reset(html_content_ids, table_ids, plots);
@@ -68,18 +76,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             ui.createDatasetPropsDropdown(dataset);
             ui.createSampleDataTable(dataset);
             CanvasXpress.destroy('canvasId');
-            $('#canvas-container').empty()
-            $('#canvas-container').append(`<canvas id="canvasId" responsive='true'></canvas>`)
-            let canvas = document.getElementById('canvasId')
-            let container = document.getElementById('canvas-container')
-            canvas.width = container.offsetWidth;
-            canvas.height = 600;
+            init_canvas()
             await ui.visualize(dataset, result.length, file.name);
             ui.init_tooltips(tippy)
             document.querySelector('#feature_selection_modal').addEventListener('update_graphs', async function (e) {
                 CanvasXpress.destroy('canvasId');
-                $('#canvas-container').empty()
-                $('#canvas-container').append(`<canvas id="canvasId" responsive='true'></canvas>`)
+                init_canvas()
                 await ui.visualize(data_frame);
             });
             document.getElementById("train-button").onclick = async () => {
