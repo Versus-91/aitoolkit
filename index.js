@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         let canvas = document.getElementById('canvasId')
         let container = document.getElementById('canvas-container')
         canvas.width = container.offsetWidth;
-        canvas.height = 600;
+        canvas.height = 800;
     }
     async function process_file(file, type) {
         try {

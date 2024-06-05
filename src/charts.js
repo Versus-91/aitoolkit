@@ -52,12 +52,7 @@ export default class ChartController {
     regression_target_chart(items, container, name) {
         let kde_data = [];
         let ys = [];
-        let bandwidth = this.nrd(items.map(item => item)).toFixed(2);
         let items_range = items
-        let minValue = Math.min(...items_range);
-        let maxValue = Math.max(...items_range);
-        items_range.push(minValue - parseFloat(bandwidth))
-        items_range.push(maxValue + parseFloat(bandwidth))
         var breaks = ss.equalIntervalBreaks(items_range, 100);
         let kde = ss.kernelDensityEstimation(items, 'gaussian', 'nrd');
         breaks.forEach((item) => {
@@ -474,11 +469,11 @@ export default class ChartController {
             current_class.draw_kde(data, column, target, newBandwidth, is_classification, true);
         });
         let container_id = column + '-kde-plot';
-        let items_range = raw_values.column(column).values
-        let minValue = Math.min(...items_range);
-        let maxValue = Math.max(...items_range);
-        items_range.push(minValue - parseFloat(default_bandwidth))
-        items_range.push(maxValue + parseFloat(default_bandwidth))
+        let items_range = [...raw_values.column(column).values]
+        // let minValue = Math.min(...items_range);
+        // let maxValue = Math.max(...items_range);
+        // items_range.push(minValue - parseFloat(default_bandwidth))
+        // items_range.push(maxValue + parseFloat(default_bandwidth))
         var breaks = ss.equalIntervalBreaks(items_range, 100);
         let allData = [];
         let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
@@ -902,7 +897,7 @@ export default class ChartController {
                 let data = subset.map(item => item[j]);
                 traces.push({
                     type: 'box',
-                    name: `${true_label}`,
+                    name: `${labels[j]}`,
                     marker: {
                         color: colorIndices[j]
                     },
@@ -1270,10 +1265,11 @@ export default class ChartController {
         let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
         if (is_classification) {
             let unique_labels = [...new Set(labels)];
+            var colors = unique_labels.map(label => this.indexToColor(unique_labels.indexOf(label)));
             if (unique_labels.length == 2) {
-                labels = labels.map(label => label[0].toString() === "0" ? 'positive' : 'negative')
+                labels = labels.map(label => label.toString() === "0" ? 'positive' : 'negative')
             } else {
-                labels = labels.map(label => 'class.' + label[0].toString())
+                labels = labels.map(label => 'class.' + label.toString())
             }
             var data = {
                 "y": {
@@ -1288,6 +1284,8 @@ export default class ChartController {
 
 
             var config = {
+                "colors": colors,
+                "colorScheme": "User",
                 "legendColumns": labels.length,
                 "legendHorizontalJustification": null,
                 "legendPosition": "top",
@@ -1295,6 +1293,8 @@ export default class ChartController {
                 "colorBy": "Classes",
                 "graphType": "Scatter2D",
                 "layoutAdjust": "true",
+                axisAlgorithm: 'heckbert',
+                bandwidthRule: 'nrd',
                 "scatterPlotMatrix": true,
                 "scatterPlotMatrixType": "all",
                 "theme": "CanvasXpress"
@@ -1306,18 +1306,21 @@ export default class ChartController {
                     "smps": columns,
                 },
                 "z": {
+                    "Classes": dataset.map(m => "class.1"),
                 }
             };
             data['z'][target] = labels
             var config = {
                 autoScaleFont: true,
-                fontSize: 8,
+                legendInside: true,
+                bandwidthRule: 'nrd',
+                axisAlgorithm: 'heckbert',
                 "broadcast": "true",
                 "colorBy": target,
                 "graphType": "Scatter2D",
                 "layoutAdjust": "true",
-                "scatterPlotMatrix": true,
-                "scatterPlotMatrixType": "lower",
+                "scatterPlotMatrix": "Classes",
+                "scatterPlotMatrixType": "correlationDensity",
                 "theme": "CanvasXpress"
             }
         }
