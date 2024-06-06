@@ -1,4 +1,4 @@
-import { asyncRun } from "../py-worker";
+import Plotly from 'plotly.js-dist';
 
 
 export default class LinearRegression {
@@ -26,6 +26,8 @@ export default class LinearRegression {
 
                 await webR.objs.globalEnv.bind('y', y_train);
                 await webR.objs.globalEnv.bind('names', labels);
+                await webR.objs.globalEnv.bind('is_lasso', this.context.regularization_type);
+
 
                 const plotlyData = await webR.evalR(`
                     library(plotly)
@@ -39,9 +41,8 @@ export default class LinearRegression {
                     x <- as.matrix(xx)  
                     colnames(x) <- names
 
-                    
                     lam = 10 ^ seq (-2,3, length =100)    
-                    cvfit = cv.glmnet(x, y, alpha = 0, lambda = lam)
+                    cvfit = cv.glmnet(x, y, alpha = is_lasso)
                     
                     betas = as.matrix(cvfit$glmnet.fit$beta)
                     lambdas = cvfit$lambda

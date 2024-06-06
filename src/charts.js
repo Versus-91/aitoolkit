@@ -879,13 +879,12 @@ export default class ChartController {
         }, 0);
     }
     probabilities_boxplot(probs, labels, true_labels, index) {
-        // Map labels to colors for consistent coloring in plots
+        true_labels.filter(m => m == 0).length
+        true_labels.filter(m => m == 1).length
         var colorIndices = labels.map((label, i) => this.indexToColor(i));
         const num_columns = probs[0].length;
         let traces = [];
-        if (labels.length === 2) {
-            labels = [0, 1]
-        }
+
         // Create subsets of probabilities based on the true labels
         let subsets = {};
         true_labels.forEach((true_label, i) => {
@@ -894,7 +893,7 @@ export default class ChartController {
             }
             subsets[true_label].push(probs[i]);
         });
-
+        console.log(subsets);
         // Generate box plots for each true label class
         for (let true_label in subsets) {
             let subset = subsets[true_label];
@@ -981,8 +980,6 @@ export default class ChartController {
         div.setAttribute("id", "result_number_" + tab_index);
         let metric = await metrics(y.arraySync(), predictedLabels.arraySync(), uniqueClasses)
         let info = metric[0]
-        console.log(labels);
-        console.log(confusionMatrix);
         let len = confusionMatrix[0].length
         let preceissions = [];
         let supports = [];
@@ -1016,13 +1013,14 @@ export default class ChartController {
         window.tensorflow.dispose(y)
         window.tensorflow.dispose(predictedLabels)
         const metric_labels = ["Precession", "Recall", "F1 score", "Support"]
-        labels.push("Precession")
+        // labels.push("Precession")
         labels.push("Recall")
-        labels.push("F1 score")
+        // labels.push("F1 score")
         // labels.push("Support")
-        confusionMatrix.push(preceissions)
+        // confusionMatrix.push(preceissions)
+        recalls.push(0)
         confusionMatrix.push(recalls)
-        confusionMatrix.push(f1s)
+        // confusionMatrix.push(f1s)
         // confusionMatrix.push(supports)
         let items_labels = labels.filter(x => !metric_labels.includes(x))
         // Substring template helper for the responsive labels
@@ -1031,15 +1029,16 @@ export default class ChartController {
         let formatted_matrix = []
         for (let i = 0; i < confusionMatrix.length; i++) {
             const element = confusionMatrix[i];
+            if (i < confusionMatrix.length - 1) {
+                element.push(preceissions[i])
+            }
             for (let j = 0; j < element.length; j++) {
                 const item = element[j];
                 formatted_matrix.push([j, i, item])
             }
         }
-        console.log(confusionMatrix);
-        console.log(labels);
+        items_labels.push("Precession")
 
-        // Create the chart
         Highcharts.chart("confusion_matrix_" + tab_index, {
             credits: {
                 enabled: false
@@ -1131,22 +1130,8 @@ export default class ChartController {
                 y: 25,
                 symbolHeight: 280
             },
-
-            tooltip: {
-                formatter: function () {
-                    var totalCount = this.series.data.reduce(function (acc, cur) {
-                        return acc + cur.value;
-                    }, 0);
-                    var count = this.point.value;
-                    var percentage = ((count / totalCount) * 100).toFixed(2);
-                    return '<b>Actual: </b>' + this.series.yAxis.categories[this.point.y] +
-                        '<br><b>Predicted: </b>' + this.series.xAxis.categories[this.point.x] +
-                        '<br><b>Count: </b>' + count +
-                        '<br><b>Percentage: </b>' + percentage + '%';
-                }
-            },
             series: [{
-                name: 'Sales per employee',
+                name: '',
                 borderWidth: 1,
                 data: formatted_matrix,
                 dataLabels: {
@@ -1154,13 +1139,16 @@ export default class ChartController {
                     useHTML: true,
                     color: '#000000',
                     formatter: function () {
-                        var totalCount = this.series.data.reduce(function (acc, cur) {
-                            return acc + cur.value;
+                        var totalCount = this.series.data.reduce(function (acc, cur, i) {
+                            if ((i + 1) % (uniqueClasses.length + 1) === 0) {
+                                return acc
+                            }
+                            return acc + cur?.value;
                         }, 0);
                         var count = this.point.value;
-                        var skip = this.point.index >= this.series.data.length - (3 * uniqueClasses.length);
+                        var skip = this.point.index >= this.series.data.length - (1 * (uniqueClasses.length + 1));
 
-                        if (!skip) {
+                        if (!skip && !((this.point.index + 1) % (uniqueClasses.length + 1) === 0)) {
                             var percentage = ((count / totalCount) * 100).toFixed(2);
                             return '<p style="margin:auto; text-align:center;">' + count + '<br/>(' + percentage + '%)</p> ';
                         } else {

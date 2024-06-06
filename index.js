@@ -189,6 +189,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             // $(this).toggleClass("is-active ");
             if (document.getElementById(target).value !== FeatureCategories.Numerical) {
                 let uniqueLabels = [...new Set(y_train.values)];
+                if (uniqueLabels.length === 2) {
+                    uniqueLabels.sort()
+                }
                 switch (model_name) {
                     case Settings.classification.k_nearest_neighbour.value: {
                         let knn_classifier = model_factory.createModel(Settings.classification.k_nearest_neighbour, model_settings)
@@ -200,8 +203,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         for (let k = model_settings.min; k <= model_settings.max; k++) {
                             await knn_classifier.train(x_train.values, encoded_y_train, k)
                             let predictions = knn_classifier.predict(x_test.values)
+                            let pobas = knn_classifier.predict_probas(x_test.values)
                             let evaluation_result = evaluate_classification(predictions, encoded_y_test)
-                            results.push({ k: k, predictions: predictions, evaluation: evaluation_result })
+                            results.push({ k: k, predictions: predictions, evaluation: evaluation_result, probas: pobas })
                         }
                         let best_result = results[0];
                         results.forEach(element => {
@@ -233,6 +237,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             paging: false,
                             searching: false,
                         });
+                        chart_controller.probabilities_boxplot(best_result.probas, uniqueLabels, y_test.values, mltool.model_number)
                         ui.predictions_table(x_test, y_test, encoder, best_result.predictions, null, mltool.model_number)
                         break;
                     }

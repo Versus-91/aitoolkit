@@ -20,4 +20,14 @@ export default class KNNModel {
         })
         return predictions
     }
+    predict_probas(x_test) {
+        if (this.model === null || this.model === undefined) {
+            throw "model not found."
+        }
+        var predictions = window.tf.tidy(() => {
+            let results = this.model.predictProba(x_test);
+            return Array.from(results.arraySync())
+        })
+        return predictions
+    }
 }
