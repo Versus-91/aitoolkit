@@ -880,7 +880,9 @@ export default class ChartController {
         var colorIndices = labels.map((label, i) => this.indexToColor(i));
         const num_columns = probs[0].length;
         let traces = [];
-
+        if (labels.length === 2) {
+            labels = [0, 1]
+        }
         // Create subsets of probabilities based on the true labels
         let subsets = {};
         true_labels.forEach((true_label, i) => {
@@ -897,7 +899,7 @@ export default class ChartController {
                 let data = subset.map(item => item[j]);
                 traces.push({
                     type: 'box',
-                    name: `${labels[j]}`,
+                    name: ` class ${true_label} : Predicted ${labels[j]}`,
                     marker: {
                         color: colorIndices[j]
                     },
@@ -908,7 +910,7 @@ export default class ChartController {
 
         // Create a div for the plot
         let content = `
-            <div class="column is-6" id="probs_box_plot_${index}" style="height: 450px;">
+            <div class="column is-6" id="probs_box_plot_${index}" style="height: 350px;">
             </div>
         `;
         $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(content);
@@ -916,7 +918,19 @@ export default class ChartController {
         // Plot the box plots using Plotly
         Plotly.newPlot("probs_box_plot_" + index, traces, {
             yaxis: {
-                zeroline: false
+                title: 'Predicted Probability'
+            },
+            legend: {
+                x: 1,
+                xanchor: 'right',
+                y: 1
+            },
+            margin: {
+                l: 60,
+                r: 30,
+                b: 60,
+                t: 0,
+                pad: 20
             },
             boxmode: 'group'
         });
