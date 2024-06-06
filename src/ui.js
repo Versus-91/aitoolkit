@@ -769,7 +769,16 @@ export default class UI {
         <div class="column is-6">
             <div id="regression_y_yhat_${index}" width="100%">
            </div>
-        </div>`
+        </div>
+        <div class="column is-6">
+            <div id="errors_${index}" width="100%">
+       </div>
+    </div>
+    <div class="column is-6">
+        <div id="regularization_${index}" width="100%">
+    </div>
+    </div>
+`
         $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(content);
     }
     init_tooltips(tippy) {

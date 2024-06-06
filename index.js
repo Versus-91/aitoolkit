@@ -255,7 +255,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         let evaluation_result = evaluate_classification(predictions, encoded_y_test)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
-                        ui.predictions_table(x_test, y_test, encoder, predictions,null, mltool.model_number)
+                        ui.predictions_table(x_test, y_test, encoder, predictions, null, mltool.model_number)
                         break;
                     }
                     case Settings.classification.naive_bayes.value: {
@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, evaluation_result.indexes, uniqueLabels, mltool.model_number)
-                        ui.predictions_table(x_test, y_test, encoder, predictions,null, mltool.model_number)
+                        ui.predictions_table(x_test, y_test, encoder, predictions, null, mltool.model_number)
                         break;
                     }
                     case Settings.classification.boosting.value: {
@@ -405,7 +405,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 switch (model_name) {
                     case Settings.regression.linear_regression.value: {
                         let model = model_factory.createModel(Settings.regression.linear_regression, model_settings, {});
-                        let summary = await model.train_test(x_train.values, y_train.values, x_test.values, y_test.values, x_train.columns)
+                        let summary = await model.train_test(x_train.values, y_train.values, x_test.values, y_test.values, x_train.columns
+                            , 'regularization_' + mltool.model_number, 'errors_' + mltool.model_number)
 
                         let model_stats_matrix = [];
                         let cols = [...x_train.columns]
@@ -413,16 +414,15 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         for (let i = 0; i < cols.length; i++) {
                             let row = [];
                             row.push(cols[i])
-                            row.push(summary.get('params')[i].toFixed(2))
-                            row.push(summary.get('bse')[i].toFixed(2))
-                            row.push(summary.get('pvalues')[i].toFixed(2))
+                            row.push(summary['params'][i]?.toFixed(2))
+                            row.push(summary['bse'][i]?.toFixed(2))
+                            row.push(summary['pvalues'][i]?.toFixed(2))
                             model_stats_matrix.push(row)
                         }
-                        chart_controller.plot_regularization(summary.get('coefs'), summary.get('alphas'), x_train.columns, mltool.model_number)
                         new DataTable('#metrics_table_' + mltool.model_number, {
                             dom: '<"' + mltool.model_number + '">',
                             initComplete: function () {
-                                $('.' + mltool.model_number).html(`R squared:${summary.get('rsquared').toFixed(2)} AIC: ${summary.get('aic').toFixed(2)} BIC: ${summary.get('bic').toFixed(2)} `);
+                                // $('.' + mltool.model_number).html(`R squared:${summary.get('rsquared').toFixed(2)} AIC: ${summary.get('aic').toFixed(2)} BIC: ${summary.get('bic').toFixed(2)} `);
                             },
                             responsive: true,
                             columns: [{ title: "variable" }, { title: "weight" }, { title: "std error" }, { title: "p value" }],
@@ -434,8 +434,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             paging: false,
                             bDestroy: true,
                         });
-                        chart_controller.yhat_plot(y_test.values, summary.get('preds'), mltool.model_number)
-                        ui.predictions_table_regression(x_test, y_test, summary.get('preds'), mltool.model_number)
+                        chart_controller.yhat_plot(y_test.values, summary['predictions'], mltool.model_number)
+                        ui.predictions_table_regression(x_test, y_test, summary['predictions'], mltool.model_number)
 
                         break;
                     }

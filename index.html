@@ -56,9 +56,6 @@
 </head>
 
 <body>
-    <div>
-        <pre><code id="out">Loading webR, please wait...</code></pre>
-    </div>
     <div class="container is-widescreen mt-3 ">
         <div class="columns is-gapless is-multiline">
             <div class="column is-2">
@@ -329,69 +326,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.2/plotly.min.js" charset="utf-8"></script>
 
     <script type="module">
-        import('https://webr.r-wasm.org/latest/webr.mjs').then(
-            async ({ WebR }) => {
-                const webR = new WebR({ interactive: false });
-                await webR.init();
-                let result = await webR.evalR('rnorm(10,5,1)');
-                let output = await result.toArray();
 
-                const outElem = document.getElementById('out');
-                outElem.innerText = 'Loading plotly, please wait...';
-                await webR.installPackages(['jsonlite', 'ggplot2', 'plotly', 'plotly_json', 'tidyr', 'dplyr', 'ggrepel', 'glmnet'], true);
-                outElem.innerText = 'Generating plot, please wait...';
-                const plotlyData = await webR.evalRString(`
-                    library(plotly)
-                    library(ggplot2)
-                    library(tidyr)
-                    library(dplyr)
-                    library(ggrepel)
-                    library(glmnet)
-
-                    data(mtcars)  
-                    # Select all columns except the first as predictors. 
-                    x <- as.matrix(mtcars[, -1])  
-                    # Select the first column as the response. 
-                    y <- mtcars[, 1]
-                    
-                    
-                    
-                    lam = 10 ^ seq (-2,3, length =100)    
-                    cvfit = cv.glmnet(x, y, alpha = 0, lambda = lam)
-                    
-                    betas = as.matrix(cvfit$glmnet.fit$beta)
-                    lambdas = cvfit$lambda
-                    names(lambdas) = colnames(betas)
-                    
-                    
-                    p <- as.data.frame(betas) %>% 
-                      tibble::rownames_to_column("variable") %>% 
-                      pivot_longer(-variable) %>% 
-                      mutate(lambda=lambdas[name]) %>% 
-                    ggplot(aes(x=lambda,y=value,col=variable)) + 
-                      geom_line() + 
-                      geom_label_repel(data=~subset(.x,lambda==min(lambda)),
-                                       aes(label=variable),nudge_x=-0.5) +
-                      scale_x_log10()
-                    
-                    cv.out = cv.glmnet(x,y,alpha=0)
-                    df = with(cv.out,
-                            data.frame(lambda = lambda,MSE = cvm,MSEhi=cvup,MSElow=cvlo))
-
-                    p2<-ggplot(df,aes(x=lambda,y=MSE)) + 
-                    geom_point(col="#f05454") + 
-                    scale_x_log10("log(lambda)") + 
-                    geom_errorbar(aes(ymin = MSElow,ymax=MSEhi),col="#30475e") + 
-                    geom_vline(xintercept=c(cv.out$lambda.1se,cv.out$lambda.min),
-                                linetype="dashed")+
-                    theme_bw()
-                    plotly_json(p2, pretty = FALSE)
-                    `);
-                outElem.replaceChildren();
-                Plotly.newPlot('out', JSON.parse(plotlyData), {});
-                console.log('Result of running `rnorm` from webR: ', output);
-            }
-        );
     </script>
 </body>
 
