@@ -77,8 +77,10 @@ export default class LinearRegression {
                     coefs <- coef(model)
                     pvals <- summary(model)$coefficients[,4]
                     std_error <- summary(model)$coefficients[,2]
-
-                    list(plotly_json(p, pretty = FALSE),plotly_json(p2, pretty = FALSE),coefs,pvals,std_error,predictions)
+                    aic_value <- AIC(model)
+                    bic_value <- BIC(model)
+                    rsquared <- summary(model)$r.squared
+                    list(plotly_json(p, pretty = FALSE),plotly_json(p2, pretty = FALSE),coefs,pvals,std_error,predictions,aic_value,bic_value,rsquared)
                     `);
                 let results = await plotlyData.toArray()
                 console.log(results);
@@ -89,6 +91,9 @@ export default class LinearRegression {
                     bse: await results[4].toArray(),
                     pvalues: await results[3].toArray(),
                     predictions: await results[5].toArray(),
+                    aic: await results[6].toNumber(),
+                    bic: await results[7].toNumber(),
+                    r2: await results[8].toNumber(),
                 }
             }
         );

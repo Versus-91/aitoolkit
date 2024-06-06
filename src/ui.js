@@ -190,7 +190,7 @@ export default class UI {
             if (items.column(column).dtype !== 'string') {
                 $('#' + key).val(FeatureCategories.Numerical)
             } else {
-                $('#' + key).val(FeatureCategories.Nominal)
+                $('#' + key).val(FeatureCategories.Ordinal)
             }
         });
 
@@ -774,7 +774,7 @@ export default class UI {
             <div id="errors_${index}" width="100%">
        </div>
     </div>
-    <div class="column is-6">
+    <div class="column is-12">
         <div id="regularization_${index}" width="100%">
     </div>
     </div>

@@ -372,6 +372,9 @@ export default class ChartController {
         let default_bandwidth = this.nrd(items).toFixed(2);
         let raw_values = dataset.loc({ columns: [column, target_name] });
         let uniqueLabels = [...new Set(raw_values.column(target_name).values)];
+        if (uniqueLabels.length === 2) {
+            uniqueLabels.sort()
+        }
         let column_values = raw_values.values;
         let subsets = [];
         var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
@@ -1260,7 +1263,7 @@ export default class ChartController {
             mode: 'lines',
             type: 'scatter',
             line: { color: 'red', dash: 'dash' },
-            name: 'y=x '
+            name: 'y = x line'
         }], {
             title: "y vs y&#770;",
             margin: {
@@ -1325,8 +1328,6 @@ export default class ChartController {
             };
             data['z'][target] = labels
             var config = {
-                autoScaleFont: true,
-                legendInside: true,
                 bandwidthRule: 'nrd',
                 axisAlgorithm: 'heckbert',
                 "broadcast": "true",

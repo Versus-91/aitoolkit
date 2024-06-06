@@ -422,7 +422,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         new DataTable('#metrics_table_' + mltool.model_number, {
                             dom: '<"' + mltool.model_number + '">',
                             initComplete: function () {
-                                // $('.' + mltool.model_number).html(`R squared:${summary.get('rsquared').toFixed(2)} AIC: ${summary.get('aic').toFixed(2)} BIC: ${summary.get('bic').toFixed(2)} `);
+                                $('.' + mltool.model_number).html(`R squared:${summary['r2'].toFixed(2)} AIC: ${summary['aic'].toFixed(2)} BIC: ${summary['bic'].toFixed(2)} `);
                             },
                             responsive: true,
                             columns: [{ title: "variable" }, { title: "weight" }, { title: "std error" }, { title: "p value" }],
