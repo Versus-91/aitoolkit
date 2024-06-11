@@ -685,7 +685,8 @@ export default class UI {
             this.chart_controller.regression_target_chart(dataset.column(target).values, "target_chart", target);
         }
         let features = Object.values(numericColumns).concat(Object.values(categorical_columns)).filter(m => m !== target)
-        this.chart_controller.scatterplot_matrix_display(dataset.loc({ columns: features }).values, features, dataset.column(target).values)
+        // this.chart_controller.scatterplot_matrix_display(dataset.loc({ columns: features }).values, features, dataset.column(target).values)
+        await this.chart_controller.draw_scatterplot_matrix(dataset.values, 'canvas-container', dataset.columns, categorical_columns, target)
     }
 
 

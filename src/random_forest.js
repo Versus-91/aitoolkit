@@ -9,13 +9,14 @@ export default class RandomForest {
     }
     async train_test(x_train, y_train, x_test) {
         if (this.options.criteria === 'gini') {
+
             let worker = new Worker(
                 new URL('./workers/randomforest', import.meta.url),
                 { type: 'module' }
             );
             return new Promise((resolve, reject) => {
                 worker.onmessage = (e) => {
-                    resolve(e.data)
+                    resolve(e.data.preds)
                 };
                 worker.onerror = (error) => { throw error };
                 worker.postMessage({ x: x_train, y: y_train, x_test: x_test, options: this.options });

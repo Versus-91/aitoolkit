@@ -52,11 +52,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     }
     function init_canvas() {
         $('#canvas-container').empty()
-        $('#canvas-container').append(`<canvas id="canvasId" responsive='true'></canvas>`)
-        let canvas = document.getElementById('canvasId')
         let container = document.getElementById('canvas-container')
-        canvas.width = container.offsetWidth;
-        canvas.height = 800;
+        container.height = 800;
     }
     async function process_file(file, type) {
         try {
@@ -590,6 +587,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         displaylogo: false,
         modeBarButtonsToRemove: ['resetScale2d', 'zoom2d', 'pan', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '], // Remove certain buttons from the mode bar
     });
+
+
 });
 
 

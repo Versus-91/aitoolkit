@@ -605,8 +605,10 @@ export default class ChartController {
         let y = []
         let x_error = []
         let y_error = []
+        let error_texts = []
         pca_data[0].forEach((element, i) => {
             if (missclassifications.includes(i)) {
+                error_texts.push('features : ' + dataset[i].join())
                 x_error.push(element[0])
                 y_error.push(element[1])
             } else {
@@ -632,7 +634,7 @@ export default class ChartController {
             name: 'Missclassifications',
             x: x_error,
             y: y_error,
-            text: labels,
+            text: error_texts,
             mode: 'markers',
             type: 'scatter',
             marker: {
@@ -1022,6 +1024,7 @@ export default class ChartController {
         confusionMatrix.push(recalls)
         // confusionMatrix.push(f1s)
         // confusionMatrix.push(supports)
+        console.log(preceissions);
         let items_labels = labels.filter(x => !metric_labels.includes(x))
         // Substring template helper for the responsive labels
         Highcharts.Templating.helpers.substr = (s, from, length) =>
@@ -1123,12 +1126,12 @@ export default class ChartController {
             },
 
             legend: {
-                align: 'right',
-                layout: 'vertical',
+                align: 'center',
+                layout: 'horizontal',
                 margin: 0,
                 verticalAlign: 'top',
-                y: 25,
-                symbolHeight: 280
+                y: 5,
+                symbolHeight: 10
             },
             series: [{
                 name: '',
@@ -1327,6 +1330,81 @@ export default class ChartController {
                 "theme": "CanvasXpress"
             }
         }
-        new CanvasXpress("canvasId", data, config);
+        new CanvasXpress("draw_scatterplot_matrix", data, config);
+    }
+    draw_scatterplot_matrix(data, container, columns, categorical_columns, target) {
+        return import('https://webr.r-wasm.org/latest/webr.mjs').then(
+            async ({ WebR }) => {
+                const webR = new WebR({ interactive: false });
+                await webR.init();
+                await webR.installPackages(['jsonlite', 'ggplot2', 'plotly', 'plotly_json', 'tidyr', 'dplyr', 'ggrepel', 'GGally'], false);
+                await webR.objs.globalEnv.bind('xx', data);
+                await webR.objs.globalEnv.bind('target', target);
+                await webR.objs.globalEnv.bind('categorical_columns', categorical_columns);
+                await webR.objs.globalEnv.bind('numeric_columns', columns.filter((el) => !categorical_columns.includes(el)));
+
+                await webR.objs.globalEnv.bind('names', columns);
+                const plotlyData = await webR.evalRString(`
+                library(plotly)
+                library(GGally)
+                library(ggplot2)
+                x <- as.matrix(xx)  
+                colnames(x) <- names
+                # Prepare example dataset
+                data <- as.data.frame(x)
+                for (column in numeric_columns) {
+                   data[[column]] <- as.numeric(data[[column]])
+                }
+                for (column in categorical_columns) {
+                   data[[column]] <- as.factor(data[[column]])
+                }
+                # Define custom function for KDE on the diagonal for numerical variables
+                kde_diag <- function(data, mapping, ...) {
+                if (is.numeric(data[[as_label(mapping$x)]])) {
+                    ggally_densityDiag(data, mapping, alpha = 0.5, ...)
+                } else {
+                    ggally_barDiag(data, mapping, ...)
+                }
+                }
+
+                # Define custom function for KDE in the lower panels for numerical variables
+                kde_lower <- function(data, mapping, ...) {
+                if (is.numeric(data[[as_label(mapping$x)]]) && is.numeric(data[[as_label(mapping$y)]])) {
+                    ggplot(data, mapping) + 
+                    geom_density2d_filled(alpha = 0.5) + 
+                    theme_bw()
+                } else {
+                    ggplot(data, mapping) + 
+                    geom_point(alpha = 0.5, aes(color = get(target))) + 
+                    theme_bw()
+                }
+                }
+
+                # Define custom function for the lower panels
+                custom_lower <- function(data, mapping, ...) {
+                ggplot(data, mapping) + 
+                    geom_point(alpha = 0.5, aes(color = get(target))) + 
+                    theme_bw()
+                }
+                p <- ggpairs(data, 
+                            aes(color = get(target)),  # Color points by Species
+                            diag = list(
+                            continuous = kde_diag,
+                            discrete = kde_diag  # Use the same function for both continuous and discrete to handle both cases
+                            ),
+                            lower = list(
+                            continuous = custom_lower,
+                            combo = kde_lower
+                            ),
+                            upper = list(
+                            continuous = wrap("cor")
+                            )
+                )
+                plotly_json(p, pretty = FALSE)
+                    `);
+                Plotly.newPlot(container, JSON.parse(plotlyData), {});
+                return
+            }
+        );
     }
 }
