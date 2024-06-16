@@ -1243,8 +1243,8 @@ export default class ChartController {
     }
     yhat_plot(y_test, predictions, tab_index) {
         Plotly.newPlot('regression_y_yhat_' + tab_index, [{
-            x: y_test,
-            y: predictions,
+            y: y_test,
+            x: predictions,
             type: 'scatter',
             name: "y",
             mode: 'markers',
@@ -1263,8 +1263,8 @@ export default class ChartController {
                 b: 20,
                 t: 30,
                 pad: 5
-            }, plot_bgcolor: "#E5ECF6"
-        }, { responsive: true });
+            }
+        }, { responsive: true, showlegend: false });
     }
 
     scatterplot_matrix_display(dataset, columns, labels) {
@@ -1286,9 +1286,9 @@ export default class ChartController {
 
                 },
                 "z": {
-                    "Classes": labels,
                 }
             }
+            data['z'][target] = labels
 
 
             var config = {
@@ -1298,7 +1298,7 @@ export default class ChartController {
                 "legendHorizontalJustification": null,
                 "legendPosition": "top",
                 "broadcast": "true",
-                "colorBy": "Classes",
+                "colorBy": target,
                 "graphType": "Scatter2D",
                 "layoutAdjust": "true",
                 axisAlgorithm: 'heckbert',
@@ -1330,7 +1330,7 @@ export default class ChartController {
                 "theme": "CanvasXpress"
             }
         }
-        new CanvasXpress("draw_scatterplot_matrix", data, config);
+        new CanvasXpress("canvasId", data, config);
     }
     draw_scatterplot_matrix(data, container, columns, categorical_columns, target) {
         return import('https://webr.r-wasm.org/latest/webr.mjs').then(

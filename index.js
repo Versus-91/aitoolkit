@@ -52,8 +52,11 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     }
     function init_canvas() {
         $('#canvas-container').empty()
+        $('#canvas-container').append(`<canvas id="canvasId" responsive='true'></canvas>`)
+        let canvas = document.getElementById('canvasId')
         let container = document.getElementById('canvas-container')
-        container.height = 800;
+        canvas.width = container.offsetWidth;
+        canvas.height = 800;
     }
     async function process_file(file, type) {
         try {
@@ -408,7 +411,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     case Settings.regression.linear_regression.value: {
                         let model = model_factory.createModel(Settings.regression.linear_regression, model_settings, {});
                         let summary = await model.train_test(x_train.values, y_train.values, x_test.values, y_test.values, x_train.columns
-                            , 'regularization_' + mltool.model_number, 'errors_' + mltool.model_number)
+                            , 'regularization_' + mltool.model_number, 'errors_' + mltool.model_number, 'parameters_plot_' + mltool.model_number)
 
                         let model_stats_matrix = [];
                         let cols = [...x_train.columns]
@@ -427,7 +430,11 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                                 $('.' + mltool.model_number).html(`R squared:${summary['r2'].toFixed(2)} AIC: ${summary['aic'].toFixed(2)} BIC: ${summary['bic'].toFixed(2)} `);
                             },
                             responsive: true,
-                            columns: [{ title: "variable" }, { title: "weight" }, { title: "std error" }, { title: "p value" }],
+                            columns: [{ title: "name" }, { title: "coefficients" }, { title: "std error" }, { title: "p-value" },
+                            { title: "coefficients" }, { title: "std error" }, { title: "p-value" },
+                            { title: "coefficients" }, { title: "std error" }, { title: "p-value" }
+
+                            ],
                             data: model_stats_matrix,
                             info: false,
                             search: false,
@@ -587,7 +594,428 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         displaylogo: false,
         modeBarButtonsToRemove: ['resetScale2d', 'zoom2d', 'pan', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '], // Remove certain buttons from the mode bar
     });
-
+    Plotly.newPlot('test', {
+        "data": [
+          {
+            "x": [
+              -7.69795469541385,
+              2.31019697148941,
+              1.01588272500972,
+              3.30090583745051,
+              6.64602601660341,
+              -0.758378104679442
+            ],
+            "y": [
+              0.875,
+              1.875,
+              2.875,
+              3.875,
+              4.875,
+              5.875
+            ],
+            "text": [
+              "estimate: -7.69795470<br />term: (Intercept)<br />conf.low: -35.04253711<br />conf.high: 19.64662772<br />model: Model (4)",
+              "estimate:  2.31019697<br />term: drat<br />conf.low:  -1.63942362<br />conf.high:  6.25981756<br />model: Model (4)",
+              "estimate:  1.01588273<br />term: qsec<br />conf.low:  -0.27896547<br />conf.high:  2.31073092<br />model: Model (4)",
+              "estimate:  3.30090584<br />term: vs<br />conf.low:  -1.35793497<br />conf.high:  7.95974665<br />model: Model (4)",
+              "estimate:  6.64602602<br />term: am<br />conf.low:   2.05309326<br />conf.high: 11.23895877<br />model: Model (4)",
+              "estimate: -0.75837810<br />term: gear<br />conf.low:  -3.81296104<br />conf.high:  2.29620483<br />model: Model (4)"
+            ],
+            "type": "scatter",
+            "mode": "lines+markers",
+            "opacity": 1,
+            "line": {
+              "color": "transparent"
+            },
+            "error_x": {
+              "array": [
+                27.344582416396847,
+                3.9496205872703403,
+                1.2948481948098698,
+                4.65884081042235,
+                4.59293275610039,
+                3.054582937018632
+              ],
+              "arrayminus": [
+                27.344582416396854,
+                3.9496205872703403,
+                1.294848194809875,
+                4.65884081042235,
+                4.59293275610038,
+                3.054582937018628
+              ],
+              "type": "data",
+              "width": 0,
+              "symmetric": false,
+              "color": "rgba(248,118,109,1)"
+            },
+            "name": "Model (4)",
+            "legendgroup": "Model (4)",
+            "showlegend": true,
+            "xaxis": "x",
+            "yaxis": "y",
+            "hoverinfo": "text",
+            "marker": {
+              "autocolorscale": false,
+              "color": "rgba(248,118,109,1)",
+              "opacity": 1,
+              "size": 1.8897637795275593,
+              "symbol": "circle",
+              "line": {
+                "width": 3.7795275590551185,
+                "color": "rgba(248,118,109,1)"
+              }
+            },
+            "hoveron": "points",
+            "frame": null
+          },
+          {
+            "x": [
+              12.3033741559962,
+              0.787110972236116,
+              0.821040749674628,
+              0.317762814185423,
+              2.52022688720842,
+              0.655413017081792,
+              -0.111440477886863,
+              0.0133352399133411,
+              -0.0214821189891363,
+              -3.71530392832747,
+              -0.199419254856267
+            ],
+            "y": [
+              1.125,
+              2.125,
+              3.125,
+              4.125,
+              5.125,
+              6.125,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "text": [
+              "estimate: 12.30337416<br />term: (Intercept)<br />conf.low: -26.62259745<br />conf.high: 51.22934576<br />model: Model (3)",
+              "estimate:  0.78711097<br />term: drat<br />conf.low:  -2.61383350<br />conf.high:  4.18805545<br />model: Model (3)",
+              "estimate:  0.82104075<br />term: qsec<br />conf.low:  -0.69883421<br />conf.high:  2.34091571<br />model: Model (3)",
+              "estimate:  0.31776281<br />term: vs<br />conf.low:  -4.05880242<br />conf.high:  4.69432805<br />model: Model (3)",
+              "estimate:  2.52022689<br />term: am<br />conf.low:  -1.75681208<br />conf.high:  6.79726585<br />model: Model (3)",
+              "estimate:  0.65541302<br />term: gear<br />conf.low:  -2.44999107<br />conf.high:  3.76081711<br />model: Model (3)",
+              "estimate: -0.11144048<br />term: cyl<br />conf.low:  -2.28468553<br />conf.high:  2.06180457<br />model: Model (3)",
+              "estimate:  0.01333524<br />term: disp<br />conf.low:  -0.02380146<br />conf.high:  0.05047194<br />model: Model (3)",
+              "estimate: -0.02148212<br />term: hp<br />conf.low:  -0.06675236<br />conf.high:  0.02378812<br />model: Model (3)",
+              "estimate: -3.71530393<br />term: wt<br />conf.low:  -7.65495413<br />conf.high:  0.22434628<br />model: Model (3)",
+              "estimate: -0.19941925<br />term: carb<br />conf.low:  -1.92290442<br />conf.high:  1.52406591<br />model: Model (3)"
+            ],
+            "type": "scatter",
+            "mode": "lines+markers",
+            "opacity": 1,
+            "line": {
+              "color": "transparent"
+            },
+            "error_x": {
+              "array": [
+                38.9259716019818,
+                3.400944474765934,
+                1.5198749561575418,
+                4.376565232778367,
+                4.27703896478857,
+                3.105404088824508,
+                2.173245052739713,
+                0.0371367048854902,
+                0.0452702387939734,
+                3.939650204958306,
+                1.723485168031647
+              ],
+              "arrayminus": [
+                38.9259716019818,
+                3.400944474765936,
+                1.5198749561575409,
+                4.376565232778363,
+                4.27703896478856,
+                3.1054040888245016,
+                2.173245052739717,
+                0.0371367048854902,
+                0.045270238793973405,
+                3.9396502049583204,
+                1.723485168031653
+              ],
+              "type": "data",
+              "width": 0,
+              "symmetric": false,
+              "color": "rgba(0,191,196,1)"
+            },
+            "name": "Model (3)",
+            "legendgroup": "Model (3)",
+            "showlegend": true,
+            "xaxis": "x",
+            "yaxis": "y",
+            "hoverinfo": "text",
+            "marker": {
+              "autocolorscale": false,
+              "color": "rgba(0,191,196,1)",
+              "opacity": 1,
+              "size": 1.8897637795275593,
+              "symbol": "circle",
+              "line": {
+                "width": 3.7795275590551185,
+                "color": "rgba(0,191,196,1)"
+              }
+            },
+            "hoveron": "points",
+            "frame": null
+          }
+        ],
+        "layout": {
+          "margin": {
+            "t": 38.27165697485332,
+            "r": 7.305936073059362,
+            "b": 52.225994874396704,
+            "l": 75.25114155251143
+          },
+          "font": {
+            "color": "rgba(0,0,0,1)",
+            "family": "",
+            "size": 14.611872146118724
+          },
+          "xaxis": {
+            "domain": [
+              0,
+              1
+            ],
+            "automargin": true,
+            "type": "linear",
+            "autorange": false,
+            "range": [
+              -39.356131255300134,
+              55.542939901467435
+            ],
+            "tickmode": "array",
+            "ticktext": [
+              "-20",
+              "0",
+              "20",
+              "40"
+            ],
+            "tickvals": [
+              -20,
+              0,
+              20,
+              40.00000000000001
+            ],
+            "categoryorder": "array",
+            "categoryarray": [
+              "-20",
+              "0",
+              "20",
+              "40"
+            ],
+            "nticks": null,
+            "ticks": "",
+            "tickcolor": null,
+            "ticklen": 3.652968036529681,
+            "tickwidth": 0,
+            "showticklabels": true,
+            "tickfont": {
+              "color": "rgba(77,77,77,1)",
+              "family": "",
+              "size": 11.68949771689498
+            },
+            "tickangle": 0,
+            "showline": false,
+            "linecolor": null,
+            "linewidth": 0,
+            "showgrid": true,
+            "gridcolor": "rgba(235,235,235,1)",
+            "gridwidth": 0.66417600664176,
+            "zeroline": false,
+            "anchor": "y",
+            "title": {
+              "text": "Coefficient estimates and 95% confidence intervals",
+              "font": {
+                "color": "rgba(0,0,0,1)",
+                "family": "",
+                "size": 14.611872146118724
+              }
+            },
+            "hoverformat": ".2f"
+          },
+          "yaxis": {
+            "domain": [
+              0,
+              1
+            ],
+            "automargin": true,
+            "type": "linear",
+            "autorange": false,
+            "range": [
+              0.4,
+              11.6
+            ],
+            "tickmode": "array",
+            "ticktext": [
+              "(Intercept)",
+              "drat",
+              "qsec",
+              "vs",
+              "am",
+              "gear",
+              "cyl",
+              "disp",
+              "hp",
+              "wt",
+              "carb"
+            ],
+            "tickvals": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "categoryorder": "array",
+            "categoryarray": [
+              "(Intercept)",
+              "drat",
+              "qsec",
+              "vs",
+              "am",
+              "gear",
+              "cyl",
+              "disp",
+              "hp",
+              "wt",
+              "carb"
+            ],
+            "nticks": null,
+            "ticks": "",
+            "tickcolor": null,
+            "ticklen": 3.652968036529681,
+            "tickwidth": 0,
+            "showticklabels": true,
+            "tickfont": {
+              "color": "rgba(77,77,77,1)",
+              "family": "",
+              "size": 11.68949771689498
+            },
+            "tickangle": 0,
+            "showline": false,
+            "linecolor": null,
+            "linewidth": 0,
+            "showgrid": true,
+            "gridcolor": "rgba(235,235,235,1)",
+            "gridwidth": 0.66417600664176,
+            "zeroline": false,
+            "anchor": "x",
+            "title": {
+              "text": "",
+              "font": {
+                "color": "rgba(0,0,0,1)",
+                "family": "",
+                "size": 14.611872146118724
+              }
+            },
+            "hoverformat": ".2f"
+          },
+          "shapes": [
+            {
+              "type": "rect",
+              "fillcolor": null,
+              "line": {
+                "color": null,
+                "width": 0,
+                "linetype": []
+              },
+              "yref": "paper",
+              "xref": "paper",
+              "x0": 0,
+              "x1": 1,
+              "y0": 0,
+              "y1": 1
+            }
+          ],
+          "showlegend": true,
+          "legend": {
+            "bgcolor": null,
+            "bordercolor": null,
+            "borderwidth": 0,
+            "font": {
+              "color": "rgba(0,0,0,1)",
+              "family": "",
+              "size": 11.68949771689498
+            },
+            "title": {
+              "text": "model",
+              "font": {
+                "color": null,
+                "family": null,
+                "size": 0
+              }
+            }
+          },
+          "hovermode": "closest",
+          "barmode": "relative"
+        },
+        "config": {
+          "doubleClick": "reset",
+          "modeBarButtonsToAdd": [
+            "hoverclosest",
+            "hovercompare"
+          ],
+          "showSendToCloud": false
+        },
+        "source": "A",
+        "attrs": {
+          "8ef47587a65": {
+            "x": {},
+            "y": {},
+            "xmin": {},
+            "xmax": {},
+            "colour": {},
+            "type": "scatter"
+          }
+        },
+        "cur_data": "8ef47587a65",
+        "visdat": {
+          "8ef47587a65": [
+            "function (y) ",
+            "x"
+          ]
+        },
+        "highlight": {
+          "on": "plotly_click",
+          "persistent": false,
+          "dynamic": false,
+          "selectize": false,
+          "opacityDim": 0.2,
+          "selected": {
+            "opacity": 1
+          },
+          "debounce": 0
+        },
+        "shinyEvents": [
+          "plotly_hover",
+          "plotly_click",
+          "plotly_selected",
+          "plotly_relayout",
+          "plotly_brushed",
+          "plotly_brushing",
+          "plotly_clickannotation",
+          "plotly_doubleclick",
+          "plotly_deselect",
+          "plotly_afterplot",
+          "plotly_sunburstclick"
+        ],
+        "base_url": "https://plot.ly"
+      }, {});
 
 });
 

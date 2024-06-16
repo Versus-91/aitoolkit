@@ -410,9 +410,11 @@ export default class UI {
         });
         return selected_columns;
     }
-    find_selected_columns_types(columns) {
-        const target = document.getElementById("target").value;
-        columns = columns.filter(column => column !== target)
+    find_selected_columns_types(columns, include_target = false) {
+        if (include_target === false) {
+            const target = document.getElementById("target").value;
+            columns = columns.filter(column => column !== target)
+        }
         const column_types = []
         columns.forEach(column => {
             let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
@@ -685,8 +687,13 @@ export default class UI {
             this.chart_controller.regression_target_chart(dataset.column(target).values, "target_chart", target);
         }
         let features = Object.values(numericColumns).concat(Object.values(categorical_columns)).filter(m => m !== target)
-        // this.chart_controller.scatterplot_matrix_display(dataset.loc({ columns: features }).values, features, dataset.column(target).values)
-        await this.chart_controller.draw_scatterplot_matrix(dataset.values, 'canvas-container', dataset.columns, categorical_columns, target)
+        dataset = this.data_parser.handle_missing_values(dataset)
+        let model_name = document.getElementById('model_name').value
+        model_name = parseInt(model_name)
+        features.push(target)
+        dataset = this.data_parser.encode_dataset(filterd_dataset, this.find_selected_columns_types(filterd_dataset.columns, true), model_name)
+        this.chart_controller.scatterplot_matrix_display(dataset.loc({ columns: features }).values, features, dataset.column(target).values)
+        // await this.chart_controller.draw_scatterplot_matrix(dataset.values, 'canvas-container', dataset.columns, categorical_columns, target)
     }
 
 
@@ -757,28 +764,30 @@ export default class UI {
     }
     init_regression_results_tab(index) {
         let content = `
-        <div class="column is-6">
+        <div class="column is-7">
             <div class="table-container">
             <table
                 class="table nowrap is-striped is-narrow is-hoverable is-size-7"
                 id="metrics_table_${index}" >
             </table>
            </div>
+        </div>        
+        <div class="column is-5" style="height:400px;" id="parameters_plot_${index}">
         </div>
         <div class="column is-12" id="metrics_${index}">
         </div>
-        <div class="column is-6">
-            <div id="regression_y_yhat_${index}" width="100%">
+
+        <div class="column is-3">
+            <div id="errors_${index}" width="100%" style="height:200px"></div>
+        </div>
+        <div class="column is-3">
+            <div id="regression_y_yhat_${index}" width="100%" style="height:200px">
            </div>
         </div>
-        <div class="column is-6">
-            <div id="errors_${index}" width="100%">
-       </div>
-    </div>
-    <div class="column is-12">
-        <div id="regularization_${index}" width="100%">
-    </div>
-    </div>
+        <div class="column is-6">d</div>
+        <div class="column is-3">
+            <div id="regularization_${index}" width="100%" style="height:200px"></div>
+        </div>
 `
         $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(content);
     }
