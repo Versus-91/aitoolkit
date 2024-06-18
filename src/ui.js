@@ -1,6 +1,7 @@
 import Plotly from 'plotly.js-dist';
 import { MinMaxScaler, StandardScaler } from 'danfojs/dist/danfojs-base';
 import { calculateRSquared, calculateMSE } from './utils';
+import { toJSON } from 'danfojs/dist/danfojs-browser/src/index';
 
 import { FeatureCategories, Settings } from "../feature_types.js";
 export default class UI {
@@ -691,8 +692,7 @@ export default class UI {
         let model_name = document.getElementById('model_name').value
         model_name = parseInt(model_name)
         features.push(target)
-        dataset = this.data_parser.encode_dataset(filterd_dataset, this.find_selected_columns_types(filterd_dataset.columns, true), model_name)
-        this.chart_controller.scatterplot_matrix_display(dataset.loc({ columns: features }).values, features, dataset.column(target).values)
+        this.chart_controller.ScatterplotMatrix(dataset.loc({ columns: features }).values, features, dataset.column(target).values)
         // await this.chart_controller.draw_scatterplot_matrix(dataset.values, 'canvas-container', dataset.columns, categorical_columns, target)
     }
 
@@ -776,7 +776,6 @@ export default class UI {
         </div>
         <div class="column is-12" id="metrics_${index}">
         </div>
-
         <div class="column is-3">
             <div id="errors_${index}" width="100%" style="height:200px"></div>
         </div>
@@ -784,9 +783,28 @@ export default class UI {
             <div id="regression_y_yhat_${index}" width="100%" style="height:200px">
            </div>
         </div>
-        <div class="column is-6">d</div>
+        <div class="column is-3">
+            <div id="regression_y_yhat_min_${index}" width="100%" style="height:200px">
+           </div>
+        </div>
+        <div class="column is-3">
+            <div id="regression_y_yhat_1se_${index}" width="100%" style="height:200px">
+           </div>
+        </div>
         <div class="column is-3">
             <div id="regularization_${index}" width="100%" style="height:200px"></div>
+        </div>
+        <div class="column is-3">
+            <div id="regression_residual_${index}" width="100%" style="height:200px">
+           </div>
+        </div>
+        <div class="column is-3">
+            <div id="regression_residual_min_${index}" width="100%" style="height:200px">
+           </div>
+        </div>
+        <div class="column is-3">
+            <div id="regression_residual_1se_${index}" width="100%" style="height:200px">
+           </div>
         </div>
 `
         $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(content);

@@ -210,12 +210,14 @@ export async function metrics(y, y_pred, labels) {
     const script = `
         from sklearn.metrics import precision_recall_fscore_support, classification_report, f1_score,accuracy_score
         from js import y_pred,y,labels       
-        # Perform t-SNE dimensionality reduction
-        precision_recall_support = precision_recall_fscore_support(y, y_pred,labels=labels)
+        from sklearn.metrics import recall_score,precision_score
+
+        precision = precision_score(y, y_pred, average=None,labels=labels)
+        recall = recall_score(y, y_pred, average=None,labels=labels)
         f1_micro = f1_score(y, y_pred, average='micro')
         f1_macro = f1_score(y, y_pred, average='macro')
         accuracy = accuracy_score(y, y_pred)
-        (precision_recall_support,f1_micro,f1_macro,accuracy)
+        (precision,recall,f1_micro,f1_macro,accuracy)
     `;
     try {
         const { results, error } = await asyncRun(script, context);

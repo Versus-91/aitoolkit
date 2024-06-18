@@ -7,6 +7,8 @@ import { FeatureCategories } from "../feature_types.js";
 import { metrics } from './utils.js';
 import * as tfvis from '@tensorflow/tfjs-vis';
 import { scale_data } from './utils';
+import * as d3 from "d3";
+import { trace } from 'mathjs';
 
 export default class ChartController {
     constructor(data_processor) {
@@ -981,30 +983,21 @@ export default class ChartController {
         div.classList.add('is-12');
         div.setAttribute("id", "result_number_" + tab_index);
         let metric = await metrics(y.arraySync(), predictedLabels.arraySync(), uniqueClasses)
-        let info = metric[0]
         let len = confusionMatrix[0].length
         let preceissions = [];
-        let supports = [];
         let recalls = [];
-        let f1s = [];
         for (let j = 0; j < len; j++) {
-            preceissions.push(parseFloat(info[0][j].toFixed(2)))
+            preceissions.push(parseFloat(metric[0][j].toFixed(2)))
         }
         for (let j = 0; j < len; j++) {
-            recalls.push(parseFloat(info[1][j].toFixed(2)))
-        }
-        for (let j = 0; j < len; j++) {
-            f1s.push(parseFloat(info[2][j].toFixed(2)))
-        }
-        for (let j = 0; j < len; j++) {
-            supports.push(parseFloat(info[3][j].toFixed(2)))
+            recalls.push(parseFloat(metric[1][j].toFixed(2)))
         }
         div.innerHTML =
             `<div class="column is-12">
 
-            <h5 class="subtitle mb-1">Accuracy: ${metric[3].toFixed(2)}</h5>
-            <span class="subtitle mr-2">F1 micro: ${metric[1].toFixed(2)}</span>
-            <span class="subtitle">F1 macro: ${metric[2].toFixed(2)}</span>
+            <h5 class="subtitle mb-1">Accuracy: ${metric[4].toFixed(2)}</h5>
+            <span class="subtitle mr-2">F1 micro: ${metric[3].toFixed(2)}</span>
+            <span class="subtitle">F1 macro: ${metric[3].toFixed(2)}</span>
             </div>`
             ;
         $("#tabs_info li[data-index='" + tab_index + "'] #results_" + tab_index + "").append(div);
@@ -1241,8 +1234,8 @@ export default class ChartController {
             }
         });
     }
-    yhat_plot(y_test, predictions, tab_index) {
-        Plotly.newPlot('regression_y_yhat_' + tab_index, [{
+    yhat_plot(y_test, predictions, container) {
+        Plotly.newPlot(container, [{
             y: y_test,
             x: predictions,
             type: 'scatter',
@@ -1256,15 +1249,77 @@ export default class ChartController {
             line: { color: 'red', dash: 'dash' },
             name: 'y = x line'
         }], {
-            title: "y vs y&#770;",
+            showlegend: false,
+            xaxis: {
+                title: {
+                    text: 'preds',
+                    font: {
+                        family: 'Courier New, monospace',
+                        size: 14,
+                        color: '#7f7f7f'
+                    }
+                },
+            },
+            yaxis: {
+                title: {
+                    text: 'y',
+                    font: {
+                        family: 'Courier New, monospace',
+                        size: 14,
+                        color: '#7f7f7f'
+                    }
+                }
+            },
             margin: {
-                l: 20,
+                l: 40,
                 r: 20,
-                b: 20,
+                b: 40,
                 t: 30,
-                pad: 5
+                pad: 10
             }
-        }, { responsive: true, showlegend: false });
+        }, { responsive: true, });
+    }
+    residual_plot(y, residuals, container) {
+        Plotly.newPlot(container, [{
+            y: y,
+            x: residuals,
+            type: 'scatter',
+            name: "y",
+            mode: 'markers',
+            marker: {
+                color: 'rgb(17, 157, 255)',
+                size: 7
+            },
+        }], {
+            showlegend: false,
+            xaxis: {
+                title: {
+                    text: 'residuals',
+                    font: {
+                        family: 'Courier New, monospace',
+                        size: 14,
+                        color: '#7f7f7f'
+                    }
+                },
+            },
+            yaxis: {
+                title: {
+                    text: 'y',
+                    font: {
+                        family: 'Courier New, monospace',
+                        size: 14,
+                        color: '#7f7f7f'
+                    }
+                }
+            },
+            margin: {
+                l: 40,
+                r: 20,
+                b: 40,
+                t: 30,
+                pad: 10
+            }
+        }, { responsive: true, });
     }
 
     scatterplot_matrix_display(dataset, columns, labels) {
@@ -1337,7 +1392,7 @@ export default class ChartController {
             async ({ WebR }) => {
                 const webR = new WebR({ interactive: false });
                 await webR.init();
-                await webR.installPackages(['jsonlite', 'ggplot2', 'plotly', 'plotly_json', 'tidyr', 'dplyr', 'ggrepel', 'GGally'], false);
+                await webR.installPackages(['plotly', 'GGally'], false);
                 await webR.objs.globalEnv.bind('xx', data);
                 await webR.objs.globalEnv.bind('target', target);
                 await webR.objs.globalEnv.bind('categorical_columns', categorical_columns);
@@ -1347,7 +1402,6 @@ export default class ChartController {
                 const plotlyData = await webR.evalRString(`
                 library(plotly)
                 library(GGally)
-                library(ggplot2)
                 x <- as.matrix(xx)  
                 colnames(x) <- names
                 # Prepare example dataset
@@ -1358,53 +1412,176 @@ export default class ChartController {
                 for (column in categorical_columns) {
                    data[[column]] <- as.factor(data[[column]])
                 }
-                # Define custom function for KDE on the diagonal for numerical variables
-                kde_diag <- function(data, mapping, ...) {
-                if (is.numeric(data[[as_label(mapping$x)]])) {
-                    ggally_densityDiag(data, mapping, alpha = 0.5, ...)
-                } else {
-                    ggally_barDiag(data, mapping, ...)
-                }
-                }
-
-                # Define custom function for KDE in the lower panels for numerical variables
-                kde_lower <- function(data, mapping, ...) {
-                if (is.numeric(data[[as_label(mapping$x)]]) && is.numeric(data[[as_label(mapping$y)]])) {
-                    ggplot(data, mapping) + 
-                    geom_density2d_filled(alpha = 0.5) + 
-                    theme_bw()
-                } else {
-                    ggplot(data, mapping) + 
-                    geom_point(alpha = 0.5, aes(color = get(target))) + 
-                    theme_bw()
-                }
-                }
-
-                # Define custom function for the lower panels
-                custom_lower <- function(data, mapping, ...) {
-                ggplot(data, mapping) + 
-                    geom_point(alpha = 0.5, aes(color = get(target))) + 
-                    theme_bw()
-                }
-                p <- ggpairs(data, 
-                            aes(color = get(target)),  # Color points by Species
-                            diag = list(
-                            continuous = kde_diag,
-                            discrete = kde_diag  # Use the same function for both continuous and discrete to handle both cases
-                            ),
-                            lower = list(
-                            continuous = custom_lower,
-                            combo = kde_lower
-                            ),
-                            upper = list(
-                            continuous = wrap("cor")
-                            )
-                )
-                plotly_json(p, pretty = FALSE)
+                    pm <- ggpairs(data)
+                    plotly_json(pm)
                     `);
                 Plotly.newPlot(container, JSON.parse(plotlyData), {});
                 return
             }
         );
     }
+    ScatterplotMatrix(items, features, labels, is_classification = false) {
+        let unique_labels = [...new Set(labels)];
+        var colors = labels.map(label => this.indexToColor(unique_labels.indexOf(label)));
+        let traces = []
+        let index = 1;
+        if (unique_labels.length === 2) {
+            unique_labels.sort()
+        }
+
+        for (let i = 0; i < features.length; i++) {
+            for (let j = 0; j < features.length; j++) {
+                console.log(i % (features.length - 1));
+
+                if (i === features.length - 1) {
+                    traces.push({
+                        y: items.map(m => m[i]),
+                        x: items.map(m => m[j]),
+                        color: colors,
+                        marker: {
+                            color: colors,
+                            opacity: 0.5,
+                            size: 5,
+                        },
+                        type: 'scatter',
+                        mode: 'markers',
+                        xaxis: 'x' + (index),
+                        yaxis: 'y' + (index),
+                    })
+                } else if (j === features.length - 1) {
+                    let subsets = [];
+                    if (!is_classification) {
+                        subsets.push(items.map(m => m[i]));
+                    } else {
+
+                        for (let k = 0; k < unique_labels.length; k++) {
+                            subsets.push(items.filter(m => m[items[0].length - 1] === unique_labels[k]).map(m => m[i]));
+                            traces.push({
+                                name: unique_labels[k],
+                                y: subsets[k],
+                                marker: {
+                                    color: this.indexToColor(k)
+                                },
+                                type: 'box',
+                                xaxis: 'x' + (index),
+                                yaxis: 'y' + (index),
+                            })
+                        }
+                    }
+
+                }
+                else if (i === j && i !== features.length - 1) {
+                    let subsets = [];
+                    let kde;
+                    let breaks = []
+                    let allData = []
+                    if (!is_classification) {
+                        subsets.push(items.map(m => m[i]));
+                    } else {
+
+                        for (let k = 0; k < unique_labels.length; k++) {
+                            subsets.push(items.filter(m => m[items[0].length - 1] === unique_labels[k]).map(m => m[i]));
+                        }
+                    }
+                    if (is_classification) {
+                        for (let ii = 0; ii < subsets.length; ii++) {
+                            if (subsets[ii].length > 2) {
+                                let default_bandwidth = this.nrd(subsets[ii]).toFixed(2);
+                                breaks = ss.equalIntervalBreaks(subsets[ii], 100);
+
+                                let ys = [];
+                                kde = ss.kernelDensityEstimation(subsets[ii], 'gaussian', 'nrd');
+                                let data = [];
+                                breaks.forEach((item) => {
+                                    ys.push(kde(item, default_bandwidth));
+                                    data.push([item, ys[ys.length - 1]]);
+                                });
+                                allData.push(data);
+                            } else {
+                                allData.push([]);
+                            }
+                        }
+                        for (let i = 0; i < allData.length; i++) {
+                            traces.push({
+                                type: 'scatter',
+                                x: allData[i].map(m => m[0]),
+                                y: allData[i].map(m => m[1]),
+                                xaxis: 'x' + (index),
+                                yaxis: 'y' + (index),
+                                mode: 'lines',
+                                name: 'Red',
+                                line: {
+                                    color: 'rgb(219, 64, 82)',
+                                    width: 3
+                                }
+                            })
+
+                        }
+
+
+                    } else {
+                        for (let i = 0; i < subsets.length; i++) {
+                            if (subsets[i].length > 2) {
+                                let ys = [];
+                                let default_bandwidth = this.nrd(subsets[i]).toFixed(2);
+                                breaks = ss.equalIntervalBreaks(subsets[i], 100);
+                                kde = ss.kernelDensityEstimation(subsets[i], 'gaussian', 'nrd');
+                                let data = [];
+                                breaks.forEach((item) => {
+                                    ys.push(kde(item, default_bandwidth));
+                                    data.push([item, ys[ys.length - 1]]);
+                                });
+                                allData.push(data);
+                            } else {
+                                allData.push([]);
+                            }
+                        }
+                        traces.push({
+                            type: 'scatter',
+                            x: allData[0].map(m => m[0]),
+                            y: allData[0].map(m => m[1]),
+                            mode: 'lines',
+                            xaxis: 'x' + (index),
+                            yaxis: 'y' + (index),
+                            name: 'Red',
+                            line: {
+                                color: 'rgb(219, 64, 82)',
+                                width: 3
+                            }
+                        })
+                    }
+                }
+                else {
+                    traces.push({
+                        y: items.map(m => m[i]),
+                        x: items.map(m => m[j]),
+                        color: colors,
+
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: {
+                            color: colors,
+                            opacity: 0.5,
+                            size: 5,
+                        },
+                        xaxis: 'x' + (index),
+                        yaxis: 'y' + (index),
+                    })
+                }
+                index++
+            }
+
+        }
+
+        var layout = {
+            width: 1200,
+            height: 800,
+            showlegend: false,
+            grid: { rows: features.length, columns: features.length, pattern: 'independent' },
+        };
+
+        Plotly.react('my_dataviz', traces, layout)
+
+    }
+
 }

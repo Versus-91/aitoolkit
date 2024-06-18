@@ -84,6 +84,9 @@ export default class LinearRegression {
                     aic_value <- AIC(model)
                     bic_value <- BIC(model)
                     rsquared <- summary(model)$r.squared
+                    residuals_ols <- resid(model)
+                    fitted_values_ols <- fitted(model)
+
 
                     best_lambda <- cvfit$lambda.min
                     x <- as.matrix(xx) 
@@ -93,14 +96,10 @@ export default class LinearRegression {
                     coefficients <- as.matrix(coef(best_model))
                     
                     nonzero_coef <- coefficients[coefficients != 0]
-                    print(coefficients)
                     
-                    # Get the names of the non-zero features (excluding the intercept)
                     nonzero_features <- rownames(coefficients)[coefficients != 0 & rownames(coefficients) != "(Intercept)"]
-                    print(nonzero_features)
-                    # Subset the original data to only include non-zero features
                     X_reduced <- x[, nonzero_features]
-
+                    linear_model_min_features <- nonzero_features
                     # Fit a linear regression model using the non-zero features
                     linear_model_min <- lm(y ~ ., data = as.data.frame(X_reduced))
                     coefs_min <- coef(linear_model_min)
@@ -109,16 +108,30 @@ export default class LinearRegression {
                     best_lambda <- cvfit$lambda.1se
                     best_model <- glmnet(x, y, alpha =is_lasso, lambda = best_lambda)
                     coefficients <- as.matrix(coef(best_model))
-                    
+                    residuals_min <- resid(linear_model_min)
+                    fitted_values_min <- fitted(linear_model_min)
+                    x <- as.matrix(x_test)  
+                    colnames(x) <- names
+                    x <- x[, nonzero_features]
+                    predictions_min <- predict(linear_model_min, newdata = as.data.frame(x))
+
+                    x <- as.matrix(xx)  
+                    colnames(x) <- names
                     nonzero_coef <- coefficients[coefficients != 0]
                     print(coefficients)
                     nonzero_features <- rownames(coefficients)[coefficients != 0 & rownames(coefficients) != "(Intercept)"]
-                    print(nonzero_features)
                     X_reduced <- x[, nonzero_features]
+                    linear_model_1se_features <- nonzero_features
                     linear_model_1se <- lm(y ~ ., data = as.data.frame(X_reduced))
                     coefs_1se <- coef(linear_model_1se)
                     pvals_1se <- summary(linear_model_1se)$coefficients[,4]
                     std_error_1se <- summary(linear_model_1se)$coefficients[,2]
+                    residuals_1se <- resid(linear_model_1se)
+                    fitted_values_1se <- fitted(linear_model_1se)
+                    x <- as.matrix(x_test)  
+                    colnames(x) <- names
+                    x <- x[, nonzero_features]
+                    predictions_1se <- predict(linear_model_1se, newdata = as.data.frame(x))
                     models <- list(
                         "Simple OLS" = model,
                         "Lambda Min OLS" = linear_model_min,
@@ -126,15 +139,15 @@ export default class LinearRegression {
                         )
                     z <- modelplot(models =models,coef_omit = 'Interc')
                     
-                    list(plotly_json(p, pretty = FALSE),plotly_json(p2, pretty = FALSE),coefs,pvals,std_error,predictions,aic_value,bic_value,rsquared,coefs_min,pvals_min,std_error_min,coefs_1se,pvals_1se,std_error_1se,plotly_json(z, pretty = FALSE))
+                    list(plotly_json(p, pretty = FALSE),plotly_json(p2, pretty = FALSE),coefs,pvals,std_error,predictions,aic_value,bic_value,rsquared,coefs_min,pvals_min,std_error_min
+                    ,coefs_1se,pvals_1se,std_error_1se,plotly_json(z, pretty = FALSE),linear_model_min_features,linear_model_1se_features
+                    ,residuals_ols,residuals_1se,residuals_min,predictions_1se,predictions_min)
                     `);
                 let results = await plotlyData.toArray()
                 let reg_plot = JSON.parse(await results[0].toString())
                 reg_plot.layout.legend["orientation"] = 'h'
-                reg_plot["legend"]
+                reg_plot.layout['showlegend'] = false;
                 Plotly.newPlot(container_regularization, reg_plot, {
-                    showlegend: true,
-                    legend: { "orientation": "h" }
                 });
                 Plotly.newPlot(container_errors, JSON.parse(await results[1].toString()), {});
                 Plotly.newPlot(container_coefs, JSON.parse(await results[15].toString()), {});
@@ -144,15 +157,22 @@ export default class LinearRegression {
                     bse: await results[4].toArray(),
                     pvalues: await results[3].toArray(),
                     predictions: await results[5].toArray(),
+                    predictions1se: await results[21].toArray(),
+                    predictionsmin: await results[22].toArray(),
+                    residuals_ols: await results[18].toArray(),
+                    residuals_1se: await results[19].toArray(),
+                    residuals_min: await results[20].toArray(),
                     aic: await results[6].toNumber(),
                     bic: await results[7].toNumber(),
                     r2: await results[8].toNumber(),
                     best_fit_min: {
+                        names: await results[16].toArray(),
                         coefs: await results[9].toArray(),
                         bse: await results[11].toArray(),
                         pvalues: await results[10].toArray(),
                     },
                     best_fit_1se: {
+                        names: await results[17].toArray(),
                         coefs: await results[12].toArray(),
                         bse: await results[14].toArray(),
                         pvalues: await results[13].toArray(),
