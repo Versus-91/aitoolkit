@@ -20,7 +20,7 @@ export default class LinearRegression {
             async ({ WebR }) => {
                 const webR = new WebR({ interactive: false });
                 await webR.init();
-                await webR.installPackages(['jsonlite', 'ggplot2', 'plotly', 'plotly_json', 'tidyr', 'dplyr', 'ggrepel', 'glmnet', 'modelsummary'], true);
+                await webR.installPackages(['jsonlite', 'ggplot2', 'plotly', 'tidyr', 'dplyr', 'ggrepel', 'glmnet', 'modelsummary'], { quiet: true });
                 await webR.objs.globalEnv.bind('xx', x_train);
                 await webR.objs.globalEnv.bind('x_test', x_test);
 
@@ -105,6 +105,8 @@ export default class LinearRegression {
                     coefs_min <- coef(linear_model_min)
                     pvals_min <- summary(linear_model_min)$coefficients[,4]
                     std_error_min <- summary(linear_model_min)$coefficients[,2]
+                    aic_min <- AIC(linear_model_min)
+                    rsquared_min <- summary(linear_model_min)$r.squared
                     best_lambda <- cvfit$lambda.1se
                     best_model <- glmnet(x, y, alpha =is_lasso, lambda = best_lambda)
                     coefficients <- as.matrix(coef(best_model))
@@ -114,17 +116,19 @@ export default class LinearRegression {
                     colnames(x) <- names
                     x <- x[, nonzero_features]
                     predictions_min <- predict(linear_model_min, newdata = as.data.frame(x))
-
                     x <- as.matrix(xx)  
                     colnames(x) <- names
                     nonzero_coef <- coefficients[coefficients != 0]
-                    print(coefficients)
+                    
                     nonzero_features <- rownames(coefficients)[coefficients != 0 & rownames(coefficients) != "(Intercept)"]
                     X_reduced <- x[, nonzero_features]
                     linear_model_1se_features <- nonzero_features
                     linear_model_1se <- lm(y ~ ., data = as.data.frame(X_reduced))
+                    print(coef(linear_model_1se))
                     coefs_1se <- coef(linear_model_1se)
                     pvals_1se <- summary(linear_model_1se)$coefficients[,4]
+                    aic_1se<- AIC(linear_model_1se)
+                    rsquared_1se <- summary(linear_model_1se)$r.squared
                     std_error_1se <- summary(linear_model_1se)$coefficients[,2]
                     residuals_1se <- resid(linear_model_1se)
                     fitted_values_1se <- fitted(linear_model_1se)
@@ -133,15 +137,15 @@ export default class LinearRegression {
                     x <- x[, nonzero_features]
                     predictions_1se <- predict(linear_model_1se, newdata = as.data.frame(x))
                     models <- list(
-                        "Simple OLS" = model,
-                        "Lambda Min OLS" = linear_model_min,
-                        "Lambda 1se OLS" = linear_model_1se
+                        "OLS" = model,
+                        "Min OLS" = linear_model_min,
+                        "1se OLS" = linear_model_1se
                         )
                     z <- modelplot(models =models,coef_omit = 'Interc')
                     
                     list(plotly_json(p, pretty = FALSE),plotly_json(p2, pretty = FALSE),coefs,pvals,std_error,predictions,aic_value,bic_value,rsquared,coefs_min,pvals_min,std_error_min
                     ,coefs_1se,pvals_1se,std_error_1se,plotly_json(z, pretty = FALSE),linear_model_min_features,linear_model_1se_features
-                    ,residuals_ols,residuals_1se,residuals_min,predictions_1se,predictions_min)
+                    ,residuals_ols,residuals_1se,residuals_min,predictions_1se,predictions_min,rsquared_1se,aic_1se,rsquared_min,aic_min)
                     `);
                 let results = await plotlyData.toArray()
                 let reg_plot = JSON.parse(await results[0].toString())
@@ -150,7 +154,18 @@ export default class LinearRegression {
                 Plotly.newPlot(container_regularization, reg_plot, {
                 });
                 Plotly.newPlot(container_errors, JSON.parse(await results[1].toString()), {});
-                Plotly.newPlot(container_coefs, JSON.parse(await results[15].toString()), {});
+                let coefs_plot = JSON.parse(await results[15].toString())
+                coefs_plot.layout.legend = {
+                    x: 0,
+                    y: 1,
+                    traceorder: 'normal',
+                    font: {
+                        family: 'sans-serif',
+                        size: 8,
+                        color: '#000'
+                    },
+                };
+                Plotly.newPlot(container_coefs, coefs_plot, {});
 
                 let summary = {
                     params: await results[2].toArray(),
@@ -166,12 +181,16 @@ export default class LinearRegression {
                     bic: await results[7].toNumber(),
                     r2: await results[8].toNumber(),
                     best_fit_min: {
+                        r2: await results[25].toNumber(),
+                        aic:await results[26].toNumber(),
                         names: await results[16].toArray(),
                         coefs: await results[9].toArray(),
                         bse: await results[11].toArray(),
                         pvalues: await results[10].toArray(),
                     },
                     best_fit_1se: {
+                        r2: await results[23].toNumber(),
+                        aic:await results[24].toNumber(),
                         names: await results[17].toArray(),
                         coefs: await results[12].toArray(),
                         bse: await results[14].toArray(),

@@ -1234,10 +1234,10 @@ export default class ChartController {
             }
         });
     }
-    yhat_plot(y_test, predictions, container) {
+    yhat_plot(y_test, predictions, container, title = '') {
         Plotly.newPlot(container, [{
-            y: y_test,
-            x: predictions,
+            x: y_test,
+            y: predictions,
             type: 'scatter',
             name: "y",
             mode: 'markers',
@@ -1249,10 +1249,19 @@ export default class ChartController {
             line: { color: 'red', dash: 'dash' },
             name: 'y = x line'
         }], {
+            title: {
+                text: title,
+                font: {
+                    family: 'Courier New, monospace',
+                    size: 10
+                },
+                xref: 'paper',
+                x: 0.05,
+            },
             showlegend: false,
             xaxis: {
                 title: {
-                    text: 'preds',
+                    text: 'y',
                     font: {
                         family: 'Courier New, monospace',
                         size: 14,
@@ -1262,7 +1271,7 @@ export default class ChartController {
             },
             yaxis: {
                 title: {
-                    text: 'y',
+                    text: 'predictions',
                     font: {
                         family: 'Courier New, monospace',
                         size: 14,
@@ -1272,17 +1281,17 @@ export default class ChartController {
             },
             margin: {
                 l: 40,
-                r: 20,
+                r: 10,
                 b: 40,
-                t: 30,
-                pad: 10
+                t: 20,
+                pad: 0
             }
         }, { responsive: true, });
     }
-    residual_plot(y, residuals, container) {
+    residual_plot(y, residuals, container, title = '') {
         Plotly.newPlot(container, [{
-            y: y,
-            x: residuals,
+            x: y,
+            y: residuals,
             type: 'scatter',
             name: "y",
             mode: 'markers',
@@ -1291,10 +1300,19 @@ export default class ChartController {
                 size: 7
             },
         }], {
+            title: {
+                text: title,
+                font: {
+                    family: 'Courier New, monospace',
+                    size: 10
+                },
+                xref: 'paper',
+                x: 0.05,
+            },
             showlegend: false,
             xaxis: {
                 title: {
-                    text: 'residuals',
+                    text: 'y',
                     font: {
                         family: 'Courier New, monospace',
                         size: 14,
@@ -1304,7 +1322,7 @@ export default class ChartController {
             },
             yaxis: {
                 title: {
-                    text: 'y',
+                    text: 'residuals',
                     font: {
                         family: 'Courier New, monospace',
                         size: 14,
@@ -1314,10 +1332,10 @@ export default class ChartController {
             },
             margin: {
                 l: 40,
-                r: 20,
+                r: 10,
                 b: 40,
-                t: 30,
-                pad: 10
+                t: 20,
+                pad: 0
             }
         }, { responsive: true, });
     }
@@ -1420,7 +1438,9 @@ export default class ChartController {
             }
         );
     }
-    ScatterplotMatrix(items, features, labels, is_classification = false) {
+    ScatterplotMatrix(items, features, labels, number_of_categoricals, is_classification = true) {
+        return
+        items = items.slice(0, 1000)
         let unique_labels = [...new Set(labels)];
         var colors = labels.map(label => this.indexToColor(unique_labels.indexOf(label)));
         let traces = []
@@ -1432,45 +1452,7 @@ export default class ChartController {
         for (let i = 0; i < features.length; i++) {
             for (let j = 0; j < features.length; j++) {
                 console.log(i % (features.length - 1));
-
-                if (i === features.length - 1) {
-                    traces.push({
-                        y: items.map(m => m[i]),
-                        x: items.map(m => m[j]),
-                        color: colors,
-                        marker: {
-                            color: colors,
-                            opacity: 0.5,
-                            size: 5,
-                        },
-                        type: 'scatter',
-                        mode: 'markers',
-                        xaxis: 'x' + (index),
-                        yaxis: 'y' + (index),
-                    })
-                } else if (j === features.length - 1) {
-                    let subsets = [];
-                    if (!is_classification) {
-                        subsets.push(items.map(m => m[i]));
-                    } else {
-
-                        for (let k = 0; k < unique_labels.length; k++) {
-                            subsets.push(items.filter(m => m[items[0].length - 1] === unique_labels[k]).map(m => m[i]));
-                            traces.push({
-                                name: unique_labels[k],
-                                y: subsets[k],
-                                marker: {
-                                    color: this.indexToColor(k)
-                                },
-                                type: 'box',
-                                xaxis: 'x' + (index),
-                                yaxis: 'y' + (index),
-                            })
-                        }
-                    }
-
-                }
-                else if (i === j && i !== features.length - 1) {
+                if (i === j) {
                     let subsets = [];
                     let kde;
                     let breaks = []
@@ -1484,40 +1466,58 @@ export default class ChartController {
                         }
                     }
                     if (is_classification) {
-                        for (let ii = 0; ii < subsets.length; ii++) {
-                            if (subsets[ii].length > 2) {
-                                let default_bandwidth = this.nrd(subsets[ii]).toFixed(2);
-                                breaks = ss.equalIntervalBreaks(subsets[ii], 100);
-
-                                let ys = [];
-                                kde = ss.kernelDensityEstimation(subsets[ii], 'gaussian', 'nrd');
-                                let data = [];
-                                breaks.forEach((item) => {
-                                    ys.push(kde(item, default_bandwidth));
-                                    data.push([item, ys[ys.length - 1]]);
-                                });
-                                allData.push(data);
-                            } else {
-                                allData.push([]);
-                            }
-                        }
-                        for (let i = 0; i < allData.length; i++) {
+                        if (i === features.length - 1) {
+                            let y = []
+                            unique_labels.forEach(label => {
+                                y.push(items.filter(item => item[items[0].length - 1] === label).length)
+                            });
                             traces.push({
-                                type: 'scatter',
-                                x: allData[i].map(m => m[0]),
-                                y: allData[i].map(m => m[1]),
+                                x: unique_labels,
+                                y: y,
+                                type: 'bar',
                                 xaxis: 'x' + (index),
                                 yaxis: 'y' + (index),
-                                mode: 'lines',
-                                name: 'Red',
-                                line: {
-                                    color: 'rgb(219, 64, 82)',
-                                    width: 3
+                                marker: {
+                                    color: unique_labels.map((_, z) => this.indexToColor(z))
                                 }
                             })
 
-                        }
+                        } else {
+                            for (let ii = 0; ii < subsets.length; ii++) {
+                                if (subsets[ii].length > 2) {
+                                    let default_bandwidth = this.nrd(subsets[ii]).toFixed(2);
+                                    breaks = ss.equalIntervalBreaks(subsets[ii], 100);
 
+                                    let ys = [];
+                                    kde = ss.kernelDensityEstimation(subsets[ii], 'gaussian', 'nrd');
+                                    let data = [];
+                                    breaks.forEach((item) => {
+                                        ys.push(kde(item, default_bandwidth));
+                                        data.push([item, ys[ys.length - 1]]);
+                                    });
+                                    allData.push(data);
+                                } else {
+                                    allData.push([]);
+                                }
+                            }
+                            for (let i = 0; i < allData.length; i++) {
+                                traces.push({
+                                    type: 'scatter',
+                                    x: allData[i].map(m => m[0]),
+                                    y: allData[i].map(m => m[1]),
+                                    xaxis: 'x' + (index),
+                                    yaxis: 'y' + (index),
+                                    mode: 'lines',
+                                    name: 'Red',
+                                    fill: 'tozeroy',
+                                    line: {
+                                        color: this.indexToColor(i),
+                                        width: 3
+                                    }
+                                })
+
+                            }
+                        }
 
                     } else {
                         for (let i = 0; i < subsets.length; i++) {
@@ -1541,6 +1541,7 @@ export default class ChartController {
                             x: allData[0].map(m => m[0]),
                             y: allData[0].map(m => m[1]),
                             mode: 'lines',
+                            fill: 'tozeroy',
                             xaxis: 'x' + (index),
                             yaxis: 'y' + (index),
                             name: 'Red',
@@ -1550,6 +1551,45 @@ export default class ChartController {
                             }
                         })
                     }
+                }
+                else if (i === features.length - 1) {
+                    traces.push({
+                        y: items.map(m => m[i]),
+                        x: items.map(m => m[j]),
+                        color: colors,
+                        marker: {
+                            color: colors,
+                            opacity: 0.5,
+                            size: 5,
+                        },
+                        type: 'scatter',
+                        mode: 'markers',
+                        xaxis: 'x' + (index),
+                        yaxis: 'y' + (index),
+                    })
+                } else if (j >= features.length - number_of_categoricals) {
+                    let subsets = [];
+                    if (!is_classification) {
+                        subsets.push(items.map(m => m[i]));
+                    } else {
+                        let boxplot_labels = [...new Set(items.map(m => m[j]))]
+                        for (let m = 0; m < unique_labels.length; m++) {
+                            for (let n = 0; n < boxplot_labels.length; n++) {
+                                traces.push({
+                                    name: boxplot_labels[n],
+                                    y: items.filter(item => item[j] === boxplot_labels[n] && item[features.length - 1] === unique_labels[m]).map(item => item[i]),
+                                    marker: {
+                                        color: this.indexToColor(m)
+                                    },
+                                    type: 'box',
+                                    xaxis: 'x' + (index),
+                                    yaxis: 'y' + (index),
+                                })
+                            }
+
+                        }
+                    }
+
                 }
                 else {
                     traces.push({
@@ -1574,11 +1614,56 @@ export default class ChartController {
         }
 
         var layout = {
-            width: 1200,
-            height: 800,
+            width: 900,
+            height: 900,
+            spacing: 0,
             showlegend: false,
             grid: { rows: features.length, columns: features.length, pattern: 'independent' },
+            margin: { l: 30, r: 10, b: 30, t: 10, pad: 5 },
+
         };
+        for (var i = 0; i < features.length; i++) {
+            for (var j = 0; j < features.length; j++) {
+                var xAxisKey = 'xaxis' + ((i * features.length) + j + 1);
+                var yAxisKey = 'yaxis' + ((i * features.length) + j + 1);
+                let fontSize = 10;
+                layout[xAxisKey] = {
+                    tickfont: {
+                        size: fontSize
+                    },
+                };
+                layout[yAxisKey] = {
+                    tickfont: {
+                        size: fontSize
+                    },
+                };
+                if (i === features.length - 1) {
+                    layout[xAxisKey] = {
+                        tickfont: {
+                            size: fontSize
+                        },
+                        title: {
+                            text: features[j], font: {
+                                size: fontSize
+                            },
+                        }
+                    };
+
+                }
+                if (j === 0) {
+                    layout[yAxisKey] = {
+                        tickfont: {
+                            size: fontSize
+                        },
+                        title: {
+                            text: features[j], font: {
+                                size: fontSize
+                            },
+                        }
+                    };
+                }
+            }
+        }
 
         Plotly.react('my_dataviz', traces, layout)
 

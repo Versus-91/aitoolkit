@@ -692,7 +692,7 @@ export default class UI {
         let model_name = document.getElementById('model_name').value
         model_name = parseInt(model_name)
         features.push(target)
-        this.chart_controller.ScatterplotMatrix(dataset.loc({ columns: features }).values, features, dataset.column(target).values)
+        this.chart_controller.ScatterplotMatrix(dataset.loc({ columns: features }).values, features, dataset.column(target).values, categorical_columns.length, is_classification)
         // await this.chart_controller.draw_scatterplot_matrix(dataset.values, 'canvas-container', dataset.columns, categorical_columns, target)
     }
 
@@ -764,18 +764,48 @@ export default class UI {
     }
     init_regression_results_tab(index) {
         let content = `
-        <div class="column is-7">
+        <div class="column is-8">
             <div class="table-container">
             <table
-                class="table nowrap is-striped is-narrow is-hoverable is-size-7"
+                class="table nowrap is-striped is-bordered is-narrow is-hoverable is-size-7"
                 id="metrics_table_${index}" >
+                        <thead>
+            <tr>
+                <th colspan="1"></th>
+                <th colspan="3">OLS</th>
+                <th colspan="3">OLS min</th>
+                <th colspan="3">OLS 1se</th>
+            </tr>
+            <tr>
+                <th>name</th>
+                <th>coefficients</th>
+                <th>std error</th>
+                <th>p-value</th>
+                <th>coefficients</th>
+                <th>std error</th>
+                <th>p-value</th>
+                <th>coefficients</th>
+                <th>std error</th>
+                <th>p-value</th>
+            </tr>
+        </thead>
+          <tfoot>
+    <tr>
+      <th></th>
+      <th colspan="3"></th>
+      <th colspan="3"></th>
+      <th colspan="3"></th>
+
+    </tr>
+  </tfoot>
             </table>
            </div>
         </div>        
-        <div class="column is-5" style="height:400px;" id="parameters_plot_${index}">
+        <div class="column is-4" style="height:400px;" id="parameters_plot_${index}">
         </div>
         <div class="column is-12" id="metrics_${index}">
         </div>
+
         <div class="column is-3">
             <div id="errors_${index}" width="100%" style="height:200px"></div>
         </div>
@@ -872,6 +902,14 @@ export default class UI {
             pageLength: 25,
             responsive: true,
             paging: true,
+            columnDefs: [
+                {
+                    render: function (data, type, row) {
+                        return data.toFixed(2);
+                    },
+                    targets: "_all",
+                }
+            ],
             "bPaginate": true,
             columns: table_columns,
             data: x.values,
