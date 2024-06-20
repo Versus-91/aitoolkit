@@ -8,7 +8,7 @@ import { metrics } from './utils.js';
 import * as tfvis from '@tensorflow/tfjs-vis';
 import { scale_data } from './utils';
 import * as d3 from "d3";
-import { trace } from 'mathjs';
+import { forEach, trace } from 'mathjs';
 
 export default class ChartController {
     constructor(data_processor) {
@@ -1439,8 +1439,6 @@ export default class ChartController {
         );
     }
     ScatterplotMatrix(items, features, labels, number_of_categoricals, is_classification = true) {
-        return
-        items = items.slice(0, 1000)
         let unique_labels = [...new Set(labels)];
         var colors = labels.map(label => this.indexToColor(unique_labels.indexOf(label)));
         let traces = []
@@ -1451,37 +1449,53 @@ export default class ChartController {
 
         for (let i = 0; i < features.length; i++) {
             for (let j = 0; j < features.length; j++) {
-                console.log(i % (features.length - 1));
                 if (i === j) {
                     let subsets = [];
                     let kde;
                     let breaks = []
                     let allData = []
-                    if (!is_classification) {
-                        subsets.push(items.map(m => m[i]));
-                    } else {
-
-                        for (let k = 0; k < unique_labels.length; k++) {
-                            subsets.push(items.filter(m => m[items[0].length - 1] === unique_labels[k]).map(m => m[i]));
-                        }
-                    }
                     if (is_classification) {
-                        if (i === features.length - 1) {
-                            let y = []
-                            unique_labels.forEach(label => {
-                                y.push(items.filter(item => item[items[0].length - 1] === label).length)
-                            });
-                            traces.push({
-                                x: unique_labels,
-                                y: y,
-                                type: 'bar',
-                                xaxis: 'x' + (index),
-                                yaxis: 'y' + (index),
-                                marker: {
-                                    color: unique_labels.map((_, z) => this.indexToColor(z))
+                        if (i >= features.length - number_of_categoricals) {
+                            if (i === features.length - 1) {
+                                for (let k = 0; k < unique_labels.length; k++) {
+                                    subsets.push(items.filter(m => m[items[0].length - 1] === unique_labels[k]).map(m => m[i]));
                                 }
-                            })
-
+                                traces.push({
+                                    x: unique_labels,
+                                    y: subsets.map(set => set.length),
+                                    type: 'bar',
+                                    xaxis: 'x' + (index),
+                                    yaxis: 'y' + (index),
+                                    marker: {
+                                        color: unique_labels.map((_, z) => this.indexToColor(z))
+                                    }
+                                })
+                            } else {
+                                let unique_labels_feature = [...new Set(items.map(m => m[i]))];
+                                for (let k = 0; k < unique_labels.length; k++) {
+                                    let lablel_items = items.filter(m => m[items[0].length - 1] === unique_labels[k])
+                                    let counts = [];
+                                    unique_labels_feature.forEach(label =>
+                                        counts.push(lablel_items.filter(m => m[i] === label).length)
+                                    )
+                                    subsets.push({
+                                        items: lablel_items,
+                                        counts: counts
+                                    });
+                                }
+                                unique_labels.forEach((_, i) => {
+                                    traces.push({
+                                        x: unique_labels_feature,
+                                        y: subsets[i].counts,
+                                        type: 'bar',
+                                        xaxis: 'x' + (index),
+                                        yaxis: 'y' + (index),
+                                        marker: {
+                                            color: this.indexToColor(i)
+                                        }
+                                    })
+                                })
+                            }
                         } else {
                             for (let ii = 0; ii < subsets.length; ii++) {
                                 if (subsets[ii].length > 2) {
@@ -1520,6 +1534,7 @@ export default class ChartController {
                         }
 
                     } else {
+                        subsets.push(items.map(m => m[i]));
                         for (let i = 0; i < subsets.length; i++) {
                             if (subsets[i].length > 2) {
                                 let ys = [];
@@ -1559,18 +1574,21 @@ export default class ChartController {
                         color: colors,
                         marker: {
                             color: colors,
-                            opacity: 0.5,
-                            size: 5,
+                            size: 2,
                         },
-                        type: 'scatter',
+                        type: 'scattergl',
                         mode: 'markers',
                         xaxis: 'x' + (index),
                         yaxis: 'y' + (index),
                     })
                 } else if (j >= features.length - number_of_categoricals) {
-                    let subsets = [];
                     if (!is_classification) {
-                        subsets.push(items.map(m => m[i]));
+                        traces.push({
+                            x: [],
+                            y: [],
+                            mode: 'lines',
+                            name: 'Trace 1'
+                        })
                     } else {
                         let boxplot_labels = [...new Set(items.map(m => m[j]))]
                         for (let m = 0; m < unique_labels.length; m++) {
@@ -1592,21 +1610,29 @@ export default class ChartController {
 
                 }
                 else {
-                    traces.push({
-                        y: items.map(m => m[i]),
-                        x: items.map(m => m[j]),
-                        color: colors,
-
-                        type: 'scatter',
-                        mode: 'markers',
-                        marker: {
+                    if (j > i) {
+                        traces.push({
+                            x: [],
+                            y: [],
+                            mode: 'lines',
+                            name: 'Trace 1'
+                        })
+                    } else {
+                        traces.push({
+                            y: items.map(m => m[i]),
+                            x: items.map(m => m[j]),
                             color: colors,
-                            opacity: 0.5,
-                            size: 5,
-                        },
-                        xaxis: 'x' + (index),
-                        yaxis: 'y' + (index),
-                    })
+
+                            type: 'scattergl',
+                            mode: 'markers',
+                            marker: {
+                                color: colors,
+                                size: 2,
+                            },
+                            xaxis: 'x' + (index),
+                            yaxis: 'y' + (index),
+                        })
+                    }
                 }
                 index++
             }
@@ -1614,12 +1640,12 @@ export default class ChartController {
         }
 
         var layout = {
-            width: 900,
+            width: 1200,
             height: 900,
             spacing: 0,
             showlegend: false,
             grid: { rows: features.length, columns: features.length, pattern: 'independent' },
-            margin: { l: 30, r: 10, b: 30, t: 10, pad: 5 },
+            margin: { l: 40, r: 10, b: 30, t: 10, pad: 5 },
 
         };
         for (var i = 0; i < features.length; i++) {
@@ -1656,7 +1682,7 @@ export default class ChartController {
                             size: fontSize
                         },
                         title: {
-                            text: features[j], font: {
+                            text: features[i], font: {
                                 size: fontSize
                             },
                         }
@@ -1665,7 +1691,9 @@ export default class ChartController {
             }
         }
 
-        Plotly.react('my_dataviz', traces, layout)
+        Plotly.react('my_dataviz', traces, layout, {
+            staticPlot: true
+        })
 
     }
 
