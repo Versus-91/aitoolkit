@@ -79,6 +79,7 @@ export default class LinearRegression {
                     predictions <- predict(model, newdata = as.data.frame(x))
                     # Get coefficients, p-values, and standard errors
                     coefs <- coef(model)
+                    print(coefs)
                     pvals <- summary(model)$coefficients[,4]
                     std_error <- summary(model)$coefficients[,2]
                     aic_value <- AIC(model)
@@ -182,7 +183,7 @@ export default class LinearRegression {
                     r2: await results[8].toNumber(),
                     best_fit_min: {
                         r2: await results[25].toNumber(),
-                        aic:await results[26].toNumber(),
+                        aic: await results[26].toNumber(),
                         names: await results[16].toArray(),
                         coefs: await results[9].toArray(),
                         bse: await results[11].toArray(),
@@ -190,7 +191,7 @@ export default class LinearRegression {
                     },
                     best_fit_1se: {
                         r2: await results[23].toNumber(),
-                        aic:await results[24].toNumber(),
+                        aic: await results[24].toNumber(),
                         names: await results[17].toArray(),
                         coefs: await results[12].toArray(),
                         bse: await results[14].toArray(),

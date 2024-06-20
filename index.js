@@ -411,8 +411,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
                         let model_stats_matrix = [];
                         let cols = [...x_train.columns]
-                        cols.push("intercept")
-                        console.log(summary);
+                        cols.unshift("intercept")
                         let min_ols_columns = summary['best_fit_min'].names;
 
                         min_ols_columns.unshift('intercept');
@@ -422,14 +421,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         for (let i = 0; i < cols.length; i++) {
                             let row = [];
                             row.push(cols[i])
-                            row.push(summary['params'][i]?.toFixed(2))
-                            row.push(summary['bse'][i]?.toFixed(2))
-                            row.push(summary['pvalues'][i]?.toFixed(2))
+                            row.push(summary['params'][i]?.toFixed(2) ?? ' ')
+                            row.push(summary['bse'][i]?.toFixed(2) ?? ' ')
+                            row.push(summary['pvalues'][i]?.toFixed(2) ?? ' ')
                             let index = min_ols_columns.findIndex(m => m === cols[i])
                             if (index !== -1) {
-                                row.push(summary['best_fit_min']['coefs'][index]?.toFixed(2))
-                                row.push(summary['best_fit_min']['bse'][index]?.toFixed(2))
-                                row.push(summary['best_fit_min']['pvalues'][index]?.toFixed(2))
+                                row.push(summary['best_fit_min']['coefs'][index]?.toFixed(2) ?? ' ')
+                                row.push(summary['best_fit_min']['bse'][index]?.toFixed(2) ?? ' ')
+                                row.push(summary['best_fit_min']['pvalues'][index]?.toFixed(2 ?? ' '))
                             } else {
                                 row.push(' ')
                                 row.push(' ')
@@ -437,9 +436,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             }
                             index = se_ols_columns.findIndex(m => m === cols[i])
                             if (index !== -1) {
-                                row.push(summary['best_fit_1se']['coefs'][index]?.toFixed(2))
-                                row.push(summary['best_fit_1se']['bse'][index]?.toFixed(2))
-                                row.push(summary['best_fit_1se']['pvalues'][index]?.toFixed(2))
+                                row.push(summary['best_fit_1se']['coefs'][index]?.toFixed(2) ?? ' ')
+                                row.push(summary['best_fit_1se']['bse'][index]?.toFixed(2) ?? ' ')
+                                row.push(summary['best_fit_1se']['pvalues'][index]?.toFixed(2) ?? ' ')
                             } else {
                                 row.push(' ')
                                 row.push(' ')
@@ -447,6 +446,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             }
                             model_stats_matrix.push(row)
                         }
+                        console.log(model_stats_matrix);
+
                         new DataTable('#metrics_table_' + mltool.model_number, {
                             // dom: '<"' + mltool.model_number + '">',
                             // initComplete: function () {
