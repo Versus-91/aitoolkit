@@ -1497,6 +1497,9 @@ export default class ChartController {
                                 })
                             }
                         } else {
+                            for (let k = 0; k < unique_labels.length; k++) {
+                                subsets.push(items.filter(m => m[items[0].length - 1] === unique_labels[k]).map(m => m[i]));
+                            }
                             for (let ii = 0; ii < subsets.length; ii++) {
                                 if (subsets[ii].length > 2) {
                                     let default_bandwidth = this.nrd(subsets[ii]).toFixed(2);
