@@ -12,6 +12,7 @@ import { evaluate_classification, apply_data_transformation } from './src/utils.
 import SVM from "libsvm-js/asm";
 import { ParserFactory } from "./src/parsers/parser_factory.js";
 import tippy from 'tippy.js';
+import { calculateMSE } from './src/utils.js'
 import 'tippy.js/dist/tippy.css'; // optional for styling
 document.addEventListener("DOMContentLoaded", async function (event) {
     // your code here
@@ -402,9 +403,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                 }
             } else {
-                ui.init_regression_results_tab(mltool.model_number)
                 switch (model_name) {
                     case Settings.regression.linear_regression.value: {
+                        ui.init_regression_results_tab_linear_regression(mltool.model_number)
+
                         let model = model_factory.createModel(Settings.regression.linear_regression, model_settings, {});
                         let summary = await model.train_test(x_train.values, y_train.values, x_test.values, y_test.values, x_train.columns
                             , 'regularization_' + mltool.model_number, 'errors_' + mltool.model_number, 'parameters_plot_' + mltool.model_number)
@@ -493,6 +495,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                     }
                     case Settings.regression.polynomial_regression.value: {
+                        ui.init_regression_results_tab_linear_regression(mltool.model_number)
+
                         let model = model_factory.createModel(Settings.regression.polynomial_regression, model_settings, {});
                         let summary = await model.train_test(x_train.values, y_train.values, x_test.values, y_test.values, x_train.columns
                             , 'regularization_' + mltool.model_number, 'errors_' + mltool.model_number, 'parameters_plot_' + mltool.model_number)
@@ -581,18 +585,69 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                     }
                     case Settings.regression.k_nearest_neighbour.value: {
+                        ui.init_regression_results_tab(mltool.model_number)
+                        let content = `
+                        <div class="column is-6">
+                            <div id="knn_mse_${mltool.model_number}" width="100%" style="height:350px">
+                           </div>
+                        </div>
+                `
+                        $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(content);
+                        let results = []
                         model_settings = ui.get_model_settings();
                         let model = model_factory.createModel(Settings.regression.k_nearest_neighbour, model_settings)
-                        await model.train(x_train.values, y_train.values, 5)
-                        let predictions = model.predict(x_test.values);
-                        ui.regression_metrics_display(y_test, predictions, mltool.model_number);
-                        chart_controller.yhat_plot(y_test.values, predictions, 'regression_y_yhat_' + mltool.model_number)
-                        ui.predictions_table_regression(x_test, y_test, predictions, mltool.model_number)
+                        let metrics = ['manhattan', 'euclidean']
+                        for (let i = 0; i < metrics.length; i++) {
+                            const item = metrics[i];
+                            for (let k = model_settings.min; k <= model_settings.max; k++) {
+                                await model.train(x_train.values, y_train.values, item, k)
+                                let predictions = model.predict(x_test.values)
+                                let mse = calculateMSE(predictions, y_test.values)
+                                results.push({ k: k, predictions: predictions, mse: mse, metric: item })
+                            }
+                        }
+                        let best_model = results[0]
+                        for (let i = 0; i < results.length; i++) {
+                            const item = results[i];
+                            if (item.mse < best_model.mse) {
+                                best_model = results[i]
+                            }
+                        }
+                        var trace1 = {
+                            x: results.map(m => m.k),
+                            y: results.filter(n => n.metric === 'manhattan').map(m => m.mse),
+                            mode: 'lines',
+                            name: 'manhattan'
+                        };
 
+                        var trace2 = {
+                            x: results.map(m => m.k),
+                            y: results.filter(n => n.metric === 'euclidean').map(m => m.mse),
+                            mode: 'lines',
+                            name: 'euclidean'
+                        };
 
+                        var layout = {
+                            title: 'Goodness of fit ',
+                            xaxis: {
+                                title: {
+                                    text: 'K',
+                                },
+                            },
+                            yaxis: {
+                                title: {
+                                    text: 'Mean Squared Error',
+                                }
+                            }
+                        };
+
+                        Plotly.newPlot('knn_mse_' + mltool.model_number, [trace1, trace2], layout);
+                        ui.predictions_table_regression(x_test, y_test, best_model.predictions, mltool.model_number)
                         break;
                     }
                     case Settings.regression.boosting.value: {
+                        ui.init_regression_results_tab(mltool.model_number)
+
                         let model = model_factory.createModel(Settings.regression.boosting, {
                             objective: "reg:linear",
                             iterations: model_settings.iterations ?? 200
@@ -606,6 +661,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                     }
                     case Settings.regression.support_vector_machine.value: {
+                        ui.init_regression_results_tab(mltool.model_number)
+
                         let model = model_factory.createModel(Settings.regression.support_vector_machine, {
                             kernel: SVM.KERNEL_TYPES[model_settings.kernel.toUpperCase()],
                             type: SVM.SVM_TYPES.EPSILON_SVR,
@@ -622,6 +679,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                     }
                     case Settings.regression.kernel_regression.value: {
+                        ui.init_regression_results_tab(mltool.model_number)
+
                         model_settings.types = ''
                         for (let i = 0; i < x_train.columns.length; i++) {
                             model_settings.types += 'c';
@@ -635,6 +694,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break;
                     }
                     case Settings.regression.random_forest.value: {
+                        ui.init_regression_results_tab(mltool.model_number)
+
                         let num_features = typeof model_settings.features === "number" ? model_settings.features : parseInt(Math.sqrt(x_train.columns.length).toFixed(0))
                         const model = model_factory.createModel(Settings.regression.random_forest, {
                             seed: 3,
@@ -654,6 +715,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         break
                     }
                     case Settings.regression.bspline_regression.value: {
+                        ui.init_regression_results_tab(mltool.model_number)
+
                         const model = model_factory.createModel(Settings.regression.bspline_regression, {
                             knots: model_settings.knots,
                             degree: model_settings.degree

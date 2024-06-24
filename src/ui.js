@@ -762,7 +762,7 @@ export default class UI {
         $("#tabs_info li[data-index='" + index + "']").addClass("is-active");
         $("#tabs_content li[data-index='" + index + "']").addClass("is-active");
     }
-    init_regression_results_tab(index) {
+    init_regression_results_tab_linear_regression(index) {
         let content = `
         <div class="column is-8">
             <div class="table-container">
@@ -834,6 +834,15 @@ export default class UI {
         </div>
         <div class="column is-3">
             <div id="regression_residual_1se_${index}" width="100%" style="height:200px">
+           </div>
+        </div>
+`
+        $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(content);
+    }
+    init_regression_results_tab(index) {
+        let content = `
+        <div class="column is-6">
+            <div id="regression_y_yhat_${index}" width="100%" style="height:200px">
            </div>
         </div>
 `

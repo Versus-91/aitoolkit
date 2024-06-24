@@ -200,11 +200,6 @@ export const Settings = {
                     type: "number",
                     default: 9
                 },
-                "metric": {
-                    type: "select",
-                    default: "manhattan",
-                    values: [{ label: "euclidean", value: "euclidean" }, { label: "manhattan", value: "manhattan" }]
-                },
             },
         },
         "boosting": {

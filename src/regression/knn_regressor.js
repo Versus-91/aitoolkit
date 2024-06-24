@@ -6,13 +6,19 @@ export default class KNNRegressor {
         this.model = null
 
     }
-    async train(x_train, y_train, k = 3) {
+    async train(x_train, y_train, metric, k = 3) {
         return new Promise((resolve, reject) => {
             try {
                 setTimeout(async () => {
-                    this.model = new KNeighborsRegressor({ nNeighbors: k, metric: this.options.metric })
-                    await this.model.fit(x_train, y_train);
-                    resolve()
+                    try {
+                        this.model = new KNeighborsRegressor({ nNeighbors: k, metric: metric })
+                        await this.model.fit(x_train, y_train);
+                        resolve()
+                    } catch (error) {
+                        console.log(metric);
+                        reject(error)
+                    }
+
                 }, 1000)
             } catch (error) {
                 reject(error)
