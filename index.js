@@ -494,28 +494,73 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     }
                     case Settings.regression.polynomial_regression.value: {
                         let model = model_factory.createModel(Settings.regression.polynomial_regression, model_settings, {});
-                        let summary = await model.train_test(x_train.values, y_train.values, x_test.values, x_train.columns)
-
+                        let summary = await model.train_test(x_train.values, y_train.values, x_test.values, y_test.values, x_train.columns
+                            , 'regularization_' + mltool.model_number, 'errors_' + mltool.model_number, 'parameters_plot_' + mltool.model_number)
 
                         let model_stats_matrix = [];
                         let cols = [...x_train.columns]
-                        cols.push("intercept")
-                        for (let i = 0; i < cols.length; i++) {
+                        cols.unshift("intercept")
+                        let min_ols_columns = summary['best_fit_min'].names;
+
+                        min_ols_columns.unshift('intercept');
+                        let se_ols_columns = summary['best_fit_1se'].names;
+                        se_ols_columns.unshift('intercept');
+
+                        for (let i = 0; i < summary.labels.length; i++) {
                             let row = [];
-                            row.push(cols[i])
-                            row.push(summary.get('params')[i].toFixed(2))
-                            row.push(summary.get('bse')[i].toFixed(2))
-                            row.push(summary.get('pvalues')[i].toFixed(2))
+                            row.push(summary.labels[i])
+                            row.push(summary['params'][i]?.toFixed(2) ?? ' ')
+                            row.push(summary['bse'][i]?.toFixed(2) ?? ' ')
+                            row.push(summary['pvalues'][i]?.toFixed(2) ?? ' ')
+                            let index = min_ols_columns.findIndex(m => m === summary.labels[i])
+                            if (index !== -1) {
+                                row.push(summary['best_fit_min']['coefs'][index]?.toFixed(2) ?? ' ')
+                                row.push(summary['best_fit_min']['bse'][index]?.toFixed(2) ?? ' ')
+                                row.push(summary['best_fit_min']['pvalues'][index]?.toFixed(2 ?? ' '))
+                            } else {
+                                row.push(' ')
+                                row.push(' ')
+                                row.push(' ')
+                            }
+                            index = se_ols_columns.findIndex(m => m === summary.labels[i])
+                            if (index !== -1) {
+                                row.push(summary['best_fit_1se']['coefs'][index]?.toFixed(2) ?? ' ')
+                                row.push(summary['best_fit_1se']['bse'][index]?.toFixed(2) ?? ' ')
+                                row.push(summary['best_fit_1se']['pvalues'][index]?.toFixed(2) ?? ' ')
+                            } else {
+                                row.push(' ')
+                                row.push(' ')
+                                row.push(' ')
+                            }
                             model_stats_matrix.push(row)
                         }
+                        console.log(model_stats_matrix);
 
                         new DataTable('#metrics_table_' + mltool.model_number, {
-                            dom: '<"' + mltool.model_number + '">',
-                            initComplete: function () {
-                                $('.' + mltool.model_number).html(`R squared:${summary.get('rsquared').toFixed(2)} AIC: ${summary.get('aic').toFixed(2)} BIC: ${summary.get('bic').toFixed(2)} `);
-                            },
+                            // dom: '<"' + mltool.model_number + '">',
+                            // initComplete: function () {
+                            //     $('.' + mltool.model_number).html(`R squared:${summary['r2'].toFixed(2)} AIC: ${summary['aic'].toFixed(2)} BIC: ${summary['bic'].toFixed(2)} `);
+                            // },
                             responsive: true,
-                            columns: [{ title: "variable" }, { title: "weight" }, { title: "std error" }, { title: "p value" }],
+                            columns: [{ title: "name" }, { title: "coefficients" }, { title: "std error" }, { title: "p-value" },
+                            { title: "coefficients" }, { title: "std error" }, { title: "p-value" },
+                            { title: "coefficients" }, { title: "std error" }, { title: "p-value" }
+
+                            ],
+                            "footerCallback": function (row, data, start, end, display) {
+                                var api = this.api();
+
+                                // Update footer
+                                $(api.column(2).footer()).html(
+                                    'R2 :' + summary.r2.toFixed(2) + ' AIC: ' + summary.aic.toFixed(2)
+                                );
+                                $(api.column(5).footer()).html(
+                                    'R2 :' + summary['best_fit_min'].r2.toFixed(2) + ' AIC: ' + summary['best_fit_min'].aic.toFixed(2)
+                                );
+                                $(api.column(8).footer()).html(
+                                    'R2 :' + summary['best_fit_1se'].r2.toFixed(2) + ' AIC: ' + summary['best_fit_1se'].aic.toFixed(2)
+                                );
+                            },
                             data: model_stats_matrix,
                             info: false,
                             search: false,
@@ -524,8 +569,14 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             paging: false,
                             bDestroy: true,
                         });
-                        chart_controller.yhat_plot(y_test.values, summary.get('preds'), 'regression_y_yhat_' + mltool.model_number)
-                        ui.predictions_table_regression(x_test, y_test, summary.get('preds'), mltool.model_number)
+                        chart_controller.yhat_plot(y_test.values, summary['predictions'], 'regression_y_yhat_' + mltool.model_number, 'OLS predictions')
+                        chart_controller.yhat_plot(y_test.values, summary['predictionsmin'], 'regression_y_yhat_min_' + mltool.model_number, 'OLS min predictions')
+                        chart_controller.yhat_plot(y_test.values, summary['predictions1se'], 'regression_y_yhat_1se_' + mltool.model_number, 'OLS 1se predictions')
+                        chart_controller.residual_plot(y_test.values, summary['residuals_ols'], 'regression_residual_' + mltool.model_number, 'OLS residuals')
+                        chart_controller.residual_plot(y_test.values, summary['residuals_min'], 'regression_residual_min_' + mltool.model_number, 'OLS min residuals')
+                        chart_controller.residual_plot(y_test.values, summary['residuals_1se'], 'regression_residual_1se_' + mltool.model_number, 'OLS 1se residuals')
+
+                        ui.predictions_table_regression(x_test, y_test, summary['predictions'], mltool.model_number)
 
                         break;
                     }

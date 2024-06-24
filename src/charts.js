@@ -1439,6 +1439,7 @@ export default class ChartController {
         );
     }
     ScatterplotMatrix(items, features, labels, number_of_categoricals, is_classification = true) {
+        return
         let unique_labels = [...new Set(labels)];
         var colors = labels.map(label => this.indexToColor(unique_labels.indexOf(label)));
         let traces = []
