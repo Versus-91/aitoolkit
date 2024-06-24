@@ -6,8 +6,8 @@ export default class KNNModel {
         this.model = null
 
     }
-    async train(x_train, y_train, k = 3) {
-        this.model = new KNeighborsClassifier({ nNeighbors: k, metric: this.options.metric })
+    async train(x_train, y_train, metric, k = 3) {
+        this.model = new KNeighborsClassifier({ nNeighbors: k, metric: metric })
         await this.model.fit(x_train, y_train);
     }
     predict(x_test) {

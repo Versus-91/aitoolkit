@@ -197,13 +197,18 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         encoder.fit(targets)
                         let encoded_y_train = encoder.transform(y_train.values)
                         let encoded_y_test = encoder.transform(y_test.values)
-                        for (let k = model_settings.min; k <= model_settings.max; k++) {
-                            await knn_classifier.train(x_train.values, encoded_y_train, k)
-                            let predictions = knn_classifier.predict(x_test.values)
-                            let pobas = knn_classifier.predict_probas(x_test.values)
-                            let evaluation_result = evaluate_classification(predictions, encoded_y_test)
-                            results.push({ k: k, predictions: predictions, evaluation: evaluation_result, probas: pobas })
+                        let metrics = ['manhattan', 'euclidean']
+                        for (let i = 0; i < metrics.length; i++) {
+                            const metric = metrics[i];
+                            for (let k = model_settings.min; k <= model_settings.max; k++) {
+                                await knn_classifier.train(x_train.values, encoded_y_train, metric, k)
+                                let predictions = knn_classifier.predict(x_test.values)
+                                let pobas = knn_classifier.predict_probas(x_test.values)
+                                let evaluation_result = evaluate_classification(predictions, encoded_y_test)
+                                results.push({ k: k, predictions: predictions, evaluation: evaluation_result, probas: pobas, metric: metric })
+                            }
                         }
+
                         let best_result = results[0];
                         results.forEach(element => {
                             if (element.evaluation.accuracy > best_result.accuracy) {
@@ -212,28 +217,42 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                         });
 
                         let predictions = best_result.predictions
-                        let knn_table_column_names = []
-                        knn_table_column_names.push({ title: "k" })
-                        knn_table_column_names.push({ title: "accuracy" })
-                        let knn_accuracies = results.map(m => [m.k, m.evaluation.accuracy.toFixed(2)])
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
                         await chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels, mltool.model_number)
                         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(`
-                                <div class="column is-6">
-                                    <table id="knn_table_${mltool.model_number}" class="table is-bordered is-hoverable is-narrow is-size-7 display"
-                                        width="100%">
-                                    </table>
+                                <div class="column is-6" id="knn_table_${mltool.model_number}" style="height:350px;">
                                 </div>
                             `);
-                        new DataTable('#knn_table_' + mltool.model_number, {
-                            responsive: true,
-                            columns: knn_table_column_names,
-                            data: knn_accuracies,
-                            bDestroy: true,
-                            paging: false,
-                            searching: false,
-                        });
+                        var trace1 = {
+                            x: results.map(m => m.k),
+                            y: results.filter(n => n.metric === 'manhattan').map(m => (m.evaluation.accuracy / 100).toFixed(2)),
+                            mode: 'lines',
+                            name: 'manhattan'
+                        };
+
+                        var trace2 = {
+                            x: results.map(m => m.k),
+                            y: results.filter(n => n.metric === 'euclidean').map(m => (m.evaluation.accuracy / 100).toFixed(2)),
+                            mode: 'lines',
+                            name: 'euclidean'
+                        };
+
+                        var layout = {
+                            title: 'Goodness of fit ',
+                            xaxis: {
+                                title: {
+                                    text: 'K',
+                                },
+                            },
+                            yaxis: {
+                                title: {
+                                    text: 'Accuracy',
+                                }
+                            }
+                        };
+                        Plotly.newPlot("knn_table_" + mltool.model_number, [trace1, trace2], layout);
+
                         chart_controller.probabilities_boxplot(best_result.probas, uniqueLabels, y_test.values, mltool.model_number)
                         ui.predictions_table(x_test, y_test, encoder, best_result.predictions, null, mltool.model_number)
                         break;
