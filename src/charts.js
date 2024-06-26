@@ -1439,7 +1439,6 @@ export default class ChartController {
         );
     }
     ScatterplotMatrix(items, features, labels, number_of_categoricals, is_classification = true) {
-        return
         let unique_labels = [...new Set(labels)];
         var colors = labels.map(label => this.indexToColor(unique_labels.indexOf(label)));
         let traces = []
@@ -1577,6 +1576,7 @@ export default class ChartController {
                         x: items.map(m => m[j]),
                         color: colors,
                         marker: {
+                            colorscale: 'Portland',
                             color: colors,
                             size: 2,
                         },
@@ -1604,6 +1604,7 @@ export default class ChartController {
                                         color: this.indexToColor(m)
                                     },
                                     type: 'box',
+                                    boxmode: "group",
                                     xaxis: 'x' + (index),
                                     yaxis: 'y' + (index),
                                 })
@@ -1615,12 +1616,18 @@ export default class ChartController {
                 }
                 else {
                     if (j > i) {
+                        let arr1 = items.map(m => m[i])
+                        let arr2 = items.map(m => m[j])
                         traces.push({
-                            x: [],
-                            y: [],
-                            mode: 'lines',
-                            name: 'Trace 1'
-                        })
+                            x: [1.5],
+                            y: [1.5],
+                            text: ['Corr :' + jStat.corrcoeff(arr1, arr2).toFixed(2)],
+                            mode: 'text',
+                            xaxis: 'x' + (index),
+                            yaxis: 'y' + (index),
+                            type: 'scatter'
+                        });
+
                     } else {
                         traces.push({
                             y: items.map(m => m[i]),
@@ -1630,7 +1637,8 @@ export default class ChartController {
                             type: 'scattergl',
                             mode: 'markers',
                             marker: {
-                                color: colors,
+                                colorscale: 'Portland',
+                                color: is_classification ? colors : 'black',
                                 size: 2,
                             },
                             xaxis: 'x' + (index),
