@@ -692,7 +692,7 @@ export default class UI {
         let model_name = document.getElementById('model_name').value
         model_name = parseInt(model_name)
         features.push(target)
-        this.chart_controller.ScatterplotMatrix(dataset.loc({ columns: features }).values, features, dataset.column(target).values, categorical_columns.length, is_classification)
+        this.chart_controller.ScatterplotMatrix(dataset.loc({ columns: features }).values, features, dataset.column(target).values, categorical_columns.length, is_classification, numericColumns, categorical_columns, dataset)
         // await this.chart_controller.draw_scatterplot_matrix(dataset.values, 'canvas-container', dataset.columns, categorical_columns, target)
     }
 

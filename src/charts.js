@@ -1438,7 +1438,7 @@ export default class ChartController {
             }
         );
     }
-    ScatterplotMatrix(items, features, labels, number_of_categoricals, is_classification = true) {
+    ScatterplotMatrix(items, features, labels, number_of_categoricals, is_classification = true, numeric_columns, categorical_columns, dataset) {
         let unique_labels = [...new Set(labels)];
         var colors = labels.map(label => this.indexToColor(unique_labels.indexOf(label)));
         let traces = []
@@ -1577,7 +1577,7 @@ export default class ChartController {
                         color: colors,
                         marker: {
                             colorscale: 'Portland',
-                            color: colors,
+                            color: is_classification ? colors : labels,
                             size: 2,
                         },
                         type: 'scattergl',
@@ -1597,20 +1597,24 @@ export default class ChartController {
                         let boxplot_labels = [...new Set(items.map(m => m[j]))]
                         for (let m = 0; m < unique_labels.length; m++) {
                             for (let n = 0; n < boxplot_labels.length; n++) {
-                                traces.push({
-                                    name: boxplot_labels[n],
-                                    y: items.filter(item => item[j] === boxplot_labels[n] && item[features.length - 1] === unique_labels[m]).map(item => item[i]),
-                                    marker: {
-                                        color: this.indexToColor(m)
-                                    },
-                                    type: 'box',
-                                    boxmode: "group",
-                                    xaxis: 'x' + (index),
-                                    yaxis: 'y' + (index),
-                                })
+                                let box_items = items.filter(item => item[j] === boxplot_labels[n] && item[features.length - 1] === unique_labels[m])
+                                if (box_items) {
+                                    traces.push({
+                                        name: boxplot_labels[n],
+                                        y: box_items.map(item => item[i]),
+                                        marker: {
+                                            color: this.indexToColor(m)
+                                        },
+                                        type: 'box',
+                                        xaxis: 'x' + (index),
+                                        yaxis: 'y' + (index),
+                                    })
+                                }
+
                             }
 
                         }
+                        console.log(traces);
                     }
 
                 }
@@ -1638,7 +1642,7 @@ export default class ChartController {
                             mode: 'markers',
                             marker: {
                                 colorscale: 'Portland',
-                                color: is_classification ? colors : 'black',
+                                color: is_classification ? colors : labels,
                                 size: 2,
                             },
                             xaxis: 'x' + (index),
@@ -1666,11 +1670,15 @@ export default class ChartController {
                 var yAxisKey = 'yaxis' + ((i * features.length) + j + 1);
                 let fontSize = 10;
                 layout[xAxisKey] = {
+                    showgrid: false,
+                    showticklabels: false,
                     tickfont: {
                         size: fontSize
                     },
                 };
                 layout[yAxisKey] = {
+                    showgrid: false,
+                    showticklabels: false,
                     tickfont: {
                         size: fontSize
                     },
@@ -1705,6 +1713,29 @@ export default class ChartController {
 
         Plotly.react('my_dataviz', traces, layout, {
             staticPlot: true
+        })
+
+        features.forEach(feature => {
+            const target = document.getElementById("target").value;
+
+            $("#my_dataviz").append(`
+                <div class="select is-small">
+                    <select id="${feature + '--normal2'}">
+                        <option selected>${feature}</option>
+                        <option value="0">No</option>
+                        <option value="1">Scale</option>
+                        <option value="2">x^2</option>
+                        <option value="3">ln(x)</option>
+                        <option value="4">Standardize </option>
+                    </select>
+                </div>
+            `)
+            document.getElementById(feature + '--normal2').addEventListener('change', function () {
+                let data = dataset.loc({ columns: [feature, target] });
+                let normalization_type = document.getElementById(feature + '--normal').value
+                scale_data(data, feature, normalization_type)
+            });
+
         })
 
     }
