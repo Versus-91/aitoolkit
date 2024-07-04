@@ -733,7 +733,7 @@ export default class UI {
         let content = `
         <div class="column is-12">
         <div class="notification">
-        <p class="title is-5">${settings.name}</p>
+        <p class="title my-1 is-5">${settings.name}</p>
         <div class="columns is-multiline is-gapless">`;
         for (const key in settings) {
             if (key !== 'name') {

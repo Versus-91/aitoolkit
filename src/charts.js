@@ -1009,15 +1009,14 @@ export default class ChartController {
         window.tensorflow.dispose(predictedLabels)
         const metric_labels = ["Precession", "Recall", "F1 score", "Support"]
         // labels.push("Precession")
-        labels.push("Recall")
+        labels.push("Precession")
         // labels.push("F1 score")
         // labels.push("Support")
         // confusionMatrix.push(preceissions)
         recalls.push(0)
-        confusionMatrix.push(recalls)
+        confusionMatrix.push(preceissions)
         // confusionMatrix.push(f1s)
         // confusionMatrix.push(supports)
-        console.log(preceissions);
         let items_labels = labels.filter(x => !metric_labels.includes(x))
         // Substring template helper for the responsive labels
         Highcharts.Templating.helpers.substr = (s, from, length) =>
@@ -1026,14 +1025,14 @@ export default class ChartController {
         for (let i = 0; i < confusionMatrix.length; i++) {
             const element = confusionMatrix[i];
             if (i < confusionMatrix.length - 1) {
-                element.push(preceissions[i])
+                element.push(recalls[i])
             }
             for (let j = 0; j < element.length; j++) {
                 const item = element[j];
                 formatted_matrix.push([j, i, item])
             }
         }
-        items_labels.push("Precession")
+        items_labels.push("Recall")
 
         Highcharts.chart("confusion_matrix_" + tab_index, {
             credits: {
