@@ -995,8 +995,8 @@ export default class ChartController {
         div.innerHTML =
             `<div class="column is-12">
 
-            <h5 class="subtitle mb-1">Accuracy: ${metric[4].toFixed(2)}</h5>
-            <span class="subtitle mr-2">F1 micro: ${metric[3].toFixed(2)}</span>
+            <span class="subtitle mb-1">Accuracy: ${metric[4].toFixed(2)}, </span>
+            <span class="subtitle mr-2">F1 micro: ${metric[3].toFixed(2)}, </span>
             <span class="subtitle">F1 macro: ${metric[3].toFixed(2)}</span>
             </div>`
             ;

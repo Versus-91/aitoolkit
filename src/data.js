@@ -183,8 +183,8 @@ export default class DataLoader {
     encode_dataset(data_frame, columns_types, model) {
         let df = data_frame.copy()
 
-        columns_types = columns_types.filter(column => column.type === FeatureCategories.Nominal || column.type === FeatureCategories.Ordinal)
-        columns_types.forEach((column) => {
+        let categorical_columns = columns_types.filter(column => column.type === FeatureCategories.Nominal || column.type === FeatureCategories.Ordinal)
+        categorical_columns.forEach((column) => {
             if (column.type === FeatureCategories.Ordinal) {
                 let encoder = new LabelEncoder()
                 encoder.fit(df[column.name])

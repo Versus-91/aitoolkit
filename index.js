@@ -202,42 +202,91 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             const metric = metrics[i];
                             for (let k = model_settings.min; k <= model_settings.max; k++) {
                                 await knn_classifier.train(x_train.values, encoded_y_train, metric, k)
-                                let predictions = knn_classifier.predict(x_test.values)
+                                let predictions_test = knn_classifier.predict(x_test.values)
+                                let predictions_train = knn_classifier.predict(x_train.values)
                                 let pobas = knn_classifier.predict_probas(x_test.values)
-                                let evaluation_result = evaluate_classification(predictions, encoded_y_test)
-                                results.push({ k: k, predictions: predictions, evaluation: evaluation_result, probas: pobas, metric: metric })
+                                let evaluation_test = evaluate_classification(predictions_test, encoded_y_test)
+                                let evaluation_train = evaluate_classification(predictions_train, encoded_y_train)
+
+                                results.push({ k: k, predictions: predictions_test, evaluation: evaluation_test, evaluation_train: evaluation_train, probas: pobas, metric: metric })
                             }
                         }
 
-                        let best_result = results[0];
+                        let best_train = results[0];
+                        let best_test = results[0];
+
                         results.forEach(element => {
-                            if (element.evaluation.accuracy > best_result.accuracy) {
-                                best_result = element
+                            if (element.evaluation.accuracy > best_test.evaluation.accuracy) {
+                                best_test = element
+                            }
+                            if (element.evaluation_train.accuracy > best_train.evaluation_train.accuracy) {
+                                best_train = element
                             }
                         });
 
-                        let predictions = best_result.predictions
+                        let predictions = best_test.predictions
                         const classes = encoder.inverseTransform(Object.values(encoder.$labels))
                         await chart_controller.plot_confusion_matrix(window.tensorflow.tensor(predictions), window.tensorflow.tensor(encoded_y_test), encoder.inverseTransform(Object.values(encoder.$labels)), encoder.transform(classes), mltool.model_number)
-                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, best_result.evaluation.indexes, uniqueLabels, mltool.model_number)
+                        await chart_controller.draw_classification_pca(x_test.values, y_test.values, best_test.evaluation.indexes, uniqueLabels, mltool.model_number)
                         $("#tabs_info li[data-index='" + mltool.model_number + "'] #results_" + mltool.model_number + "").append(`
                                 <div class="column is-6" id="knn_table_${mltool.model_number}" style="height:350px;">
                                 </div>
                             `);
-                        var trace1 = {
+                        let traces = []
+                        traces.push({
                             x: results.map(m => m.k),
-                            y: results.filter(n => n.metric === 'manhattan').map(m => (m.evaluation.accuracy / 100).toFixed(2)),
+                            y: results.filter(n => n.metric === 'manhattan').map(m => Number((m.evaluation.accuracy / 100).toFixed(2))),
                             mode: 'lines',
-                            name: 'manhattan'
-                        };
+                            name: 'manhattan test set',
+                            line: {
+                                color: 'rgb(55, 128, 191)',
+                                width: 2
+                            }
+                        });
 
-                        var trace2 = {
+                        traces.push({
                             x: results.map(m => m.k),
-                            y: results.filter(n => n.metric === 'euclidean').map(m => (m.evaluation.accuracy / 100).toFixed(2)),
+                            y: results.filter(n => n.metric === 'euclidean').map(m => Number((m.evaluation.accuracy / 100).toFixed(2))),
                             mode: 'lines',
-                            name: 'euclidean'
-                        };
+                            name: 'euclidean test set',
+                            line: {
+                                color: 'rgb(219, 64, 82)',
+                                width: 2
+                            }
+                        });
+                        traces.push({
+                            x: results.map(m => m.k),
+                            y: results.filter(n => n.metric === 'manhattan').map(m => Number((m.evaluation_train.accuracy / 100).toFixed(2))),
+                            mode: 'lines',
+                            name: 'manhattan train set',
+                            line: {
+                                color: 'rgb(55, 128, 191)',
+                                width: 1
+                            }
+                        });
+                        traces.push({
+                            x: results.map(m => m.k),
+                            y: results.filter(n => n.metric === 'euclidean').map(m => Number((m.evaluation_train.accuracy / 100).toFixed(2))),
+                            mode: 'lines',
+                            name: 'euclidean train set',
+                            line: {
+                                color: 'rgb(219, 64, 82)',
+                                width: 1
+                            }
+                        });
+                        var min_y = Number.POSITIVE_INFINITY;
+                        var max_y = Number.NEGATIVE_INFINITY;
+                        traces.forEach(trace => {
+                            let min = Math.min(...trace.y)
+                            let max = Math.max(...trace.y)
+                            if (min < min_y) {
+                                min_y = min
+                            }
+                            if (max > max_y) {
+                                max_y = max
+                            }
 
+                        })
                         var layout = {
                             title: 'Goodness of fit ',
                             xaxis: {
@@ -249,12 +298,34 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                                 title: {
                                     text: 'Accuracy',
                                 }
-                            }
+                            },
+                            shapes: [
+                                {
+                                    type: 'line',
+                                    x0: best_train.k,
+                                    y0: min_y,
+                                    x1: best_train.k,
+                                    y1: max_y,
+                                    line: {
+                                        color: 'rgb(55, 128, 191)',
+                                        width: 3
+                                    }
+                                }, {
+                                    type: 'line',
+                                    x0: best_test.k,
+                                    y0: min_y,
+                                    x1: best_test.k,
+                                    y1: max_y,
+                                    line: {
+                                        color: 'rgb(55, 128, 191)',
+                                        width: 3
+                                    }
+                                },]
                         };
-                        Plotly.newPlot("knn_table_" + mltool.model_number, [trace1, trace2], layout);
+                        Plotly.newPlot("knn_table_" + mltool.model_number, traces, layout);
 
-                        chart_controller.probabilities_boxplot(best_result.probas, uniqueLabels, y_test.values, mltool.model_number)
-                        ui.predictions_table(x_test, y_test, encoder, best_result.predictions, null, mltool.model_number)
+                        chart_controller.probabilities_boxplot(best_test.probas, uniqueLabels, y_test.values, mltool.model_number)
+                        ui.predictions_table(x_test, y_test, encoder, best_test.predictions, null, mltool.model_number)
                         break;
                     }
                     case Settings.classification.support_vector_machine.value: {
@@ -615,8 +686,12 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             for (let k = model_settings.min; k <= model_settings.max; k++) {
                                 await model.train(x_train.values, y_train.values, item, k)
                                 let predictions = model.predict(x_test.values)
-                                let mse = calculateMSE(predictions, y_test.values)
-                                results.push({ k: k, predictions: predictions, mse: mse, metric: item })
+                                let predictions_train = model.predict(x_train.values)
+
+                                let mse_test = calculateMSE(predictions, y_test.values)
+                                let mse_train = calculateMSE(predictions_train, y_train.values)
+
+                                results.push({ k: k, predictions: predictions, mse_test: mse_test, mse_train: mse_train, metric: item })
                             }
                         }
                         let best_model = results[0]
@@ -626,20 +701,32 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                                 best_model = results[i]
                             }
                         }
-                        var trace1 = {
+                        let traces = []
+                        traces.push({
                             x: results.map(m => m.k),
-                            y: results.filter(n => n.metric === 'manhattan').map(m => m.mse),
+                            y: results.filter(n => n.metric === 'manhattan').map(m => m.mse_test),
                             mode: 'lines',
-                            name: 'manhattan'
-                        };
+                            name: 'manhattan(test)'
+                        });
 
-                        var trace2 = {
+                        traces.push({
                             x: results.map(m => m.k),
-                            y: results.filter(n => n.metric === 'euclidean').map(m => m.mse),
+                            y: results.filter(n => n.metric === 'euclidean').map(m => m.mse_test),
                             mode: 'lines',
-                            name: 'euclidean'
-                        };
-
+                            name: 'euclidean(test)'
+                        });
+                        traces.push({
+                            x: results.map(m => m.k),
+                            y: results.filter(n => n.metric === 'manhattan').map(m => m.mse_train),
+                            mode: 'lines',
+                            name: 'manhattan(train)'
+                        });
+                        traces.push({
+                            x: results.map(m => m.k),
+                            y: results.filter(n => n.metric === 'euclidean').map(m => m.mse_train),
+                            mode: 'lines',
+                            name: 'euclidean(train)'
+                        });
                         var layout = {
                             title: 'Goodness of fit ',
                             xaxis: {
@@ -654,7 +741,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             }
                         };
 
-                        Plotly.newPlot('knn_mse_' + mltool.model_number, [trace1, trace2], layout);
+                        Plotly.newPlot('knn_mse_' + mltool.model_number, traces, layout);
                         ui.predictions_table_regression(x_test, y_test, best_model.predictions, mltool.model_number)
                         break;
                     }

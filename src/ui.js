@@ -907,7 +907,7 @@ export default class UI {
             table_columns.push({ title: element });
         });
         new DataTable('#predictions_table_' + tab_index, {
-            pageLength: 5,
+            pageLength: 10,
             responsive: true,
             paging: true,
             columnDefs: [
@@ -940,9 +940,8 @@ export default class UI {
         x.columns.forEach(element => {
             table_columns.push({ title: element });
         });
-        let rr = [...Array(table_columns.length - 3).keys()]
         new DataTable('#predictions_table_' + tab_index, {
-            pageLength: 5,
+            pageLength: 10,
             responsive: true,
             paging: true,
             "bPaginate": true,

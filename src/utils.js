@@ -269,7 +269,7 @@ export function evaluate_classification(predictions, y_test) {
         }
     });
     return {
-        accuracy: (currect_classifications_sum / predictions.length) * 100,
+        accuracy: Number((currect_classifications_sum / predictions.length) * 100),
         indexes: missclassification_indexes
     }
 }
