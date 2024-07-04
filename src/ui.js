@@ -854,6 +854,10 @@ export default class UI {
     }
     init_regression_results_tab(index) {
         let content = `
+        <div class="column is-12">
+            <div id="metrics_${index}">
+           </div>
+        </div>
         <div class="column is-6">
             <div id="regression_y_yhat_${index}" width="100%" style="height:200px">
            </div>
@@ -992,10 +996,9 @@ export default class UI {
         let r2 = calculateRSquared(y_test.values, predictions);
         let mse = calculateMSE(y_test.values, predictions);
         let content = `
-                    <div class="column is-12" id="regularization_${tab_index}">
                         <p>R squared : ${r2.toFixed(2)}</p>
                         <p>Mean Squared Error: ${mse.toFixed(2)}</p>
-                    </div> `;
-        $("#metrics_" + tab_index).html(content);
+                     `;
+        $("#metrics_" + tab_index).append(content);
     }
 }
