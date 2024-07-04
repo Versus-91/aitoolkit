@@ -370,43 +370,46 @@ export default class ChartController {
     };
 
     draw_kde(dataset, column, target_name, bandwidth = "nrd", is_classification = false, redrawing = false) {
-        let items = dataset.column(column).values;
-        let default_bandwidth = this.nrd(items).toFixed(2);
-        let raw_values = dataset.loc({ columns: [column, target_name] });
-        let uniqueLabels = [...new Set(raw_values.column(target_name).values)];
-        if (uniqueLabels.length === 2) {
-            uniqueLabels.sort()
-        }
-        let column_values = raw_values.values;
-        let subsets = [];
-        var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
-        if (!is_classification) {
-            subsets.push(dataset[column].values);
-        } else {
-            for (let i = 0; i < uniqueLabels.length; i++) {
-                const label = uniqueLabels[i];
-                let subset = [];
-                for (let i = 0; i < column_values.length; i++) {
-                    const item = column_values[i];
-                    if (item[1] === label) {
-                        subset.push(item[0])
-                    }
-                }
-                subsets.push(subset);
+        try {
+
+
+            let items = dataset.column(column).values;
+            let default_bandwidth = this.nrd(items).toFixed(2);
+            let raw_values = dataset.loc({ columns: [column, target_name] });
+            let uniqueLabels = [...new Set(raw_values.column(target_name).values)];
+            if (uniqueLabels.length === 2) {
+                uniqueLabels.sort()
             }
-        }
+            let column_values = raw_values.values;
+            let subsets = [];
+            var colorIndices = uniqueLabels.map(label => this.indexToColor(uniqueLabels.indexOf(label)));
+            if (!is_classification) {
+                subsets.push(dataset[column].values);
+            } else {
+                for (let i = 0; i < uniqueLabels.length; i++) {
+                    const label = uniqueLabels[i];
+                    let subset = [];
+                    for (let i = 0; i < column_values.length; i++) {
+                        const item = column_values[i];
+                        if (item[1] === label) {
+                            subset.push(item[0])
+                        }
+                    }
+                    subsets.push(subset);
+                }
+            }
 
-        document.getElementById("kde_panel").style.display = "block";
+            document.getElementById("kde_panel").style.display = "block";
 
-        var newColumn = document.createElement("div");
-        newColumn.className = "column is-3";
-        newColumn.setAttribute("id", column + '-kde-plot');
-        if (!redrawing) {
-            // let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-            let key = column;
+            var newColumn = document.createElement("div");
+            newColumn.className = "column is-3";
+            newColumn.setAttribute("id", column + '-kde-plot');
+            if (!redrawing) {
+                // let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+                let key = column;
 
-            $("#container").append(
-                `<div class="column is-4 is-size-6-tablet my-1">
+                $("#container").append(
+                    `<div class="column is-4 is-size-6-tablet my-1">
                 <div class="columns is-multiline">
                 <div class="column is-12" >
                     <div id="${column + '-kde-plot'}"> </div>
@@ -450,152 +453,155 @@ export default class ChartController {
                     </div>
                   </div>
                 </div>`
-            );
-            document.getElementById(key + '--normal').addEventListener('change', function () {
+                );
+                document.getElementById(key + '--normal').addEventListener('change', function () {
+                    const target = document.getElementById("target").value;
+                    let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
+                    let data = dataset.loc({ columns: [key, target] });
+                    let normalization_type = document.getElementById(key + '--normal').value
+                    scale_data(data, key, normalization_type)
+                    data.dropNa({ axis: 1, inplace: true })
+                    var newBandwidth = parseFloat(document.getElementById(column + '-kde').value);
+                    current_class.draw_kde(data, key, target, newBandwidth, is_classification, true);
+                });
+            }
+            var current_class = this;
+            document.getElementById(column + '-kde-button').addEventListener("click", function () {
                 const target = document.getElementById("target").value;
                 let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
-                let data = dataset.loc({ columns: [key, target] });
-                let normalization_type = document.getElementById(key + '--normal').value
-                scale_data(data, key, normalization_type)
-                data.dropNa({ axis: 1, inplace: true })
+                let data = dataset.loc({ columns: [column, target] });
+                let normalization_type = document.getElementById(column + '--normal').value
+                scale_data(data, column, normalization_type)
                 var newBandwidth = parseFloat(document.getElementById(column + '-kde').value);
-                current_class.draw_kde(data, key, target, newBandwidth, is_classification, true);
+                data.dropNa({ axis: 1, inplace: true })
+                current_class.draw_kde(data, column, target, newBandwidth, is_classification, true);
             });
-        }
-        var current_class = this;
-        document.getElementById(column + '-kde-button').addEventListener("click", function () {
-            const target = document.getElementById("target").value;
-            let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
-            let data = dataset.loc({ columns: [column, target] });
-            let normalization_type = document.getElementById(column + '--normal').value
-            scale_data(data, column, normalization_type)
-            var newBandwidth = parseFloat(document.getElementById(column + '-kde').value);
-            data.dropNa({ axis: 1, inplace: true })
-            current_class.draw_kde(data, column, target, newBandwidth, is_classification, true);
-        });
-        let container_id = column + '-kde-plot';
-        let items_range = [...raw_values.column(column).values]
-        // let minValue = Math.min(...items_range);
-        // let maxValue = Math.max(...items_range);
-        // items_range.push(minValue - parseFloat(default_bandwidth))
-        // items_range.push(maxValue + parseFloat(default_bandwidth))
-        var breaks = ss.equalIntervalBreaks(items_range, 100);
-        let allData = [];
-        let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
-        // Loop through subsets to generate data for all subsets
-        let traces = []
-        let kde;
-        if (is_classification) {
-            for (let i = 0; i < subsets.length; i++) {
-                if (subsets[i].length > 2) {
-                    let ys = [];
-                    kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
-                    let data = [];
-                    breaks.forEach((item) => {
-                        ys.push(kde(item, bandwidth));
-                        data.push([item, ys[ys.length - 1]]);
-                    });
-                    allData.push(data);
-                } else {
-                    allData.push([]);
+            let container_id = column + '-kde-plot';
+            let items_range = [...raw_values.column(column).values]
+            // let minValue = Math.min(...items_range);
+            // let maxValue = Math.max(...items_range);
+            // items_range.push(minValue - parseFloat(default_bandwidth))
+            // items_range.push(maxValue + parseFloat(default_bandwidth))
+            var breaks = ss.equalIntervalBreaks(items_range, 100);
+            let allData = [];
+            let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
+            // Loop through subsets to generate data for all subsets
+            let traces = []
+            let kde;
+            if (is_classification) {
+                for (let i = 0; i < subsets.length; i++) {
+                    if (subsets[i].length > 2) {
+                        let ys = [];
+                        kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+                        let data = [];
+                        breaks.forEach((item) => {
+                            ys.push(kde(item, bandwidth));
+                            data.push([item, ys[ys.length - 1]]);
+                        });
+                        allData.push(data);
+                    } else {
+                        allData.push([]);
+                    }
+                    traces.push({
+                        name: uniqueLabels[i],
+                        x: subsets[i],
+                        marker: {
+                            color: colorIndices[i]
+                        },
+                        type: 'box',
+                    })
+                }
+            } else {
+                for (let i = 0; i < subsets.length; i++) {
+                    if (subsets[i].length > 2) {
+                        let ys = [];
+                        kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
+                        let data = [];
+                        breaks.forEach((item) => {
+                            ys.push(kde(item, bandwidth));
+                            data.push([item, ys[ys.length - 1]]);
+                        });
+                        allData.push(data);
+                    } else {
+                        allData.push([]);
+                    }
                 }
                 traces.push({
-                    name: uniqueLabels[i],
-                    x: subsets[i],
-                    marker: {
-                        color: colorIndices[i]
-                    },
+                    name: column,
+                    x: items,
                     type: 'box',
                 })
             }
-        } else {
-            for (let i = 0; i < subsets.length; i++) {
-                if (subsets[i].length > 2) {
-                    let ys = [];
-                    kde = ss.kernelDensityEstimation(subsets[i], this.kernelFunctions[kernel_type], bandwidth);
-                    let data = [];
-                    breaks.forEach((item) => {
-                        ys.push(kde(item, bandwidth));
-                        data.push([item, ys[ys.length - 1]]);
-                    });
-                    allData.push(data);
-                } else {
-                    allData.push([]);
-                }
-            }
-            traces.push({
-                name: column,
-                x: items,
-                type: 'box',
-            })
+
+            let animationDuration = 4000;
+
+            var layout = {
+
+                yaxis: {
+                    visible: false,
+                },
+                showlegend: false,
+                margin: {
+                    l: 20,
+                    r: 10,
+                    b: 60,
+                    t: 10,
+                },
+                legend: {
+                    x: 1,
+                    xanchor: 'right',
+                    y: 1
+                },
+            };
+            Plotly.newPlot(column + '-boxplot', traces, layout, { autosize: true, responsive: true, modeBarButtonsToRemove: ['pan', 'resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
+            Highcharts.chart(container_id, {
+                credits: {
+                    enabled: false
+                },
+                legend: {
+                    enabled: is_classification ? true : false, align: 'right',
+                    verticalAlign: 'top',
+                },
+                chart: {
+                    height: '300',
+                    type: "spline",
+                    animation: true,
+                },
+                title: {
+                    text: column // Assuming `column` is defined elsewhere
+                },
+                yAxis: {
+                    title: { text: null }
+                },
+                tooltip: {
+                    valueDecimals: 3
+                },
+                plotOptions: {
+                    series: {
+                        marker: {
+                            enabled: false
+                        },
+                        dashStyle: "shortdot",
+                        color: colorIndices,
+                        animation: {
+                            duration: animationDuration
+                        },
+                        area: true
+                    }
+                },
+                series: allData.map((data, index) => ({
+                    type: 'area',
+                    name: uniqueLabels[index],
+                    dashStyle: "solid",
+                    lineWidth: 2,
+                    color: colorIndices[index],
+                    data: data
+                }))
+            });
+            window.dispatchEvent(new Event('resize'));
+        } catch (error) {
+            throw new Error('falied at data transformation.')
         }
-
-        let animationDuration = 4000;
-
-        var layout = {
-
-            yaxis: {
-                visible: false,
-            },
-            showlegend: false,
-            margin: {
-                l: 20,
-                r: 10,
-                b: 60,
-                t: 10,
-            },
-            legend: {
-                x: 1,
-                xanchor: 'right',
-                y: 1
-            },
-        };
-        Plotly.newPlot(column + '-boxplot', traces, layout, { autosize: true, responsive: true, modeBarButtonsToRemove: ['pan', 'resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
-        Highcharts.chart(container_id, {
-            credits: {
-                enabled: false
-            },
-            legend: {
-                enabled: is_classification ? true : false, align: 'right',
-                verticalAlign: 'top',
-            },
-            chart: {
-                height: '300',
-                type: "spline",
-                animation: true,
-            },
-            title: {
-                text: column // Assuming `column` is defined elsewhere
-            },
-            yAxis: {
-                title: { text: null }
-            },
-            tooltip: {
-                valueDecimals: 3
-            },
-            plotOptions: {
-                series: {
-                    marker: {
-                        enabled: false
-                    },
-                    dashStyle: "shortdot",
-                    color: colorIndices,
-                    animation: {
-                        duration: animationDuration
-                    },
-                    area: true
-                }
-            },
-            series: allData.map((data, index) => ({
-                type: 'area',
-                name: uniqueLabels[index],
-                dashStyle: "solid",
-                lineWidth: 2,
-                color: colorIndices[index],
-                data: data
-            }))
-        });
-        window.dispatchEvent(new Event('resize'));
     }
 
     async draw_classification_pca(dataset, labels, missclassifications, uniqueLabels, index) {

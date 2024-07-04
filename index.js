@@ -15,6 +15,7 @@ import tippy from 'tippy.js';
 import { calculateMSE } from './src/utils.js'
 import 'tippy.js/dist/tippy.css'; // optional for styling
 document.addEventListener("DOMContentLoaded", async function (event) {
+
     // your code here
     sk.setBackend(tensorflow)
     let data_frame;
@@ -28,7 +29,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     const html_content_ids = []
     const table_ids = ["sample_data_table"]
     const plots = ["tsne", "pca-1", "pca-2", "pca-3"]
-
+    window.onerror = function (message, source, lineno, colno, error) {
+        ui.show_error_message(message, "#7E191B");
+    };
     async function handleFileSelect(evt, url) {
         var target = evt?.target || evt?.srcElement;
         let file;
@@ -855,6 +858,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     })
     ui.init_tabs_events();
     Plotly.setPlotConfig({
+        staticPlot: true,
         displaylogo: false,
         modeBarButtonsToRemove: ['resetScale2d', 'zoom2d', 'pan', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '], // Remove certain buttons from the mode bar
     });

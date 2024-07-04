@@ -177,12 +177,11 @@ export default class LinearRegression {
                 let reg_plot = JSON.parse(await results[0].toString())
                 reg_plot.layout.legend["orientation"] = 'h'
                 reg_plot.layout['showlegend'] = false;
-                Plotly.newPlot(container_regularization, reg_plot, {
-                });
-                Plotly.newPlot(container_errors, JSON.parse(await results[1].toString()), {});
-                Plotly.newPlot(qqplot_ols, JSON.parse(await results[27].toString()), {});
-                Plotly.newPlot(qqplot_1se, JSON.parse(await results[28].toString()), {});
-                Plotly.newPlot(qqplot_min, JSON.parse(await results[29].toString()), {});
+                Plotly.newPlot(container_regularization, reg_plot, { staticPlot: true });
+                Plotly.newPlot(container_errors, JSON.parse(await results[1].toString()), { staticPlot: true });
+                Plotly.newPlot(qqplot_ols, JSON.parse(await results[27].toString()), { staticPlot: true });
+                Plotly.newPlot(qqplot_1se, JSON.parse(await results[28].toString()), { staticPlot: true });
+                Plotly.newPlot(qqplot_min, JSON.parse(await results[29].toString()), { staticPlot: true });
 
                 let coefs_plot = JSON.parse(await results[15].toString())
                 coefs_plot.layout.legend = {
@@ -195,7 +194,7 @@ export default class LinearRegression {
                         color: '#000'
                     },
                 };
-                Plotly.newPlot(container_coefs, coefs_plot, {});
+                Plotly.newPlot(container_coefs, coefs_plot, { staticPlot: true });
 
                 let summary = {
                     params: await results[2].toArray(),
