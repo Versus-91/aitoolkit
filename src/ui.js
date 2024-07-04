@@ -835,6 +835,20 @@ export default class UI {
             <div id="regression_residual_1se_${index}" width="100%" style="height:200px">
            </div>
         </div>
+        <div class="column is-3">
+        </div>
+        <div class="column is-3">
+            <div id="qqplot_ols_${index}" width="100%" style="height:200px">
+           </div>
+        </div>
+        <div class="column is-3">
+            <div id="qqplot_min_${index}" width="100%" style="height:200px">
+           </div>
+        </div>
+        <div class="column is-3">
+            <div id="qqplot_1se_${index}" width="100%" style="height:200px">
+           </div>
+        </div>
 `
         $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(content);
     }

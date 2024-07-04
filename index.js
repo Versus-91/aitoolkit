@@ -499,7 +499,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
                         let model = model_factory.createModel(Settings.regression.linear_regression, model_settings, {});
                         let summary = await model.train_test(x_train.values, y_train.values, x_test.values, y_test.values, x_train.columns
-                            , 'regularization_' + mltool.model_number, 'errors_' + mltool.model_number, 'parameters_plot_' + mltool.model_number)
+                            , 'regularization_' + mltool.model_number, 'errors_' + mltool.model_number, 'parameters_plot_' + mltool.model_number
+                            , 'qqplot_ols_' + mltool.model_number
+                            , 'qqplot_1se_' + mltool.model_number
+                            , 'qqplot_min_' + mltool.model_number)
 
                         let model_stats_matrix = [];
                         let cols = [...x_train.columns]
@@ -520,7 +523,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             if (index !== -1) {
                                 row.push(summary['best_fit_min']['coefs'][index]?.toFixed(2) ?? ' ')
                                 row.push(summary['best_fit_min']['bse'][index]?.toFixed(2) ?? ' ')
-                                row.push(summary['best_fit_min']['pvalues'][index]?.toFixed(2 ?? ' '))
+                                row.push(summary['best_fit_min']['pvalues'][index]?.toFixed(2) ?? ' ')
                             } else {
                                 row.push(' ')
                                 row.push(' ')
@@ -583,7 +586,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
                         let model = model_factory.createModel(Settings.regression.polynomial_regression, model_settings, {});
                         let summary = await model.train_test(x_train.values, y_train.values, x_test.values, y_test.values, x_train.columns
-                            , 'regularization_' + mltool.model_number, 'errors_' + mltool.model_number, 'parameters_plot_' + mltool.model_number)
+                            , 'regularization_' + mltool.model_number, 'errors_' + mltool.model_number, 'parameters_plot_' + mltool.model_number
+                            , 'qqplot_ols_' + mltool.model_number
+                            , 'qqplot_1se_' + mltool.model_number
+                            , 'qqplot_min_' + mltool.model_number)
 
                         let model_stats_matrix = [];
                         let cols = [...x_train.columns]

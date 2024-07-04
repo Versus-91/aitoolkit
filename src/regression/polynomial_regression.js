@@ -38,7 +38,7 @@ export default class PolynomialRegression {
                     library(modelsummary)
                     library(glmnet)
                     degree <- 2
-                    x <-   poly(as.matrix(xx), degree, raw = TRUE)
+                    x <-   as.matrix(xx)
 
                     lam = 10 ^ seq (-2,3, length =100)    
                     cvfit = cv.glmnet(x, y, alpha = is_lasso)
@@ -72,7 +72,7 @@ export default class PolynomialRegression {
                     theme_bw()
 
                     model <- lm(y ~ ., data = as.data.frame(x))
-                    x <- poly(as.matrix(x_test), degree, raw = TRUE)  
+                    x <- as.matrix(x_test)  
                     predictions <- predict(model, newdata = as.data.frame(x))
                     # Get coefficients, p-values, and standard errors
                     coefs <- coef(model)
@@ -87,7 +87,7 @@ export default class PolynomialRegression {
 
 
                     best_lambda <- cvfit$lambda.min
-                    x <- poly(as.matrix(xx), degree, raw = TRUE)
+                    x <- as.matrix(xx)
                     # Get the coefficients for the best lambda
                     best_model <- glmnet(x, y, alpha =is_lasso, lambda = best_lambda)
                     coefficients <- as.matrix(coef(best_model))
@@ -109,10 +109,10 @@ export default class PolynomialRegression {
                     coefficients <- as.matrix(coef(best_model))
                     residuals_min <- resid(linear_model_min)
                     fitted_values_min <- fitted(linear_model_min)
-                    x <- poly(as.matrix(x_test), degree, raw = TRUE) 
+                    x <- as.matrix(x_test)
                     x <- x[, nonzero_features]
                     predictions_min <- predict(linear_model_min, newdata = as.data.frame(x))
-                    x <- poly(as.matrix(xx), degree, raw = TRUE) 
+                    x <- as.matrix(xx)
                     nonzero_coef <- coefficients[coefficients != 0]
                     
                     nonzero_features <- rownames(coefficients)[coefficients != 0 & rownames(coefficients) != "(Intercept)"]
@@ -127,7 +127,7 @@ export default class PolynomialRegression {
                     std_error_1se <- summary(linear_model_1se)$coefficients[,2]
                     residuals_1se <- resid(linear_model_1se)
                     fitted_values_1se <- fitted(linear_model_1se)
-                    x <- poly(as.matrix(x_test), degree, raw = TRUE) 
+                    x <- as.matrix(x_test)
                     x <- x[, nonzero_features]
                     predictions_1se <- predict(linear_model_1se, newdata = as.data.frame(x))
                     models <- list(
