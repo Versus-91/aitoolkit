@@ -734,13 +734,12 @@ export default class UI {
         <div class="column is-12">
         <div class="notification">
         <p class="title is-5">${settings.name}</p>
-        <div class="columns is-multiline">`;
-
+        <div class="columns is-multiline is-gapless">`;
         for (const key in settings) {
             if (key !== 'name') {
                 if (Object.hasOwnProperty.call(settings, key)) {
                     const element = settings[key];
-                    content += `<div class="column is-4"><p><strong>${key}</strong>: ${element}</p></div>`
+                    content += `<div class="column is-12 "><p><strong>${key}</strong>: ${element}</p></div>`
                 }
             }
 
