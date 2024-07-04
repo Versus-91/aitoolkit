@@ -764,32 +764,32 @@ export default class UI {
     }
     init_regression_results_tab_linear_regression(index) {
         let content = `
-        <div class="column is-8">
+        <div class="column is-7">
             <div class="table-container">
             <table
-                class="table nowrap is-striped is-bordered is-narrow is-hoverable is-size-7"
+                class="table has-text-centered nowrap is-striped is-bordered is-narrow is-hoverable is-size-7"
                 id="metrics_table_${index}" >
                         <thead>
             <tr>
                 <th colspan="1"></th>
                 <th colspan="3">OLS</th>
-                <th colspan="3">OLS min</th>
-                <th colspan="3">OLS 1se</th>
+                <th colspan="3">lambda min</th>
+                <th colspan="3">lambda 1se</th>
             </tr>
             <tr>
                 <th>name</th>
-                <th>coefficients</th>
-                <th>std error</th>
-                <th>p-value</th>
-                <th>coefficients</th>
-                <th>std error</th>
-                <th>p-value</th>
-                <th>coefficients</th>
-                <th>std error</th>
-                <th>p-value</th>
+                <th>coef</th>
+                <th>st.d.</th>
+                <th><i>p</i>-value</th>
+                <th>coef</th>
+                <th>st.d.</th>
+                <th><i>p</i>-value</th>
+                <th>coef</th>
+                <th>st.d.</th>
+                <th><i>p</i>-value</th>
             </tr>
         </thead>
-          <tfoot>
+          <tfoot class="has-text-centered" style=" font-weight: normal">
     <tr>
       <th></th>
       <th colspan="3"></th>
@@ -801,7 +801,7 @@ export default class UI {
             </table>
            </div>
         </div>        
-        <div class="column is-4" style="height:400px;" id="parameters_plot_${index}">
+        <div class="column is-5 mt-4" style="height:400px;" id="parameters_plot_${index}">
         </div>
         <div class="column is-12" id="metrics_${index}">
         </div>
@@ -908,7 +908,7 @@ export default class UI {
             table_columns.push({ title: element });
         });
         new DataTable('#predictions_table_' + tab_index, {
-            pageLength: 25,
+            pageLength: 5,
             responsive: true,
             paging: true,
             columnDefs: [
@@ -943,7 +943,7 @@ export default class UI {
         });
         let rr = [...Array(table_columns.length - 3).keys()]
         new DataTable('#predictions_table_' + tab_index, {
-            pageLength: 25,
+            pageLength: 5,
             responsive: true,
             paging: true,
             "bPaginate": true,

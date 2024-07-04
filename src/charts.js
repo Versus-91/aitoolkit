@@ -1625,8 +1625,12 @@ export default class ChartController {
                         traces.push({
                             x: [1.5],
                             y: [1.5],
-                            text: ['Corr :' + jStat.corrcoeff(arr1, arr2).toFixed(2)],
+                            text: ['Correlation : ' + jStat.corrcoeff(arr1, arr2).toFixed(2)],
                             mode: 'text',
+                            textfont: {
+                                size: 8, // Font size for the text
+                                color: 'black'
+                            },
                             xaxis: 'x' + (index),
                             yaxis: 'y' + (index),
                             type: 'scatter'
@@ -1736,7 +1740,8 @@ export default class ChartController {
                 scale_data(data, feature, normalization_type)
             });
 
-        })
+        });
+        $("#my_dataviz").append(`<button class="button is-small">Update</button>`);
 
     }
 

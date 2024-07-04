@@ -467,31 +467,25 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                             }
                             model_stats_matrix.push(row)
                         }
-                        console.log(model_stats_matrix);
-
+                        model_stats_matrix.reverse()
                         new DataTable('#metrics_table_' + mltool.model_number, {
                             // dom: '<"' + mltool.model_number + '">',
                             // initComplete: function () {
                             //     $('.' + mltool.model_number).html(`R squared:${summary['r2'].toFixed(2)} AIC: ${summary['aic'].toFixed(2)} BIC: ${summary['bic'].toFixed(2)} `);
                             // },
                             responsive: true,
-                            columns: [{ title: "name" }, { title: "coefficients" }, { title: "std error" }, { title: "p-value" },
-                            { title: "coefficients" }, { title: "std error" }, { title: "p-value" },
-                            { title: "coefficients" }, { title: "std error" }, { title: "p-value" }
-
-                            ],
                             "footerCallback": function (row, data, start, end, display) {
                                 var api = this.api();
 
                                 // Update footer
                                 $(api.column(2).footer()).html(
-                                    'R2 :' + summary.r2.toFixed(2) + ' AIC: ' + summary.aic.toFixed(2)
+                                    'R2 : ' + summary.r2.toFixed(2) + ' AIC: ' + summary.aic.toFixed(2)
                                 );
                                 $(api.column(5).footer()).html(
-                                    'R2 :' + summary['best_fit_min'].r2.toFixed(2) + ' AIC: ' + summary['best_fit_min'].aic.toFixed(2)
+                                    'R2 : ' + summary['best_fit_min'].r2.toFixed(2) + ' AIC: ' + summary['best_fit_min'].aic.toFixed(2)
                                 );
                                 $(api.column(8).footer()).html(
-                                    'R2 :' + summary['best_fit_1se'].r2.toFixed(2) + ' AIC: ' + summary['best_fit_1se'].aic.toFixed(2)
+                                    'R2 : ' + summary['best_fit_1se'].r2.toFixed(2) + ' AIC: ' + summary['best_fit_1se'].aic.toFixed(2)
                                 );
                             },
                             data: model_stats_matrix,
