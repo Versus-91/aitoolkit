@@ -137,10 +137,33 @@ export default class PolynomialRegression {
                         )
                     z <- modelplot(models =models,coef_omit = 'Interc')
                     term_labels <- attr(terms(model), "term.labels")
-                    print(term_labels)
+                    qqplot_ols <-ggplot(data.frame(residuals = residuals_ols), aes(sample = residuals_ols)) +
+                        stat_qq() +
+                        stat_qq_line(col = "red") +
+                        labs(title = "QQ Plot of Residuals",
+                            x = "Theoretical Quantiles",
+                            y = "Sample Quantiles") +
+                        theme_minimal()
+                    qqplot_1se <-ggplot(data.frame(residuals = residuals_1se), aes(sample = residuals_1se)) +
+                        stat_qq() +
+                        stat_qq_line(col = "red") +
+                        labs(title = "QQ Plot of Residuals",
+                            x = "Theoretical Quantiles",
+                            y = "Sample Quantiles") +
+                        theme_minimal()
+                    qqplot_min <-ggplot(data.frame(residuals = residuals_min), aes(sample = residuals_min)) +
+                        stat_qq() +
+                        stat_qq_line(col = "red") +
+                        labs(title = "QQ Plot of Residuals",
+                            x = "Theoretical Quantiles",
+                            y = "Sample Quantiles") +
+                        theme_minimal()
                     list(plotly_json(p, pretty = FALSE),plotly_json(p2, pretty = FALSE),coefs,pvals,std_error,predictions,aic_value,bic_value,rsquared,coefs_min,pvals_min,std_error_min
                     ,coefs_1se,pvals_1se,std_error_1se,plotly_json(z, pretty = FALSE),linear_model_min_features,linear_model_1se_features
-                    ,residuals_ols,residuals_1se,residuals_min,predictions_1se,predictions_min,rsquared_1se,aic_1se,rsquared_min,aic_min,term_labels)
+                    ,residuals_ols,residuals_1se,residuals_min,predictions_1se,predictions_min,rsquared_1se,aic_1se,rsquared_min,aic_min,term_labels
+                    ,plotly_json(qqplot_ols, pretty = FALSE)
+                    ,plotly_json(qqplot_1se, pretty = FALSE)
+                    ,plotly_json(qqplot_min, pretty = FALSE))
                     `);
                 let results = await plotlyData.toArray()
                 let reg_plot = JSON.parse(await results[0].toString())

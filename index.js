@@ -29,9 +29,10 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     const html_content_ids = []
     const table_ids = ["sample_data_table"]
     const plots = ["tsne", "pca-1", "pca-2", "pca-3"]
-    window.onerror = function (message, source, lineno, colno, error) {
-        ui.show_error_message(message, "#7E191B");
-    };
+    // window.onerror = function (message, source, lineno, colno, error) {
+    //     console.log(error, source, lineno);
+    //     ui.show_error_message(message, "#7E191B");
+    // };
     async function handleFileSelect(evt, url) {
         var target = evt?.target || evt?.srcElement;
         let file;
@@ -54,14 +55,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         }
 
     }
-    function init_canvas() {
-        $('#canvas-container').empty()
-        $('#canvas-container').append(`<canvas id="canvasId" responsive='true'></canvas>`)
-        let canvas = document.getElementById('canvasId')
-        let container = document.getElementById('canvas-container')
-        canvas.width = container.offsetWidth;
-        canvas.height = 800;
-    }
+
     async function process_file(file, type) {
         try {
             ui.reset(html_content_ids, table_ids, plots);
@@ -82,6 +76,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             await ui.visualize(dataset, result.length, file.name);
             ui.init_tooltips(tippy)
             document.querySelector('#feature_selection_modal').addEventListener('update_graphs', async function (e) {
+                Plotly.purge('scatterplot_mtx');
+                $('#scatterplot_mtx').empty()
                 await ui.visualize(data_frame);
             });
             document.getElementById("train-button").onclick = async () => {
@@ -183,7 +179,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             let model_settings = ui.get_model_settings();
             mltool.model_number++
             ui.create_model_result_tab(mltool.model_number)
-            ui.show_settings(model_settings, mltool.model_number);
+            ui.show_settings(model_settings, numericColumns, ui.get_categorical_columns(dataset, true), target, mltool.model_number);
             let tabs = Bulma('.tabs-wrapper').data('tabs');
             tabs.setActive(2)
             // $(this).toggleClass("is-active ");

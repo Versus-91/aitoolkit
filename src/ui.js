@@ -1,6 +1,6 @@
 import Plotly from 'plotly.js-dist';
 import { MinMaxScaler, StandardScaler } from 'danfojs/dist/danfojs-base';
-import { calculateRSquared, calculateMSE } from './utils';
+import { calculateRSquared, calculateMSE, encode_name } from './utils';
 import { toJSON } from 'danfojs/dist/danfojs-browser/src/index';
 
 import { FeatureCategories, Settings } from "../feature_types.js";
@@ -154,7 +154,7 @@ export default class UI {
         });
         const default_target = items.columns[items.columns.length - 1]
         items.columns.forEach(column => {
-            let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            let key = encode_name(column)
             $('#features').append(`
                 <tr>
                     <td>
@@ -404,21 +404,21 @@ export default class UI {
     find_selected_columns(columns, get_all = false) {
         const selected_columns = [];
         columns.forEach(column => {
-            let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            let key = encode_name(column)
             if (document.getElementById(key + '-checkbox').checked || get_all) {
                 selected_columns.push(column);
             }
         });
         return selected_columns;
     }
-    find_selected_columns_types(columns, include_target = false) {
+    find_selected_columns_types(columns, include_target = true) {
         if (include_target === false) {
             const target = document.getElementById("target").value;
             columns = columns.filter(column => column !== target)
         }
         const column_types = []
         columns.forEach(column => {
-            let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            let key = encode_name(column)
             column_types.push({
                 name: column,
                 type: document.getElementById(key).value
@@ -429,7 +429,7 @@ export default class UI {
     createTargetDropdown(items) {
         let result = '<div  class="column is-12"><div class="label is-size-7">Target</div><div class="select is-small mb-1"> <select id="target">'
         items.columns.forEach(column => {
-            let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            let key = encode_name(column)
             result += `<option value="${key}">${key}</option>`
 
         });
@@ -462,7 +462,7 @@ export default class UI {
         for (let i = 0; i < data.columns.length; i++) {
             if (i < limit) {
                 const column = data.columns[i];
-                const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+                const key = encode_name(column)
                 const type = document.getElementById(key).value
                 if (type === FeatureCategories.Numerical) {
                     let row = "";
@@ -496,7 +496,7 @@ export default class UI {
         }
 
         data.columns.forEach((column) => {
-            const key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
+            const key = column
             const type = document.getElementById(key).value
             if (type !== FeatureCategories.Numerical) {
                 const shape = [...new Set(data.column(key).values)];
@@ -627,7 +627,7 @@ export default class UI {
         let selected_columns_types = this.find_selected_columns_types(selected_columns);
         selected_columns = selected_columns.filter(column => {
             let i = selected_columns_types.findIndex(col => col.name === column)
-            if (selected_columns_types[i]?.type !== FeatureCategories.Numerical) {
+            if (i !== -1 && selected_columns_types[i]?.type !== FeatureCategories.Numerical) {
                 return true;
             }
             return false;
@@ -640,16 +640,16 @@ export default class UI {
         });
         return categorical_columns
     }
+    column_types(columns) {
+        let selected_columns = this.find_selected_columns(columns, false)
+        return this.find_selected_columns_types(selected_columns);
+    }
     async visualize(dataset, len, file_name) {
         const myClass = this
         this.renderDatasetStats(dataset);
         let numericColumns = this.get_numeric_columns(dataset, true)
         let categorical_columns = this.get_categorical_columns(dataset, true)
         const target = document.getElementById("target").value;
-        const index = numericColumns.findIndex(m => m === target)
-        if (index === -1) {
-            numericColumns.push(target)
-        }
         let columns = [...new Set(numericColumns.concat(categorical_columns))];
 
         const filterd_dataset = dataset.loc({ columns: columns })
@@ -661,7 +661,9 @@ export default class UI {
         if (numericColumns.length > 0 && limit < 10) {
             document.getElementById("container").innerHTML = "";
             numericColumns.forEach(col => {
-                this.chart_controller.draw_kde(filterd_dataset, col, target, "nrd", is_classification);
+                if (col !== target) {
+                    this.chart_controller.draw_kde(filterd_dataset, col, target, "nrd", is_classification);
+                }
             });
             limit++;
         }
@@ -687,12 +689,15 @@ export default class UI {
         } else {
             this.chart_controller.regression_target_chart(dataset.column(target).values, "target_chart", target);
         }
-        let features = Object.values(numericColumns).concat(Object.values(categorical_columns)).filter(m => m !== target)
+        let features = []
+
+        numericColumns = this.get_numeric_columns(dataset, true)
+        categorical_columns = this.get_categorical_columns(dataset, true)
+        features = Object.values(numericColumns).concat(Object.values(categorical_columns))
+
         dataset = this.data_parser.handle_missing_values(dataset)
-        let model_name = document.getElementById('model_name').value
-        model_name = parseInt(model_name)
-        features.push(target)
-        this.chart_controller.ScatterplotMatrix(dataset.loc({ columns: features }).values, features, dataset.column(target).values, categorical_columns.length, is_classification, numericColumns, categorical_columns, dataset)
+        this.chart_controller.ScatterplotMatrix(dataset.loc({ columns: features }).values, features, dataset.column(target).values, categorical_columns.length,
+            is_classification, numericColumns, categorical_columns, dataset)
         // await this.chart_controller.draw_scatterplot_matrix(dataset.values, 'canvas-container', dataset.columns, categorical_columns, target)
     }
 
@@ -729,7 +734,15 @@ export default class UI {
         }
 
     }
-    show_settings(settings, i) {
+    show_settings(settings, numeric_columns, categorical_columns, target, i) {
+        let columns = numeric_columns.concat(categorical_columns)
+        let column_types = [];
+        for (let i = 0; i < columns.length; i++) {
+            const column = columns[i];
+            column_types.push({ column: column, type: document.getElementById(column + '--normal') })
+        }
+
+
         let content = `
         <div class="column is-12">
         <div class="notification">
@@ -744,6 +757,11 @@ export default class UI {
             }
 
         }
+        content += `<div class="column is-12 "><p><strong>Target :</strong> ${target}</p></div>`
+        content += `<div class="column is-12 "><p><strong>Continious featues :</strong> ${numeric_columns}</p></div>`
+        content += `<div class="column is-12 "><p><strong>Categorical featues :</strong> ${categorical_columns}</p></div>`
+
+
         content += `</div></div></div>`
         $("#tabs_info li[data-index='" + i + "'] #results_" + i + "").append(content);
     }

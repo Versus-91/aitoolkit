@@ -4,7 +4,7 @@ import { binarize } from './utils'
 import * as ss from "simple-statistics"
 import { schemeCategory10 } from 'd3-scale-chromatic';
 import { FeatureCategories } from "../feature_types.js";
-import { metrics } from './utils.js';
+import { metrics, encode_name } from './utils.js';
 import * as tfvis from '@tensorflow/tfjs-vis';
 import { scale_data } from './utils';
 import * as d3 from "d3";
@@ -405,8 +405,7 @@ export default class ChartController {
             newColumn.className = "column is-3";
             newColumn.setAttribute("id", column + '-kde-plot');
             if (!redrawing) {
-                // let key = column.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-                let key = column;
+                let key = encode_name(column)
 
                 $("#container").append(
                     `<div class="column is-4 is-size-6-tablet my-1">
@@ -1451,7 +1450,6 @@ export default class ChartController {
         if (unique_labels.length === 2) {
             unique_labels.sort()
         }
-
         for (let i = 0; i < features.length; i++) {
             for (let j = 0; j < features.length; j++) {
                 if (i === j) {
@@ -1542,37 +1540,56 @@ export default class ChartController {
                         }
 
                     } else {
-                        subsets.push(items.map(m => m[i]));
-                        for (let i = 0; i < subsets.length; i++) {
-                            if (subsets[i].length > 2) {
-                                let ys = [];
-                                let default_bandwidth = this.nrd(subsets[i]).toFixed(2);
-                                breaks = ss.equalIntervalBreaks(subsets[i], 100);
-                                kde = ss.kernelDensityEstimation(subsets[i], 'gaussian', 'nrd');
-                                let data = [];
-                                breaks.forEach((item) => {
-                                    ys.push(kde(item, default_bandwidth));
-                                    data.push([item, ys[ys.length - 1]]);
-                                });
-                                allData.push(data);
-                            } else {
-                                allData.push([]);
+                        if (categorical_columns.includes(features[i])) {
+                            let column_items = items.map(m => m[i]);
+                            let unique_classes = [...new Set(column_items)];
+                            let class_frequencies = []
+                            for (let i = 0; i < unique_classes.length; i++) {
+                                const class_label = unique_classes[i];
+                                class_frequencies.push(column_items.filter(m => m === class_label).length)
                             }
+                            traces.push({
+                                x: unique_classes,
+                                y: class_frequencies,
+                                type: 'bar',
+                                name: 'Trace 1',
+                                xaxis: 'x' + (index),
+                                yaxis: 'y' + (index),
+                            })
+                        } else {
+                            subsets.push(items.map(m => m[i]));
+                            for (let i = 0; i < subsets.length; i++) {
+                                if (subsets[i].length > 2) {
+                                    let ys = [];
+                                    let default_bandwidth = this.nrd(subsets[i]).toFixed(2);
+                                    breaks = ss.equalIntervalBreaks(subsets[i], 100);
+                                    kde = ss.kernelDensityEstimation(subsets[i], 'gaussian', 'nrd');
+                                    let data = [];
+                                    breaks.forEach((item) => {
+                                        ys.push(kde(item, default_bandwidth));
+                                        data.push([item, ys[ys.length - 1]]);
+                                    });
+                                    allData.push(data);
+                                } else {
+                                    allData.push([]);
+                                }
+                            }
+                            traces.push({
+                                type: 'scatter',
+                                x: allData[0].map(m => m[0]),
+                                y: allData[0].map(m => m[1]),
+                                mode: 'lines',
+                                fill: 'tozeroy',
+                                xaxis: 'x' + (index),
+                                yaxis: 'y' + (index),
+                                name: 'Red',
+                                line: {
+                                    color: 'rgb(219, 64, 82)',
+                                    width: 3
+                                }
+                            })
                         }
-                        traces.push({
-                            type: 'scatter',
-                            x: allData[0].map(m => m[0]),
-                            y: allData[0].map(m => m[1]),
-                            mode: 'lines',
-                            fill: 'tozeroy',
-                            xaxis: 'x' + (index),
-                            yaxis: 'y' + (index),
-                            name: 'Red',
-                            line: {
-                                color: 'rgb(219, 64, 82)',
-                                width: 3
-                            }
-                        })
+
                     }
                 }
                 else if (i === features.length - 1) {
@@ -1619,9 +1636,7 @@ export default class ChartController {
                             }
 
                         }
-                        console.log(traces);
                     }
-
                 }
                 else {
                     if (j > i) {
@@ -1630,10 +1645,10 @@ export default class ChartController {
                         traces.push({
                             x: [1.5],
                             y: [1.5],
-                            text: ['Correlation : ' + jStat.corrcoeff(arr1, arr2).toFixed(2)],
+                            text: [jStat.corrcoeff(arr1, arr2).toFixed(2)],
                             mode: 'text',
                             textfont: {
-                                size: 8, // Font size for the text
+                                size: 12, // Font size for the text
                                 color: 'black'
                             },
                             xaxis: 'x' + (index),
@@ -1720,15 +1735,16 @@ export default class ChartController {
             }
         }
 
-        Plotly.react('my_dataviz', traces, layout, {
+        Plotly.react('scatterplot_mtx', traces, layout, {
             staticPlot: true
         })
-
+        let column_width = 100 / features.length;
+        const target = document.getElementById("target").value;
+        let content = '<div class="columns my-1 ml-5 is-multiline">'
         features.forEach(feature => {
-            const target = document.getElementById("target").value;
 
-            $("#my_dataviz").append(`
-                <div class="select is-small">
+            content += `<div style="width: ${column_width}%">
+                <div class="select px-1 is-small is-fullwidth">
                     <select id="${feature + '--normal2'}">
                         <option selected>${feature}</option>
                         <option value="0">No</option>
@@ -1738,15 +1754,18 @@ export default class ChartController {
                         <option value="4">Standardize </option>
                     </select>
                 </div>
-            `)
-            document.getElementById(feature + '--normal2').addEventListener('change', function () {
-                let data = dataset.loc({ columns: [feature, target] });
-                let normalization_type = document.getElementById(feature + '--normal').value
-                scale_data(data, feature, normalization_type)
-            });
-
+                </div>`
         });
-        $("#my_dataviz").append(`<button class="button is-small">Update</button>`);
+        content += '</div>'
+        $("#scatterplot_mtx").append(content)
+
+        // document.getElementById(feature + '--normal2').addEventListener('change', function () {
+        //     let data = dataset.loc({ columns: [feature, target] });
+        //     let normalization_type = document.getElementById(feature + '--normal').value
+        //     scale_data(data, feature, normalization_type)
+        // });
+
+        $("#scatterplot_mtx").append(`<button class="button is-small">Update</button>`);
 
     }
 

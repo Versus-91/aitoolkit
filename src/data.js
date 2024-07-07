@@ -43,7 +43,6 @@ export default class DataLoader {
         }
         let result = {};
         for (let key in items[0]) {
-            key = key.replace(/\s/g, '').replace(/[^\w-]/g, '_');
             result[key] = "na"
             for (let index = 0; index < items.length; index++) {
                 const element = items[index];

@@ -160,9 +160,9 @@ export function binarize(y, threshold) {
         return tf.where(condition, tf.onesLike(y), tf.zerosLike(y));
     });
 }
-export function encode_name(str) {
+export function encode_name(key) {
     let str_encoded = key.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-    return str_encoded
+    return key
 }
 export function calculatePrecision(classIndex, confusionMatrix) {
     let truePositive = confusionMatrix[classIndex][classIndex];
