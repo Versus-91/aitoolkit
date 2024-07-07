@@ -75,6 +75,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             ui.createSampleDataTable(dataset);
             await ui.visualize(dataset, result.length, file.name);
             ui.init_tooltips(tippy)
+            Plotly.purge('scatterplot_mtx');
+            $('#scatterplot_mtx').empty()
             document.querySelector('#feature_selection_modal').addEventListener('update_graphs', async function (e) {
                 Plotly.purge('scatterplot_mtx');
                 $('#scatterplot_mtx').empty()

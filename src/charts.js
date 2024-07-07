@@ -1443,329 +1443,332 @@ export default class ChartController {
         );
     }
     ScatterplotMatrix(items, features, labels, number_of_categoricals, is_classification = true, numeric_columns, categorical_columns, dataset) {
-        let unique_labels = [...new Set(labels)];
-        var colors = labels.map(label => this.indexToColor(unique_labels.indexOf(label)));
-        let traces = []
-        let index = 1;
-        if (unique_labels.length === 2) {
-            unique_labels.sort()
-        }
-        for (let i = 0; i < features.length; i++) {
-            for (let j = 0; j < features.length; j++) {
-                if (i === j) {
-                    let subsets = [];
-                    let kde;
-                    let breaks = []
-                    let allData = []
-                    if (is_classification) {
-                        if (i >= features.length - number_of_categoricals) {
-                            if (i === features.length - 1) {
-                                for (let k = 0; k < unique_labels.length; k++) {
-                                    subsets.push(items.filter(m => m[items[0].length - 1] === unique_labels[k]).map(m => m[i]));
-                                }
-                                traces.push({
-                                    x: unique_labels,
-                                    y: subsets.map(set => set.length),
-                                    type: 'bar',
-                                    xaxis: 'x' + (index),
-                                    yaxis: 'y' + (index),
-                                    marker: {
-                                        color: unique_labels.map((_, z) => this.indexToColor(z))
+        setTimeout(() => {
+            let unique_labels = [...new Set(labels)];
+            var colors = labels.map(label => this.indexToColor(unique_labels.indexOf(label)));
+            let traces = []
+            let index = 1;
+            if (unique_labels.length === 2) {
+                unique_labels.sort()
+            }
+            for (let i = 0; i < features.length; i++) {
+                for (let j = 0; j < features.length; j++) {
+                    if (i === j) {
+                        let subsets = [];
+                        let kde;
+                        let breaks = []
+                        let allData = []
+                        if (is_classification) {
+                            if (i >= features.length - number_of_categoricals) {
+                                if (i === features.length - 1) {
+                                    for (let k = 0; k < unique_labels.length; k++) {
+                                        subsets.push(items.filter(m => m[items[0].length - 1] === unique_labels[k]).map(m => m[i]));
                                     }
-                                })
-                            } else {
-                                let unique_labels_feature = [...new Set(items.map(m => m[i]))];
-                                for (let k = 0; k < unique_labels.length; k++) {
-                                    let lablel_items = items.filter(m => m[items[0].length - 1] === unique_labels[k])
-                                    let counts = [];
-                                    unique_labels_feature.forEach(label =>
-                                        counts.push(lablel_items.filter(m => m[i] === label).length)
-                                    )
-                                    subsets.push({
-                                        items: lablel_items,
-                                        counts: counts
-                                    });
-                                }
-                                unique_labels.forEach((_, i) => {
                                     traces.push({
-                                        x: unique_labels_feature,
-                                        y: subsets[i].counts,
+                                        x: unique_labels,
+                                        y: subsets.map(set => set.length),
                                         type: 'bar',
                                         xaxis: 'x' + (index),
                                         yaxis: 'y' + (index),
                                         marker: {
-                                            color: this.indexToColor(i)
+                                            color: unique_labels.map((_, z) => this.indexToColor(z))
                                         }
                                     })
-                                })
-                            }
-                        } else {
-                            for (let k = 0; k < unique_labels.length; k++) {
-                                subsets.push(items.filter(m => m[items[0].length - 1] === unique_labels[k]).map(m => m[i]));
-                            }
-                            for (let ii = 0; ii < subsets.length; ii++) {
-                                if (subsets[ii].length > 2) {
-                                    let default_bandwidth = this.nrd(subsets[ii]).toFixed(2);
-                                    breaks = ss.equalIntervalBreaks(subsets[ii], 100);
-
-                                    let ys = [];
-                                    kde = ss.kernelDensityEstimation(subsets[ii], 'gaussian', 'nrd');
-                                    let data = [];
-                                    breaks.forEach((item) => {
-                                        ys.push(kde(item, default_bandwidth));
-                                        data.push([item, ys[ys.length - 1]]);
-                                    });
-                                    allData.push(data);
                                 } else {
-                                    allData.push([]);
+                                    let unique_labels_feature = [...new Set(items.map(m => m[i]))];
+                                    for (let k = 0; k < unique_labels.length; k++) {
+                                        let lablel_items = items.filter(m => m[items[0].length - 1] === unique_labels[k])
+                                        let counts = [];
+                                        unique_labels_feature.forEach(label =>
+                                            counts.push(lablel_items.filter(m => m[i] === label).length)
+                                        )
+                                        subsets.push({
+                                            items: lablel_items,
+                                            counts: counts
+                                        });
+                                    }
+                                    unique_labels.forEach((_, i) => {
+                                        traces.push({
+                                            x: unique_labels_feature,
+                                            y: subsets[i].counts,
+                                            type: 'bar',
+                                            xaxis: 'x' + (index),
+                                            yaxis: 'y' + (index),
+                                            marker: {
+                                                color: this.indexToColor(i)
+                                            }
+                                        })
+                                    })
+                                }
+                            } else {
+                                for (let k = 0; k < unique_labels.length; k++) {
+                                    subsets.push(items.filter(m => m[items[0].length - 1] === unique_labels[k]).map(m => m[i]));
+                                }
+                                for (let ii = 0; ii < subsets.length; ii++) {
+                                    if (subsets[ii].length > 2) {
+                                        let default_bandwidth = this.nrd(subsets[ii]).toFixed(2);
+                                        breaks = ss.equalIntervalBreaks(subsets[ii], 100);
+
+                                        let ys = [];
+                                        kde = ss.kernelDensityEstimation(subsets[ii], 'gaussian', 'nrd');
+                                        let data = [];
+                                        breaks.forEach((item) => {
+                                            ys.push(kde(item, default_bandwidth));
+                                            data.push([item, ys[ys.length - 1]]);
+                                        });
+                                        allData.push(data);
+                                    } else {
+                                        allData.push([]);
+                                    }
+                                }
+                                for (let i = 0; i < allData.length; i++) {
+                                    traces.push({
+                                        type: 'scatter',
+                                        x: allData[i].map(m => m[0]),
+                                        y: allData[i].map(m => m[1]),
+                                        xaxis: 'x' + (index),
+                                        yaxis: 'y' + (index),
+                                        mode: 'lines',
+                                        name: 'Red',
+                                        fill: 'tozeroy',
+                                        line: {
+                                            color: this.indexToColor(i),
+                                            width: 3
+                                        }
+                                    })
+
                                 }
                             }
-                            for (let i = 0; i < allData.length; i++) {
+
+                        } else {
+                            if (categorical_columns.includes(features[i])) {
+                                let column_items = items.map(m => m[i]);
+                                let unique_classes = [...new Set(column_items)];
+                                let class_frequencies = []
+                                for (let i = 0; i < unique_classes.length; i++) {
+                                    const class_label = unique_classes[i];
+                                    class_frequencies.push(column_items.filter(m => m === class_label).length)
+                                }
                                 traces.push({
-                                    type: 'scatter',
-                                    x: allData[i].map(m => m[0]),
-                                    y: allData[i].map(m => m[1]),
+                                    x: unique_classes,
+                                    y: class_frequencies,
+                                    type: 'bar',
+                                    name: 'Trace 1',
                                     xaxis: 'x' + (index),
                                     yaxis: 'y' + (index),
+                                })
+                            } else {
+                                subsets.push(items.map(m => m[i]));
+                                for (let i = 0; i < subsets.length; i++) {
+                                    if (subsets[i].length > 2) {
+                                        let ys = [];
+                                        let default_bandwidth = this.nrd(subsets[i]).toFixed(2);
+                                        breaks = ss.equalIntervalBreaks(subsets[i], 100);
+                                        kde = ss.kernelDensityEstimation(subsets[i], 'gaussian', 'nrd');
+                                        let data = [];
+                                        breaks.forEach((item) => {
+                                            ys.push(kde(item, default_bandwidth));
+                                            data.push([item, ys[ys.length - 1]]);
+                                        });
+                                        allData.push(data);
+                                    } else {
+                                        allData.push([]);
+                                    }
+                                }
+                                traces.push({
+                                    type: 'scatter',
+                                    x: allData[0].map(m => m[0]),
+                                    y: allData[0].map(m => m[1]),
                                     mode: 'lines',
-                                    name: 'Red',
                                     fill: 'tozeroy',
+                                    xaxis: 'x' + (index),
+                                    yaxis: 'y' + (index),
+                                    name: 'Red',
                                     line: {
-                                        color: this.indexToColor(i),
+                                        color: 'rgb(219, 64, 82)',
                                         width: 3
                                     }
                                 })
-
-                            }
-                        }
-
-                    } else {
-                        if (categorical_columns.includes(features[i])) {
-                            let column_items = items.map(m => m[i]);
-                            let unique_classes = [...new Set(column_items)];
-                            let class_frequencies = []
-                            for (let i = 0; i < unique_classes.length; i++) {
-                                const class_label = unique_classes[i];
-                                class_frequencies.push(column_items.filter(m => m === class_label).length)
-                            }
-                            traces.push({
-                                x: unique_classes,
-                                y: class_frequencies,
-                                type: 'bar',
-                                name: 'Trace 1',
-                                xaxis: 'x' + (index),
-                                yaxis: 'y' + (index),
-                            })
-                        } else {
-                            subsets.push(items.map(m => m[i]));
-                            for (let i = 0; i < subsets.length; i++) {
-                                if (subsets[i].length > 2) {
-                                    let ys = [];
-                                    let default_bandwidth = this.nrd(subsets[i]).toFixed(2);
-                                    breaks = ss.equalIntervalBreaks(subsets[i], 100);
-                                    kde = ss.kernelDensityEstimation(subsets[i], 'gaussian', 'nrd');
-                                    let data = [];
-                                    breaks.forEach((item) => {
-                                        ys.push(kde(item, default_bandwidth));
-                                        data.push([item, ys[ys.length - 1]]);
-                                    });
-                                    allData.push(data);
-                                } else {
-                                    allData.push([]);
-                                }
-                            }
-                            traces.push({
-                                type: 'scatter',
-                                x: allData[0].map(m => m[0]),
-                                y: allData[0].map(m => m[1]),
-                                mode: 'lines',
-                                fill: 'tozeroy',
-                                xaxis: 'x' + (index),
-                                yaxis: 'y' + (index),
-                                name: 'Red',
-                                line: {
-                                    color: 'rgb(219, 64, 82)',
-                                    width: 3
-                                }
-                            })
-                        }
-
-                    }
-                }
-                else if (i === features.length - 1) {
-                    traces.push({
-                        y: items.map(m => m[i]),
-                        x: items.map(m => m[j]),
-                        color: colors,
-                        marker: {
-                            colorscale: 'Portland',
-                            color: is_classification ? colors : labels,
-                            size: 2,
-                        },
-                        type: 'scattergl',
-                        mode: 'markers',
-                        xaxis: 'x' + (index),
-                        yaxis: 'y' + (index),
-                    })
-                } else if (j >= features.length - number_of_categoricals) {
-                    if (!is_classification) {
-                        traces.push({
-                            x: [],
-                            y: [],
-                            mode: 'lines',
-                            name: 'Trace 1'
-                        })
-                    } else {
-                        let boxplot_labels = [...new Set(items.map(m => m[j]))]
-                        for (let m = 0; m < unique_labels.length; m++) {
-                            for (let n = 0; n < boxplot_labels.length; n++) {
-                                let box_items = items.filter(item => item[j] === boxplot_labels[n] && item[features.length - 1] === unique_labels[m])
-                                if (box_items) {
-                                    traces.push({
-                                        name: boxplot_labels[n],
-                                        y: box_items.map(item => item[i]),
-                                        marker: {
-                                            color: this.indexToColor(m)
-                                        },
-                                        type: 'box',
-                                        xaxis: 'x' + (index),
-                                        yaxis: 'y' + (index),
-                                    })
-                                }
-
                             }
 
                         }
                     }
-                }
-                else {
-                    if (j > i) {
-                        let arr1 = items.map(m => m[i])
-                        let arr2 = items.map(m => m[j])
-                        traces.push({
-                            x: [1.5],
-                            y: [1.5],
-                            text: [jStat.corrcoeff(arr1, arr2).toFixed(2)],
-                            mode: 'text',
-                            textfont: {
-                                size: 12, // Font size for the text
-                                color: 'black'
-                            },
-                            xaxis: 'x' + (index),
-                            yaxis: 'y' + (index),
-                            type: 'scatter'
-                        });
-
-                    } else {
+                    else if (i === features.length - 1) {
                         traces.push({
                             y: items.map(m => m[i]),
                             x: items.map(m => m[j]),
                             color: colors,
-
-                            type: 'scattergl',
-                            mode: 'markers',
                             marker: {
                                 colorscale: 'Portland',
                                 color: is_classification ? colors : labels,
                                 size: 2,
                             },
+                            type: 'scattergl',
+                            mode: 'markers',
                             xaxis: 'x' + (index),
                             yaxis: 'y' + (index),
                         })
+                    } else if (j >= features.length - number_of_categoricals) {
+                        if (!is_classification) {
+                            traces.push({
+                                x: [],
+                                y: [],
+                                mode: 'lines',
+                                name: 'Trace 1'
+                            })
+                        } else {
+                            let boxplot_labels = [...new Set(items.map(m => m[j]))]
+                            for (let m = 0; m < unique_labels.length; m++) {
+                                for (let n = 0; n < boxplot_labels.length; n++) {
+                                    let box_items = items.filter(item => item[j] === boxplot_labels[n] && item[features.length - 1] === unique_labels[m])
+                                    if (box_items) {
+                                        traces.push({
+                                            name: boxplot_labels[n],
+                                            y: box_items.map(item => item[i]),
+                                            marker: {
+                                                color: this.indexToColor(m)
+                                            },
+                                            type: 'box',
+                                            xaxis: 'x' + (index),
+                                            yaxis: 'y' + (index),
+                                        })
+                                    }
+
+                                }
+
+                            }
+                        }
+                    }
+                    else {
+                        if (j > i) {
+                            let arr1 = items.map(m => m[i])
+                            let arr2 = items.map(m => m[j])
+                            traces.push({
+                                x: [1.5],
+                                y: [1.5],
+                                text: [jStat.corrcoeff(arr1, arr2).toFixed(2)],
+                                mode: 'text',
+                                textfont: {
+                                    size: 12, // Font size for the text
+                                    color: 'black'
+                                },
+                                xaxis: 'x' + (index),
+                                yaxis: 'y' + (index),
+                                type: 'scatter'
+                            });
+
+                        } else {
+                            traces.push({
+                                y: items.map(m => m[i]),
+                                x: items.map(m => m[j]),
+                                color: colors,
+
+                                type: 'scattergl',
+                                mode: 'markers',
+                                marker: {
+                                    colorscale: 'Portland',
+                                    color: is_classification ? colors : labels,
+                                    size: 2,
+                                },
+                                xaxis: 'x' + (index),
+                                yaxis: 'y' + (index),
+                            })
+                        }
+                    }
+                    index++
+                }
+
+            }
+
+            var layout = {
+                width: 1200,
+                height: 900,
+                spacing: 0,
+                showlegend: false,
+                grid: { rows: features.length, columns: features.length, pattern: 'independent' },
+                margin: { l: 40, r: 10, b: 30, t: 10, pad: 5 },
+
+            };
+            for (var i = 0; i < features.length; i++) {
+                for (var j = 0; j < features.length; j++) {
+                    var xAxisKey = 'xaxis' + ((i * features.length) + j + 1);
+                    var yAxisKey = 'yaxis' + ((i * features.length) + j + 1);
+                    let fontSize = 10;
+                    layout[xAxisKey] = {
+                        showgrid: false,
+                        showticklabels: false,
+                        tickfont: {
+                            size: fontSize
+                        },
+                    };
+                    layout[yAxisKey] = {
+                        showgrid: false,
+                        showticklabels: false,
+                        tickfont: {
+                            size: fontSize
+                        },
+                    };
+                    if (i === features.length - 1) {
+                        layout[xAxisKey] = {
+                            tickfont: {
+                                size: fontSize
+                            },
+                            title: {
+                                text: features[j], font: {
+                                    size: fontSize
+                                },
+                            }
+                        };
+
+                    }
+                    if (j === 0) {
+                        layout[yAxisKey] = {
+                            tickfont: {
+                                size: fontSize
+                            },
+                            title: {
+                                text: features[i], font: {
+                                    size: fontSize
+                                },
+                            }
+                        };
                     }
                 }
-                index++
             }
 
-        }
+            Plotly.react('scatterplot_mtx', traces, layout, {
+                staticPlot: true
+            })
+            let column_width = 100 / features.length;
+            const target = document.getElementById("target").value;
+            let content = '<div class="columns my-1 ml-5 is-multiline">'
+            features.forEach(feature => {
 
-        var layout = {
-            width: 1200,
-            height: 900,
-            spacing: 0,
-            showlegend: false,
-            grid: { rows: features.length, columns: features.length, pattern: 'independent' },
-            margin: { l: 40, r: 10, b: 30, t: 10, pad: 5 },
+                content += `<div style="width: ${column_width}%">
+                    <div class="select px-1 is-small is-fullwidth">
+                        <select id="${feature + '--normal2'}">
+                            <option selected>${feature}</option>
+                            <option value="0">No</option>
+                            <option value="1">Scale</option>
+                            <option value="2">x^2</option>
+                            <option value="3">ln(x)</option>
+                            <option value="4">Standardize </option>
+                        </select>
+                    </div>
+                    </div>`
+            });
+            content += '</div>'
+            $("#scatterplot_mtx").append(content)
 
-        };
-        for (var i = 0; i < features.length; i++) {
-            for (var j = 0; j < features.length; j++) {
-                var xAxisKey = 'xaxis' + ((i * features.length) + j + 1);
-                var yAxisKey = 'yaxis' + ((i * features.length) + j + 1);
-                let fontSize = 10;
-                layout[xAxisKey] = {
-                    showgrid: false,
-                    showticklabels: false,
-                    tickfont: {
-                        size: fontSize
-                    },
-                };
-                layout[yAxisKey] = {
-                    showgrid: false,
-                    showticklabels: false,
-                    tickfont: {
-                        size: fontSize
-                    },
-                };
-                if (i === features.length - 1) {
-                    layout[xAxisKey] = {
-                        tickfont: {
-                            size: fontSize
-                        },
-                        title: {
-                            text: features[j], font: {
-                                size: fontSize
-                            },
-                        }
-                    };
+            // document.getElementById(feature + '--normal2').addEventListener('change', function () {
+            //     let data = dataset.loc({ columns: [feature, target] });
+            //     let normalization_type = document.getElementById(feature + '--normal').value
+            //     scale_data(data, feature, normalization_type)
+            // });
 
-                }
-                if (j === 0) {
-                    layout[yAxisKey] = {
-                        tickfont: {
-                            size: fontSize
-                        },
-                        title: {
-                            text: features[i], font: {
-                                size: fontSize
-                            },
-                        }
-                    };
-                }
-            }
-        }
+            $("#scatterplot_mtx").append(`<button class="button is-small">Update</button>`);
 
-        Plotly.react('scatterplot_mtx', traces, layout, {
-            staticPlot: true
-        })
-        let column_width = 100 / features.length;
-        const target = document.getElementById("target").value;
-        let content = '<div class="columns my-1 ml-5 is-multiline">'
-        features.forEach(feature => {
-
-            content += `<div style="width: ${column_width}%">
-                <div class="select px-1 is-small is-fullwidth">
-                    <select id="${feature + '--normal2'}">
-                        <option selected>${feature}</option>
-                        <option value="0">No</option>
-                        <option value="1">Scale</option>
-                        <option value="2">x^2</option>
-                        <option value="3">ln(x)</option>
-                        <option value="4">Standardize </option>
-                    </select>
-                </div>
-                </div>`
-        });
-        content += '</div>'
-        $("#scatterplot_mtx").append(content)
-
-        // document.getElementById(feature + '--normal2').addEventListener('change', function () {
-        //     let data = dataset.loc({ columns: [feature, target] });
-        //     let normalization_type = document.getElementById(feature + '--normal').value
-        //     scale_data(data, feature, normalization_type)
-        // });
-
-        $("#scatterplot_mtx").append(`<button class="button is-small">Update</button>`);
+        }, 1000);
 
     }
 
