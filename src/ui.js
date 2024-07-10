@@ -496,7 +496,7 @@ export default class UI {
         }
 
         data.columns.forEach((column) => {
-            const key = column
+            const key = encode_name(column)
             const type = document.getElementById(key).value
             if (type !== FeatureCategories.Numerical) {
                 const shape = [...new Set(data.column(key).values)];
@@ -748,7 +748,14 @@ export default class UI {
             const column = columns[i];
             column_types.push({ column: column, type: document.getElementById(column + '--normal') })
         }
-
+        let columns_transformation = '';
+        for (let i = 0; i < columns.length; i++) {
+            const column_name = encode_name(columns[i]);
+            let normalization_type = document.getElementById(column_name + '--normal')?.value;
+            if (normalization_type && normalization_type !== "0") {
+                columns_transformation += columns[i] + ': ' + normalization_type + ' '
+            }
+        }
 
         let content = `
         <div class="column is-12">
@@ -767,6 +774,8 @@ export default class UI {
         content += `<div class="column is-12 "><p><strong>Target :</strong> ${target}</p></div>`
         content += `<div class="column is-12 "><p><strong>Continious featues :</strong> ${numeric_columns}</p></div>`
         content += `<div class="column is-12 "><p><strong>Categorical featues :</strong> ${categorical_columns}</p></div>`
+        content += `<div class="column is-12 "><p><strong>Transformations :</strong> ${columns_transformation}</p></div>`
+
 
 
         content += `</div></div></div>`

@@ -411,13 +411,13 @@ export default class ChartController {
                     `<div class="column is-4 is-size-6-tablet my-1">
                 <div class="columns is-multiline">
                 <div class="column is-12" >
-                    <div id="${column + '-kde-plot'}"> </div>
-                    <div id="${column + '-boxplot'}" style="height:20vh;width: 100%">
+                    <div id="${key + '-kde-plot'}"> </div>
+                    <div id="${key + '-boxplot'}" style="height:20vh;width: 100%">
                     </div>
                     <div class="field has-addons has-addons-centered my-1">
                     <div class="control">
                     <span class="select is-small">
-                      <select id="${column + '-kernel_type'}">
+                      <select id="${key + '-kernel_type'}">
                       <option value="gaussian">gaussian</option>
                         <option value="uniform">uniform</option>
                         <option value="triangular">triangular</option>
@@ -441,11 +441,11 @@ export default class ChartController {
                     <p class="help is-success">Normalization</p>
                     </div>
                         <div class="control">
-                            <input class="input is-small" type="number"  min="0" id="${column + '-kde'}" value="${default_bandwidth}">
+                            <input class="input is-small" type="number"  min="0" id="${key + '-kde'}" value="${default_bandwidth}">
                             <p class="help is-success">Bandwidth</p>
                         </div>
                         <p class="control">
-                            <a class="button is-success is-small" id="${column + '-kde-button'}">
+                            <a class="button is-success is-small" id="${key + '-kde-button'}">
                                 Apply
                             </a>
                         </div>
@@ -456,26 +456,28 @@ export default class ChartController {
                 document.getElementById(key + '--normal').addEventListener('change', function () {
                     const target = document.getElementById("target").value;
                     let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
-                    let data = dataset.loc({ columns: [key, target] });
+                    let data = dataset.loc({ columns: [column, target] });
                     let normalization_type = document.getElementById(key + '--normal').value
-                    scale_data(data, key, normalization_type)
+                    scale_data(data, column, normalization_type)
                     data.dropNa({ axis: 1, inplace: true })
-                    var newBandwidth = parseFloat(document.getElementById(column + '-kde').value);
-                    current_class.draw_kde(data, key, target, newBandwidth, is_classification, true);
+                    var newBandwidth = parseFloat(document.getElementById(key + '-kde').value);
+                    current_class.draw_kde(data, column, target, newBandwidth, is_classification, true);
                 });
             }
             var current_class = this;
-            document.getElementById(column + '-kde-button').addEventListener("click", function () {
+            let key = encode_name(column)
+
+            document.getElementById(key + '-kde-button').addEventListener("click", function () {
                 const target = document.getElementById("target").value;
                 let is_classification = document.getElementById(target).value !== FeatureCategories.Numerical;
                 let data = dataset.loc({ columns: [column, target] });
-                let normalization_type = document.getElementById(column + '--normal').value
+                let normalization_type = document.getElementById(key + '--normal').value
                 scale_data(data, column, normalization_type)
-                var newBandwidth = parseFloat(document.getElementById(column + '-kde').value);
+                var newBandwidth = parseFloat(document.getElementById(key + '-kde').value);
                 data.dropNa({ axis: 1, inplace: true })
                 current_class.draw_kde(data, column, target, newBandwidth, is_classification, true);
             });
-            let container_id = column + '-kde-plot';
+            let container_id = key + '-kde-plot';
             let items_range = [...raw_values.column(column).values]
             // let minValue = Math.min(...items_range);
             // let maxValue = Math.max(...items_range);
@@ -483,7 +485,7 @@ export default class ChartController {
             // items_range.push(maxValue + parseFloat(default_bandwidth))
             var breaks = ss.equalIntervalBreaks(items_range, 100);
             let allData = [];
-            let kernel_type = document.getElementById(column + "-kernel_type")?.value ?? "gaussian"
+            let kernel_type = document.getElementById(key + "-kernel_type")?.value ?? "gaussian"
             // Loop through subsets to generate data for all subsets
             let traces = []
             let kde;
@@ -552,7 +554,7 @@ export default class ChartController {
                     y: 1
                 },
             };
-            Plotly.newPlot(column + '-boxplot', traces, layout, { autosize: true, responsive: true, modeBarButtonsToRemove: ['pan', 'resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
+            Plotly.newPlot(key + '-boxplot', traces, layout, { autosize: true, responsive: true, modeBarButtonsToRemove: ['pan', 'resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
             Highcharts.chart(container_id, {
                 credits: {
                     enabled: false
@@ -599,7 +601,7 @@ export default class ChartController {
             });
             window.dispatchEvent(new Event('resize'));
         } catch (error) {
-            throw new Error('falied at data transformation.')
+            throw new Error('falied at plotting kde.')
         }
     }
 
@@ -613,9 +615,12 @@ export default class ChartController {
         let x_error = []
         let y_error = []
         let error_texts = []
+        let real_labels = []
         pca_data[0].forEach((element, i) => {
-            if (missclassifications.includes(i)) {
-                error_texts.push('features : ' + dataset[i].join())
+            if (missclassifications['indexes'].includes(i)) {
+                let index = missclassifications['indexes'].findIndex(index => index == i)
+                error_texts.push(dataset[i].join())
+                real_labels.push([labels[i], missclassifications['mispredictions'][index]])
                 x_error.push(element[0])
                 y_error.push(element[1])
             } else {
@@ -642,6 +647,7 @@ export default class ChartController {
             x: x_error,
             y: y_error,
             text: error_texts,
+            customdata: real_labels,
             mode: 'markers',
             type: 'scatter',
             marker: {
@@ -649,6 +655,12 @@ export default class ChartController {
                 color: colorIndices,
                 symbol: 'cross'
             },
+            hovertemplate:
+                "Features : %{text}<br>" +
+                "True class: %{customdata[0]}<br>" +
+                "Predited class: %{customdata[1]}" +
+                "<extra></extra>"
+
         };
         var data = [trace1, trace2];
 
@@ -656,6 +668,8 @@ export default class ChartController {
         $("#tabs_info li[data-index='" + index + "'] #results_" + index + "").append(chart_container);
 
         Plotly.newPlot('pca_results_' + index, data, {
+            hovermode: "closest",
+            hoverlabel: { bgcolor: "#FFF" },
             showlegend: true,
             margin: {
                 l: 40,
@@ -675,7 +689,7 @@ export default class ChartController {
             yaxis: {
                 title: 'PC2'
             }
-        }, { responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
+        }, { staticPlot: false, responsive: true, modeBarButtonsToRemove: ['resetScale2d', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '] });
 
     }
     async draw_pca(dataset, labels, regression_labels) {

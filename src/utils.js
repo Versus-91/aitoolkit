@@ -162,7 +162,7 @@ export function binarize(y, threshold) {
 }
 export function encode_name(key) {
     let str_encoded = key.replace(/\s/g, '').replace(/[^\w-]/g, '_');
-    return key
+    return str_encoded
 }
 export function calculatePrecision(classIndex, confusionMatrix) {
     let truePositive = confusionMatrix[classIndex][classIndex];
@@ -256,21 +256,26 @@ export function calculateMSE(actualValues, predictedValues) {
 function mean_array(array) {
     return array.reduce((acc, val) => acc + val, 0) / array.length;
 }
-export function evaluate_classification(predictions, y_test) {
+export function evaluate_classification(predictions, y_test, encoder) {
     console.assert(predictions.length === y_test.length, "predictions and test should have the same length.")
     let missclassification_indexes = []
+    let missclassification_preds = []
     let currect_classifications_sum = 0
     y_test.forEach((element, i) => {
         if (element === predictions[i]) {
             currect_classifications_sum++
         } else {
             missclassification_indexes.push(i)
+            let label = [predictions[i]]
+            let result = encoder.inverseTransform(label)
+            missclassification_preds.push(result[0])
 
         }
     });
     return {
         accuracy: Number((currect_classifications_sum / predictions.length) * 100),
-        indexes: missclassification_indexes
+        indexes: missclassification_indexes,
+        mispredictions: missclassification_preds
     }
 }
 export function scale_data(dataset, column, normalization_type) {
@@ -314,10 +319,11 @@ export function scale_data(dataset, column, normalization_type) {
 }
 export function apply_data_transformation(dataset, column_names) {
     for (let i = 0; i < column_names.length; i++) {
-        const column_name = column_names[i];
-        let normalization_type = document.getElementById(column_name + '--normal').value;
+        const column = column_names[i];
+        const key = encode_name(column_names[i]);
+        let normalization_type = document.getElementById(key + '--normal').value;
         if (normalization_type !== "0") {
-            scale_data(dataset, column_name, normalization_type)
+            scale_data(dataset, column, normalization_type)
         }
     }
     return dataset
