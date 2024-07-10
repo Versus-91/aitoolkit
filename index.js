@@ -82,6 +82,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                 $('#scatterplot_mtx').empty()
                 await ui.visualize(data_frame);
             });
+
             document.getElementById("train-button").onclick = async () => {
                 ui.reset(html_content_ids, table_ids.filter(m => m !== "sample_data_table"));
                 ui.start_loading();
@@ -859,6 +860,26 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         staticPlot: true,
         displaylogo: false,
         modeBarButtonsToRemove: ['resetScale2d', 'zoom2d', 'pan', 'select2d', 'resetViews', 'sendDataToCloud', 'hoverCompareCartesian', 'lasso2d', 'drawopenpath '], // Remove certain buttons from the mode bar
+    });
+
+    document.querySelector('#monkey_test').addEventListener('click', function (e) {
+        (function () {
+            function callback() {
+                gremlins.createHorde({
+                    species: [gremlins.species.clicker(), gremlins.species.toucher(), gremlins.species.formFiller(), gremlins.species.scroller(), gremlins.species.typer()],
+                    mogwais: [gremlins.mogwais.alert(), gremlins.mogwais.fps(), gremlins.mogwais.gizmo()],
+                    strategies: [gremlins.strategies.distribution()]
+                }).unleash();
+            }
+            var s = document.createElement("script");
+            s.src = "https://unpkg.com/gremlins.js";
+            if (s.addEventListener) {
+                s.addEventListener("load", callback, false);
+            } else if (s.readyState) {
+                s.onreadystatechange = callback;
+            }
+            document.body.appendChild(s);
+        })()
     });
 
 });
