@@ -788,19 +788,34 @@ export default class UI {
         content += `<div class="column is-12 "><p><strong>Continious featues :</strong> ${numeric_columns}</p></div>`
         content += `<div class="column is-12 "><p><strong>Categorical featues :</strong> ${categorical_columns}</p></div>`
         content += `<div class="column is-12 "><p><strong>Transformations :</strong> ${columns_transformation}</p></div>`
-
-
+        content += `<div class="column is-12 ">
+        <button class="button is-danger" id="remove_${i}"> Remove results </button>
+        </div>`
 
         content += `</div></div></div>`
         $("#tabs_info li[data-index='" + i + "'] #results_" + i + "").append(content);
+
+        document.getElementById("remove_" + i).addEventListener('click', () => {
+            $('#' + 'tab_' + i).remove();
+            if (document.getElementById(target).value !== FeatureCategories.Numerical) {
+                Plotly.purge('pca_results_' + i)
+                $('#predictions_table_' + i).DataTable().destroy();
+                $('#' + 'info_' + i).remove();
+            } else {
+                Plotly.purge('regression_y_yhat_' + i)
+                $('#predictions_table_' + i).DataTable().destroy();
+                $('#' + 'info_' + i).remove();
+            }
+
+        });
     }
     create_model_result_tab(index) {
         $("#tabs_content").append(`
-        <li data-index="${index}">
+        <li data-index="${index}" id="tab_${index}">
            <a>${index}</a>
         </li>`)
         $("#tabs_info").append(`
-        <li data-index="${index}" class=" tabs-li">
+        <li data-index="${index}" id="info_${index}"  class=" tabs-li">
         <div id="results_${index}" class="columns is-multiline"></div>
         </li>`)
         $("#tabs_content li").removeClass("is-active");

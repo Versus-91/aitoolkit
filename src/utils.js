@@ -321,8 +321,8 @@ export function apply_data_transformation(dataset, column_names) {
     for (let i = 0; i < column_names.length; i++) {
         const column = column_names[i];
         const key = encode_name(column_names[i]);
-        let normalization_type = document.getElementById(key + '--normal').value;
-        if (normalization_type !== "0") {
+        let normalization_type = document.getElementById(key + '--normal')?.value;
+        if (normalization_type && normalization_type !== "0") {
             scale_data(dataset, column, normalization_type)
         }
     }
