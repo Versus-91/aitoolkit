@@ -30,6 +30,9 @@ export default [
         Worker: "readonly",
         URL: "readonly",
         CanvasXpress: "readonly",
+        jStat: "readonly",
+        gremlins: "readonly",
+
       }
     }
   }
