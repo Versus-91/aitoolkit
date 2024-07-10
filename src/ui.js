@@ -129,7 +129,6 @@ export default class UI {
 
         });
         $("#features-selection").append(`
-
                 <div id="config_modal" style="display:none;overflow-y:scroll;max-height: 600px;height:500px">
                     <table class="table is-narrow is-size-7" 
                     <thead>
@@ -166,7 +165,7 @@ export default class UI {
                     ${column}
                     </td>
                     <td>
-                    <div class="select is-small mb-1">
+                    <div class="select is-small is-fullwidth mb-1">
                         <select id="${key}">
                             <option value="${FeatureCategories.Numerical}">Numerical</option>
                             <option value="${FeatureCategories.Nominal}">Nominal</option>
@@ -210,12 +209,25 @@ export default class UI {
         });
         $('#props').append(`
             <div class="column is-12">
+                <div class="label is-size-7">Seed</div>
+                <input
+                id="seed"
+                required
+                min="0"
+                class="input is-info is-small"
+                type="number"
+                placeholder="Seed"
+                value = "123"
+                />
+            </div>`);
+        $('#props').append(`
+            <div class="column is-12">
                 <div class="label is-size-7">Imputation
                     <span id="imputation_help" class="icon has-text-success">
                         <i class="fas fa-info-circle"></i>
                     </span>
                 </div>
-                <div class="select is-small mb-1">
+                <div class="select is-small is-fullwidth mb-1">
                     <select id="imputation">
                         <option value="1">Delete rows</option>
                         <option value="2">Mean and Mode</option>
@@ -226,13 +238,13 @@ export default class UI {
             </div>
             `);
         $('#props').append(`
-            <div class="column is-10">
+            <div class="column is-12">
                 <div class="label is-size-7">Cross Validation
                 <span id="cv_help" class="icon has-text-success">
                     <i class="fas fa-info-circle"></i>
                 </span>
                 </div>
-                <div class="select is-small mb-1">
+                <div class="select is-fullwidth is-small mb-1">
                     <select id="cross_validation">
                         <option value="1">70 % training - 30 % test</option>
                         <option value="2">No</option>
@@ -427,7 +439,7 @@ export default class UI {
         return column_types
     }
     createTargetDropdown(items) {
-        let result = '<div  class="column is-12"><div class="label is-size-7">Target</div><div class="select is-small mb-1"> <select id="target">'
+        let result = '<div  class="column is-12"><div class="label is-size-7">Target</div><div class="select is-fullwidth is-small mb-1"> <select id="target">'
         items.columns.forEach(column => {
             let key = encode_name(column)
             result += `<option value="${key}">${key}</option>`
@@ -549,7 +561,7 @@ export default class UI {
             </label>
         </div>
         <div class="column is-12">
-            <div class="select is-small">
+            <div class="select is-small is-fullwidth">
                 <select id="decimal_separator">
                     <option value="0">Decimal</option>
                     <option value="1">.</option>
@@ -561,7 +573,7 @@ export default class UI {
             <label class="checkbox"><input id="header_checkbox" type="checkbox" checked/>  Has header</label>
         </div>
         <div class="column is-12">
-            <div class="select is-small">
+            <div class="select is-small is-fullwidth">
                 <select id="items_separator">
                     <option value="0">Separator</option>
                     <option value="1">,</option>
@@ -572,9 +584,9 @@ export default class UI {
         </div>
         <progress class="progress is-small is-primary my-1" max="100" id="progress" style="display:none;">15%</progress>
         <div class="column is-12">
-            <div class="select is-small">
+            <div class="select is-small is-fullwidth">
                 <select id="sample_data_select">
-                <option>Sample data selection</option>
+                <option vlaue="0">Sample data selection</option>
                 <option>Iris</option>
                 <option>Wine</option>
                 <option>Diabetes</option>

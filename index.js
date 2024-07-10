@@ -142,7 +142,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     async function train(data, len) {
         try {
             // let dataset = data.copy()
-            let dataset = await data.sample(data.$data.length);
+            let seed = +document.getElementById('seed')?.value;
+            let dataset = await data.sample(data.$data.length, { seed: seed });
             let numericColumns = ui.get_numeric_columns(dataset, true)
             let model_name = document.getElementById('model_name').value
             model_name = parseInt(model_name)
@@ -466,7 +467,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
                     case Settings.classification.random_forest.value: {
                         let num_features = typeof model_settings.features === "number" ? model_settings.features : parseInt(Math.sqrt(x_train.columns.length).toFixed(0))
                         const model = model_factory.createModel(Settings.classification.random_forest, {
-                            seed: 3,
+                            seed: seed,
                             maxFeatures: num_features,
                             replacement: true,
                             nEstimators: model_settings.estimators,
@@ -808,7 +809,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
 
                         let num_features = typeof model_settings.features === "number" ? model_settings.features : parseInt(Math.sqrt(x_train.columns.length).toFixed(0))
                         const model = model_factory.createModel(Settings.regression.random_forest, {
-                            seed: 3,
+                            seed: seed,
                             maxFeatures: num_features,
                             replacement: true,
                             nEstimators: model_settings.estimators,
@@ -854,7 +855,9 @@ document.addEventListener("DOMContentLoaded", async function (event) {
         await dimension_reduction(false);
     });
     document.getElementById("sample_data_select").addEventListener('change', async function (e) {
-        handleFileSelect(null, e.target.value.toLowerCase() + '.csv')
+        if (e.target.value != 'Sample data selection') {
+            handleFileSelect(null, e.target.value.toLowerCase() + '.csv')
+        }
 
     })
     ui.init_tabs_events();
