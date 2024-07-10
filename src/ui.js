@@ -645,7 +645,7 @@ export default class UI {
         return this.find_selected_columns_types(selected_columns);
     }
     async visualize(dataset, len, file_name) {
-        const myClass = this
+        const current_class = this
         this.renderDatasetStats(dataset);
         let numericColumns = this.get_numeric_columns(dataset, true)
         let categorical_columns = this.get_categorical_columns(dataset, true)
@@ -697,8 +697,15 @@ export default class UI {
 
         dataset = this.data_parser.handle_missing_values(dataset)
         this.chart_controller.ScatterplotMatrix(dataset.loc({ columns: features }).values, features, dataset.column(target).values, categorical_columns.length,
-            is_classification, numericColumns, categorical_columns, dataset)
-        // await this.chart_controller.draw_scatterplot_matrix(dataset.values, 'canvas-container', dataset.columns, categorical_columns, target)
+            is_classification, numericColumns, categorical_columns, dataset).then(() => {
+                document.getElementById('splom_update').addEventListener('click', async function (e) {
+                    console.log('update');
+                    Plotly.purge('scatterplot_mtx');
+                    $('#scatterplot_mtx').empty()
+                    await current_class.visualize(dataset);
+                });
+            })
+
     }
 
 
