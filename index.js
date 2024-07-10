@@ -20,7 +20,8 @@ document.addEventListener("DOMContentLoaded", async function (event) {
     sk.setBackend(tensorflow)
     let data_frame;
     var mltool = {
-        model_number: 0
+        model_number: 0,
+        name: ''
     };
     window.tensorflow = tensorflow
     let data_parser = new DataLoader();
@@ -46,7 +47,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             fetch(url)
                 .then(response => response.blob())
                 .then(async blob => {
-                    file = new File([blob], "url");
+                    file = new File([blob], url);
                     await process_file(file, 'csv')
                 })
                 .catch(error => {
@@ -74,6 +75,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             ui.createDatasetPropsDropdown(dataset);
             ui.createSampleDataTable(dataset);
             await ui.visualize(dataset, result.length, file.name);
+            mltool.name = file.name
             ui.init_tooltips(tippy)
             Plotly.purge('scatterplot_mtx');
             $('#scatterplot_mtx').empty()
@@ -182,7 +184,7 @@ document.addEventListener("DOMContentLoaded", async function (event) {
             let model_settings = ui.get_model_settings();
             mltool.model_number++
             ui.create_model_result_tab(mltool.model_number)
-            ui.show_settings(model_settings, numericColumns, ui.get_categorical_columns(dataset, true), target, mltool.model_number);
+            ui.show_settings(model_settings, numericColumns, ui.get_categorical_columns(dataset, true), target, mltool.name, mltool.model_number);
             let tabs = Bulma('.tabs-wrapper').data('tabs');
             tabs.setActive(2)
             // $(this).toggleClass("is-active ");

@@ -741,7 +741,7 @@ export default class UI {
         }
 
     }
-    show_settings(settings, numeric_columns, categorical_columns, target, i) {
+    show_settings(settings, numeric_columns, categorical_columns, target, dataset_name, i) {
         let columns = numeric_columns.concat(categorical_columns)
         let column_types = [];
         for (let i = 0; i < columns.length; i++) {
@@ -771,6 +771,7 @@ export default class UI {
             }
 
         }
+        content += `<div class="column is-12 "><p><strong>Dataset name :</strong> ${dataset_name}</p></div>`
         content += `<div class="column is-12 "><p><strong>Target :</strong> ${target}</p></div>`
         content += `<div class="column is-12 "><p><strong>Continious featues :</strong> ${numeric_columns}</p></div>`
         content += `<div class="column is-12 "><p><strong>Categorical featues :</strong> ${categorical_columns}</p></div>`

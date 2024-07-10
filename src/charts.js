@@ -256,12 +256,13 @@ export default class ChartController {
                 y: points.map(m => m.y),
                 mode: 'markers+text',
                 type: 'scatter',
+                colorscale: 'viridis',
+
                 marker: {
                     size: 4,
-                    colorscale: 'YlOrRd',
                     color: x,
                     colorbar: {
-                        title: 'Color Scale Legend',
+                        title: 'Color Scale',
                         titleside: 'right'
                     }
                 },
@@ -815,7 +816,6 @@ export default class ChartController {
 
         });
         Plotly.newPlot('pca-1', traces1, {
-            autosize: true,
             showlegend: true,
             margin: {
                 l: 30,
